@@ -865,7 +865,7 @@ namespace CreatureModule {
     {
         int cur_floor_time = getIndexByTime((int)floorf(time_in));
         int cur_ceil_time = getIndexByTime((int)ceilf(time_in));
-        float cur_ratio = time_in - (float)cur_floor_time;
+        float cur_ratio = (time_in - (float)floorf(time_in));
         
         glm::float32 * set_pt = target_pts;
         glm::float32 * floor_pts = cache_pts[cur_floor_time];
@@ -891,7 +891,8 @@ namespace CreatureModule {
     : target_creature(target_creature_in), is_playing(false), run_time(0), time_scale(30.0),
         do_blending(false),
         blending_factor(0), mirror_y(false), use_custom_time_range(false),
-        custom_start_time(0), custom_end_time(0), should_loop(true)
+        custom_start_time(0), custom_end_time(0), should_loop(true),
+        do_auto_blending(false), auto_blend_delta(0.1f)
     {
         for(int i = 0; i < 2; i++) {
             blend_render_pts[i] = NULL;
@@ -1036,6 +1037,35 @@ namespace CreatureModule {
         active_blend_animation_names[0] = name_1;
         active_blend_animation_names[1] = name_2;
     }
+    
+    void
+    CreatureManager::SetAutoBlending(bool flag_in)
+    {
+        do_auto_blending = flag_in;
+        SetBlending(flag_in);
+        
+        if(do_auto_blending)
+        {
+            AutoBlendTo(active_animation_name, 0.1f);
+        }
+    }
+    
+    void
+    CreatureManager::AutoBlendTo(const std::string& animation_name_in, float blend_delta)
+    {
+        if(animation_name_in == auto_blend_names[1])
+        {
+            // already blending to that so just return
+            return;
+        }
+        
+        auto_blend_delta = blend_delta;
+        auto_blend_names[0] = active_animation_name;
+        auto_blend_names[1] = animation_name_in;
+        blending_factor = 0;
+        
+        SetBlendingAnimations(auto_blend_names[0], auto_blend_names[1]);
+    }
 
     void
     CreatureManager::ResetToStartTimes()
@@ -1133,6 +1163,18 @@ namespace CreatureModule {
         }
 
     }
+    
+    void
+    CreatureManager::ProcessAutoBlending()
+    {
+        
+        
+        blending_factor += auto_blend_delta;
+        if(blending_factor > 1)
+        {
+            blending_factor = 1;
+        }
+    }
 
     void
     CreatureManager::Update(float delta)
@@ -1143,6 +1185,11 @@ namespace CreatureModule {
         }
         
         increRunTime(delta * time_scale);
+        
+        if(do_auto_blending)
+        {
+            ProcessAutoBlending();
+        }
         
         if(do_blending)
         {

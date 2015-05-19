@@ -272,6 +272,12 @@ namespace CreatureModule {
         // Creates point cache for animation
         void MakePointCache(const std::string& animation_name_in);
         
+        // Sets auto blending
+        void SetAutoBlending(bool flag_in);
+        
+        // Uses auto blending to blend to the next animation
+        void AutoBlendTo(const std::string& animation_name_in, float blend_delta);
+        
     protected:
         
         std::string ProcessContactBone(const glm::vec2& pt_in,
@@ -281,6 +287,8 @@ namespace CreatureModule {
         
         void PoseCreature(const std::string& animation_name_in,
                           glm::float32 * target_pts);
+        
+        void ProcessAutoBlending();
         
         std::unordered_map<std::string, std::shared_ptr<CreatureModule::CreatureAnimation> > animations;
         std::shared_ptr<CreatureModule::Creature> target_creature;
@@ -296,6 +304,10 @@ namespace CreatureModule {
         bool use_custom_time_range;
         int custom_start_time, custom_end_time;
         bool should_loop;
+        bool do_auto_blending;
+        std::string auto_blend_names[2];
+        float auto_blend_delta;
+        
         std::function<void (std::unordered_map<std::string, meshBone *>&) > bones_override_callback;
         
     };
