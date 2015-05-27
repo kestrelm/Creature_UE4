@@ -152,6 +152,12 @@ namespace CreatureModule {
         
         // Return the end time of the animation
         float getEndTime() const;
+
+		// Sets the start time of this animation
+		void setStartTime(int value_in);
+
+		// Sets the end time of this animation
+		void setEndTime(int value_in);
         
         meshBoneCacheManager& getBonesCache();
         

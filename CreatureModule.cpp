@@ -780,6 +780,16 @@ namespace CreatureModule {
     {
         return end_time;
     }
+
+	void CreatureAnimation::setStartTime(int value_in)
+	{
+		start_time = (float)value_in;
+	}
+
+	void CreatureAnimation::setEndTime(int value_in)
+	{
+		end_time = (float)value_in;
+	}
     
     meshBoneCacheManager&
     CreatureAnimation::getBonesCache()
@@ -1063,6 +1073,8 @@ namespace CreatureModule {
         auto_blend_names[0] = active_animation_name;
         auto_blend_names[1] = animation_name_in;
         blending_factor = 0;
+
+		active_animation_name = animation_name_in;
         
         SetBlendingAnimations(auto_blend_names[0], auto_blend_names[1]);
     }
