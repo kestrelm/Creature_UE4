@@ -24,6 +24,8 @@ protected:
 
 	void UpdateCreatureRender();
 
+	bool InitCreatureRender();
+
 public:
 	ACreatureActor();
 
@@ -36,6 +38,16 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	float animation_speed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	bool smooth_transitions;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	FString start_animation_name;
+
+	virtual void PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent);
+
+	virtual void OnConstruction(const FTransform & Transform);
 
 	// Loads a data packet from a file
 	static void LoadDataPacket(const std::string& filename_in);
@@ -53,8 +65,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintActiveAnimation(FString name_in);
 
+	// Blueprint version of setting the blended active animation name
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintBlendActiveAnimation(FString name_in, float factor);
+
 	// Sets the an active animation by name
 	void SetActiveAnimation(const std::string& name_in);
+
+	// Sets the active animation by smoothly blending, factor is a range of ( 0 < factor < 1 )
+	void SetAutoBlendActiveAnimation(const std::string& name_in, float factor);
 
 	// Update callback
 	virtual void Tick(float DeltaTime) override;

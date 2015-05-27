@@ -23,6 +23,7 @@ ACreatureActor::ACreatureActor()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	animation_speed = 1.0f;
+	smooth_transitions = false;
 
 	mesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("CreatureActor"));
 
@@ -53,7 +54,28 @@ ACreatureActor::ACreatureActor()
 	*/
 }
 
-void ACreatureActor::BeginPlay()
+void ACreatureActor::OnConstruction(const FTransform & Transform)
+{
+	Super::OnConstruction(Transform);
+	bool retval = InitCreatureRender();
+	if (retval)
+	{
+		Tick(0.1f);
+	}
+}
+
+void ACreatureActor::PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	bool retval = InitCreatureRender();
+	if (retval)
+	{
+		Tick(0.1f);
+	}
+
+}
+
+bool ACreatureActor::InitCreatureRender()
 {
 	bool does_exist = FPlatformFileManager::Get().GetPlatformFile().FileExists(*creature_filename);
 	if (does_exist)
@@ -72,11 +94,35 @@ void ACreatureActor::BeginPlay()
 			AddLoadedAnimation(load_filename, cur_name);
 		}
 
+		auto cur_str = ConvertToString(start_animation_name);
+		for (auto& cur_name : all_animation_names)
+		{
+			if (cur_name == cur_str)
+			{
+				first_animation_name = cur_name;
+				break;
+			}
+		}
+
 		SetActiveAnimation(first_animation_name);
+
+		if (smooth_transitions)
+		{
+			creature_manager->SetAutoBlending(true);
+		}
+
+		return true;
 	}
 	else {
 		UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::BeginPlay() - ERROR! Could not load creature file: %s"), *creature_filename);
 	}
+
+	return false;
+}
+
+void ACreatureActor::BeginPlay()
+{
+	InitCreatureRender();
 }
 
 void ACreatureActor::LoadDataPacket(const std::string& filename_in)
@@ -150,6 +196,24 @@ void ACreatureActor::SetBluePrintActiveAnimation(FString name_in)
 void ACreatureActor::SetActiveAnimation(const std::string& name_in)
 {
 	creature_manager->SetActiveAnimationName(name_in);
+}
+
+void ACreatureActor::SetBluePrintBlendActiveAnimation(FString name_in, float factor)
+{
+	auto cur_str = ConvertToString(name_in);
+	SetAutoBlendActiveAnimation(cur_str, factor);
+}
+
+void 
+ACreatureActor::SetAutoBlendActiveAnimation(const std::string& name_in, float factor)
+{
+	if (smooth_transitions == false)
+	{
+		smooth_transitions = true;
+		creature_manager->SetAutoBlending(true);
+	}
+
+	creature_manager->AutoBlendTo(name_in, factor);
 }
 
 void ACreatureActor::Tick(float DeltaTime)
