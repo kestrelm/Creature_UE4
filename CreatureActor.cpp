@@ -1,7 +1,7 @@
 // UE4 Procedural Mesh Generation from the Epic Wiki (https://wiki.unrealengine.com/Procedural_Mesh_Generation)
 //
 
-#include "ProceduralMesh.h"
+#include "CustomProceduralMesh.h"
 #include "CreatureActor.h"
 
 static std::map<std::string, std::shared_ptr<CreatureModule::CreatureAnimation> > global_animations;
@@ -25,20 +25,14 @@ ACreatureActor::ACreatureActor()
 	animation_speed = 1.0f;
 	smooth_transitions = false;
 
-	mesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("CreatureActor"));
-
-	// Apply a simple material directly using the VertexColor as its BaseColor input
-	//static ConstructorHelpers::FObjectFinder<UMaterialInterface> Material(TEXT("Material'/Game/Materials/BaseColor.BaseColor'"));
-	// TODO Apply a real material with textures, using UVs
-//	static ConstructorHelpers::FObjectFinder<UMaterialInterface> Material(TEXT("Material'/Game/Materials/M_Concrete_Poured.M_Concrete_Poured'"));
-	//mesh->SetMaterial(0, Material.Object);
+	mesh = CreateDefaultSubobject<UCustomProceduralMeshComponent>(TEXT("CreatureActor"));
+	RootComponent = mesh;
 
 	// Generate a single dummy triangle
 	TArray<FProceduralMeshTriangle> triangles;
 	GenerateTriangle(triangles);
 	mesh->SetProceduralMeshTriangles(triangles);
 
-	RootComponent = mesh;
 
 	// Test Creature code
 	/*
@@ -57,6 +51,11 @@ ACreatureActor::ACreatureActor()
 void ACreatureActor::OnConstruction(const FTransform & Transform)
 {
 	Super::OnConstruction(Transform);
+	if (!mesh)
+	{
+		return;
+	}
+
 	bool retval = InitCreatureRender();
 	if (retval)
 	{
@@ -77,10 +76,18 @@ void ACreatureActor::PostEditChangeProperty(FPropertyChangedEvent & PropertyChan
 
 bool ACreatureActor::InitCreatureRender()
 {
-	bool does_exist = FPlatformFileManager::Get().GetPlatformFile().FileExists(*creature_filename);
+	FString cur_creature_filename = creature_filename;
+	bool does_exist = FPlatformFileManager::Get().GetPlatformFile().FileExists(*cur_creature_filename);
+	if (!does_exist)
+	{
+		// see if it is in the content directory
+		cur_creature_filename = FPaths::GameContentDir() + FString(TEXT("/")) + cur_creature_filename;
+		does_exist = FPlatformFileManager::Get().GetPlatformFile().FileExists(*cur_creature_filename);
+	}
+
 	if (does_exist)
 	{
-		auto load_filename = ConvertToString(creature_filename);
+		auto load_filename = ConvertToString(cur_creature_filename);
 		// try to load creature
 		ACreatureActor::LoadDataPacket(load_filename);
 		LoadCreature(load_filename);
@@ -159,6 +166,12 @@ void ACreatureActor::LoadAnimation(const std::string& filename_in, const std::st
 
 void ACreatureActor::LoadCreature(const std::string& filename_in)
 {
+	if (!mesh)
+	{
+		return;
+	}
+
+
 	auto load_data = global_load_data_packets[filename_in];
 
 	std::shared_ptr<CreatureModule::Creature> new_creature =
@@ -167,6 +180,7 @@ void ACreatureActor::LoadCreature(const std::string& filename_in)
 	creature_manager = std::make_shared<CreatureModule::CreatureManager>(new_creature);
 
 	draw_triangles.SetNum(creature_manager->GetCreature()->GetTotalNumIndices() / 3, true);
+
 	mesh->SetProceduralMeshTriangles(draw_triangles);
 }
 
@@ -245,6 +259,23 @@ void ACreatureActor::UpdateCreatureRender()
 	glm::float32 * cur_pts = cur_creature->GetRenderPts();
 	glm::float32 * cur_uvs = cur_creature->GetGlobalUvs();
 
+	// Update depth per region
+	std::vector<meshRenderRegion *>& cur_regions =
+		cur_creature->GetRenderComposition()->getRegions();
+	float region_z = 0.0f, delta_z = -0.01f;
+	for (auto& single_region : cur_regions)
+	{
+		glm::float32 * region_pts = cur_pts + (single_region->getStartPtIndex() * 3);
+		for (size_t i = 0; i < single_region->getNumPts(); i++)
+		{
+			region_pts[2] = region_z;
+			region_pts += 3;
+		}
+
+		region_z += delta_z;
+	}
+
+	// Build render triangles
 	TArray<FProceduralMeshTriangle>& write_triangles = mesh->GetProceduralTriangles();
 
 	static const FColor White(255, 255, 255, 255);

@@ -7,7 +7,7 @@
 #include "CreatureModule.h"
 #include <map>
 
-#include "ProceduralMeshComponent.h"
+#include "CustomProceduralMeshComponent.h"
 #include "CreatureActor.generated.h"
 
 /**
@@ -31,7 +31,7 @@ public:
 
 	// Allow viewing/changing the Material ot the procedural Mesh in editor (if placed in a level at construction)
 	UPROPERTY(VisibleAnywhere, Category=Materials)
-	UProceduralMeshComponent* mesh;
+	UCustomProceduralMeshComponent* mesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	FString creature_filename;
