@@ -28,10 +28,10 @@ ACreatureActor::ACreatureActor()
 	mesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("CreatureActor"));
 
 	// Apply a simple material directly using the VertexColor as its BaseColor input
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> Material(TEXT("Material'/Game/Materials/BaseColor.BaseColor'"));
+	//static ConstructorHelpers::FObjectFinder<UMaterialInterface> Material(TEXT("Material'/Game/Materials/BaseColor.BaseColor'"));
 	// TODO Apply a real material with textures, using UVs
 //	static ConstructorHelpers::FObjectFinder<UMaterialInterface> Material(TEXT("Material'/Game/Materials/M_Concrete_Poured.M_Concrete_Poured'"));
-	mesh->SetMaterial(0, Material.Object);
+	//mesh->SetMaterial(0, Material.Object);
 
 	// Generate a single dummy triangle
 	TArray<FProceduralMeshTriangle> triangles;
@@ -191,6 +191,18 @@ void ACreatureActor::SetBluePrintActiveAnimation(FString name_in)
 {
 	auto cur_str = ConvertToString(name_in);
 	SetActiveAnimation(cur_str);
+}
+
+void 
+ACreatureActor::SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time)
+{
+	auto cur_str = ConvertToString(name_in);
+	auto all_animations = creature_manager->GetAllAnimations();
+	if (all_animations.count(cur_str) > 0)
+	{
+		all_animations[cur_str]->setStartTime(start_time);
+		all_animations[cur_str]->setEndTime(end_time);
+	}
 }
 
 void ACreatureActor::SetActiveAnimation(const std::string& name_in)

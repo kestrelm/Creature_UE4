@@ -2,4 +2,4 @@
 
 #include "ProceduralMesh.h"
 
-IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, ProceduralMesh, "ProceduralMesh" );
+//IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, ProceduralMesh, "ProceduralMesh" );

@@ -14,7 +14,7 @@
  * 
  */
 UCLASS(Blueprintable)
-class PROCEDURALMESH_API ACreatureActor : public AActor
+class ACreatureActor : public AActor
 {
 	GENERATED_BODY()
 
@@ -68,6 +68,10 @@ public:
 	// Blueprint version of setting the blended active animation name
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintBlendActiveAnimation(FString name_in, float factor);
+
+	// Blueprint version of setting a custom time range for a given animation
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time);
 
 	// Sets the an active animation by name
 	void SetActiveAnimation(const std::string& name_in);
