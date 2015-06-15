@@ -1,0 +1,21 @@
+{
+	"FileVersion" : 3,
+	
+	"FriendlyName" : "Creature Animation Plugin",
+	"Version" : 1,
+	"VersionName" : "1.0",
+	"CreatedBy" : "Kestrel Moon Studios Pte Ltd.",
+	"CreatedByURL" : "",
+	"EngineVersion" : "4.3.1",
+	"Description" : "",
+	"Category" : "CreaturePlugin",
+	"EnabledByDefault" : true,
+	
+	"Modules" :
+	[
+		{
+			"Name" : "CreaturePlugin",
+			"Type" : "Developer"
+		}
+	]
+}
