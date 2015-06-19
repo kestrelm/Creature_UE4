@@ -233,6 +233,22 @@ void ACreatureActor::SetBluePrintBlendActiveAnimation(FString name_in, float fac
 void 
 ACreatureActor::SetAutoBlendActiveAnimation(const std::string& name_in, float factor)
 {
+	auto all_animations = creature_manager->GetAllAnimations();
+
+	if (all_animations.count(name_in) <= 0)
+	{
+		return;
+	}
+
+	if (factor < 0.001f)
+	{
+		factor = 0.001f;
+	}
+	else if (factor > 1.0f)
+	{
+		factor = 1.0f;
+	}
+
 	if (smooth_transitions == false)
 	{
 		smooth_transitions = true;
