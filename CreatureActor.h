@@ -13,6 +13,22 @@
 /**
  * 
  */
+
+USTRUCT()
+struct FCreatureBoneData
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	FVector point1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	FVector point2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	FString name;
+};
+
 UCLASS(Blueprintable)
 class ACreatureActor : public AActor
 {
@@ -22,9 +38,12 @@ protected:
 	TArray<FProceduralMeshTriangle> draw_triangles;
 	std::shared_ptr<CreatureModule::CreatureManager> creature_manager;
 
+
 	void UpdateCreatureRender();
 
 	bool InitCreatureRender();
+
+	void FillBoneData();
 
 public:
 	ACreatureActor();
@@ -32,6 +51,9 @@ public:
 	// Allow viewing/changing the Material ot the procedural Mesh in editor (if placed in a level at construction)
 	UPROPERTY(VisibleAnywhere, Category=Materials)
 	UCustomProceduralMeshComponent* mesh;
+
+	UPROPERTY(VisibleAnywhere, Category = Collision)
+	UCapsuleComponent * rootCollider;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	FString creature_filename;
@@ -44,6 +66,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	FString start_animation_name;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Materials)
+	TArray<FCreatureBoneData> bone_data;
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent);
 
@@ -73,11 +98,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time);
 
+	// Blueprint function that returns the bone data given a bone name
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	FCreatureBoneData GetBluePrintBoneData(FString name_in, bool world_transform);
+
 	// Sets the an active animation by name
 	void SetActiveAnimation(const std::string& name_in);
 
 	// Sets the active animation by smoothly blending, factor is a range of ( 0 < factor < 1 )
 	void SetAutoBlendActiveAnimation(const std::string& name_in, float factor);
+
+	
 
 	// Update callback
 	virtual void Tick(float DeltaTime) override;

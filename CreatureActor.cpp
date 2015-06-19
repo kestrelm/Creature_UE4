@@ -33,6 +33,14 @@ ACreatureActor::ACreatureActor()
 	GenerateTriangle(triangles);
 	mesh->SetProceduralMeshTriangles(triangles);
 
+	// Root collider capsule
+	rootCollider = CreateDefaultSubobject<UCapsuleComponent>(TEXT("RootCollider"));
+	rootCollider->SetRelativeRotation(FQuat(0, 1, 0, FMath::DegreesToRadians(90)));
+	rootCollider->AttachParent = RootComponent;
+	rootCollider->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	rootCollider->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+
+	
 
 	// Test Creature code
 	/*
@@ -124,8 +132,36 @@ bool ACreatureActor::InitCreatureRender()
 		UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::BeginPlay() - ERROR! Could not load creature file: %s"), *creature_filename);
 	}
 
+	FillBoneData();
+
 	return false;
 }
+
+void ACreatureActor::FillBoneData()
+{
+	auto  render_composition = creature_manager->GetCreature()->GetRenderComposition();
+	auto& bones_map = render_composition->getBonesMap();
+
+	if (bone_data.Num() == 0)
+	{
+		bone_data.SetNum(bones_map.size());
+	}
+
+	int i = 0;
+	for (auto& cur_data : bones_map)
+	{
+		bone_data[i].name = FString(cur_data.first.c_str());
+
+		auto pt1 = cur_data.second->getWorldStartPt();
+		auto pt2 = cur_data.second->getWorldEndPt();
+
+		bone_data[i].point1 = FVector(pt1.x, pt1.y, pt1.z);
+		bone_data[i].point2 = FVector(pt2.x, pt2.y, pt2.z);
+
+		i++;
+	}
+}
+
 
 void ACreatureActor::BeginPlay()
 {
@@ -258,12 +294,39 @@ ACreatureActor::SetAutoBlendActiveAnimation(const std::string& name_in, float fa
 	creature_manager->AutoBlendTo(name_in, factor);
 }
 
+FCreatureBoneData 
+ACreatureActor::GetBluePrintBoneData(FString name_in, bool world_transform)
+{
+	FCreatureBoneData ret_data;
+
+	for (size_t i = 0; i < bone_data.Num(); i++)
+	{
+		if (bone_data[i].name == name_in)
+		{
+			ret_data = bone_data[i];
+			if (world_transform)
+			{
+				FTransform xform = GetTransform();
+				FVector world_location = xform.GetTranslation();
+				ret_data.point1 = xform.TransformPosition(ret_data.point1);
+				ret_data.point2 = xform.TransformPosition(ret_data.point2);
+			}
+
+			break;
+		}
+	}
+
+	return ret_data;
+}
+
 void ACreatureActor::Tick(float DeltaTime)
 {
 	if (creature_manager)
 	{
 		creature_manager->Update(DeltaTime * animation_speed);
 		UpdateCreatureRender();
+
+		FillBoneData();
 	}
 }
 
