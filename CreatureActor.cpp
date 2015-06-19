@@ -39,7 +39,6 @@ ACreatureActor::ACreatureActor()
 	rootCollider->AttachParent = RootComponent;
 	rootCollider->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	rootCollider->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
-
 	
 
 	// Test Creature code
@@ -59,6 +58,7 @@ ACreatureActor::ACreatureActor()
 void ACreatureActor::OnConstruction(const FTransform & Transform)
 {
 	Super::OnConstruction(Transform);
+
 	if (!mesh)
 	{
 		return;
@@ -297,8 +297,8 @@ ACreatureActor::SetAutoBlendActiveAnimation(const std::string& name_in, float fa
 FCreatureBoneData 
 ACreatureActor::GetBluePrintBoneData(FString name_in, bool world_transform)
 {
-	FCreatureBoneData ret_data;
 
+	FCreatureBoneData ret_data;
 	for (size_t i = 0; i < bone_data.Num(); i++)
 	{
 		if (bone_data[i].name == name_in)

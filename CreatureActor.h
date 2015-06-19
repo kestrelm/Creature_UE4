@@ -36,7 +36,10 @@ class ACreatureActor : public AActor
 
 protected:
 	TArray<FProceduralMeshTriangle> draw_triangles;
+
 	std::shared_ptr<CreatureModule::CreatureManager> creature_manager;
+
+	TArray<FCreatureBoneData> bone_data;
 
 
 	void UpdateCreatureRender();
@@ -67,8 +70,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	FString start_animation_name;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Materials)
-	TArray<FCreatureBoneData> bone_data;
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent);
 
