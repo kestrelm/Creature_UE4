@@ -126,13 +126,14 @@ bool ACreatureActor::InitCreatureRender()
 			creature_manager->SetAutoBlending(true);
 		}
 
+		FillBoneData();
+
 		return true;
 	}
 	else {
 		UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::BeginPlay() - ERROR! Could not load creature file: %s"), *creature_filename);
 	}
 
-	FillBoneData();
 
 	return false;
 }
