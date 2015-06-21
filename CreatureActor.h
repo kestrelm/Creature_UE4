@@ -103,6 +103,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	FCreatureBoneData GetBluePrintBoneData(FString name_in, bool world_transform);
 
+	// BLueprint function that returns whether a given input point is colliding with any of the bones
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	bool IsBluePrintBonesCollide(FVector test_point, float bone_size);
+
 	// Sets the an active animation by name
 	void SetActiveAnimation(const std::string& name_in);
 

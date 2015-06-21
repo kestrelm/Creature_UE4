@@ -320,6 +320,51 @@ ACreatureActor::GetBluePrintBoneData(FString name_in, bool world_transform)
 	return ret_data;
 }
 
+bool
+ACreatureActor::IsBluePrintBonesCollide(FVector test_point, float bone_size)
+{
+	if (bone_size <= 0)
+	{
+		bone_size = 1.0f;
+	}
+
+	FTransform xform = GetTransform();
+	FVector local_test_point = xform.InverseTransformPosition(test_point);
+	auto  render_composition = creature_manager->GetCreature()->GetRenderComposition();
+	auto& bones_map = render_composition->getBonesMap();
+	
+	glm::vec4 real_test_pt(local_test_point.X, local_test_point.Y, local_test_point.Z, 1.0f);
+	for (auto cur_data : bones_map)
+	{
+		auto cur_bone = cur_data.second;
+		auto bone_start_pt = cur_bone->getWorldStartPt();
+		auto bone_end_pt = cur_bone->getWorldEndPt();
+
+		auto bone_vec = bone_end_pt - bone_start_pt;
+		auto bone_length = glm::length(bone_vec);
+		auto bone_unit_vec = bone_vec / bone_length;
+
+		auto rel_vec = real_test_pt - bone_start_pt;
+		float proj_length_u = glm::dot(rel_vec, bone_unit_vec);
+		if (proj_length_u >= 0 && proj_length_u <= bone_length)
+		{
+			// quick rotation by 90 degrees
+			auto bone_unit_normal_vec = bone_unit_vec;
+			bone_unit_normal_vec.x = -bone_unit_vec.y;
+			bone_unit_normal_vec.y = bone_unit_vec.x;
+
+			float proj_length_v = fabs(glm::dot(rel_vec, bone_unit_normal_vec));
+			if (proj_length_v <= bone_size)
+			{
+				return true;
+			}
+		}
+		
+	}
+
+	return false;
+}
+
 void ACreatureActor::Tick(float DeltaTime)
 {
 	if (creature_manager)
