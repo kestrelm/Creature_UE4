@@ -396,6 +396,8 @@ ACreatureActor::IsBluePrintBonesCollide(FVector test_point, float bone_size)
 
 void ACreatureActor::Tick(float DeltaTime)
 {
+	Super::Tick(DeltaTime); // Call parent class tick function  
+
 	if (creature_manager)
 	{
 		creature_manager->Update(DeltaTime * animation_speed);
