@@ -24,6 +24,8 @@ ACreatureActor::ACreatureActor()
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	animation_speed = 1.0f;
 	smooth_transitions = false;
+	bone_data_size = 0.1f;
+	bone_data_length_factor = 0.2f;
 
 	mesh = CreateDefaultSubobject<UCustomProceduralMeshComponent>(TEXT("CreatureActor"));
 	RootComponent = mesh;
@@ -158,6 +160,30 @@ void ACreatureActor::FillBoneData()
 
 		bone_data[i].point1 = FVector(pt1.x, pt1.y, pt1.z);
 		bone_data[i].point2 = FVector(pt2.x, pt2.y, pt2.z);
+
+		// figure out bone transform
+		auto cur_bone = cur_data.second;
+		auto bone_start_pt = cur_bone->getWorldStartPt();
+		auto bone_end_pt = cur_bone->getWorldEndPt();
+
+		auto bone_vec = bone_end_pt - bone_start_pt;
+		auto bone_length = glm::length(bone_vec);
+		auto bone_unit_vec = bone_vec / bone_length;
+
+		// quick rotation by 90 degrees
+		auto bone_unit_normal_vec = bone_unit_vec;
+		bone_unit_normal_vec.x = -bone_unit_vec.y;
+		bone_unit_normal_vec.y = bone_unit_vec.x;
+
+		FVector bone_midpt = (bone_data[i].point1 + bone_data[i].point2) * 0.5f;
+		FVector bone_axis_x(bone_unit_vec.x, bone_unit_vec.y, 0);
+		FVector bone_axis_y(bone_unit_normal_vec.x, bone_unit_normal_vec.y, 0);
+		FVector bone_axis_z(0, 0, 1);
+
+		FTransform scaleXform(FVector(0, 0, 0));
+		scaleXform.SetScale3D(FVector(bone_length * bone_data_length_factor, bone_data_size, bone_data_size));
+
+		bone_data[i].xform = scaleXform * FTransform(bone_axis_x, bone_axis_y, bone_axis_z, bone_midpt);
 
 		i++;
 	}
@@ -311,6 +337,9 @@ ACreatureActor::GetBluePrintBoneData(FString name_in, bool world_transform)
 				FVector world_location = xform.GetTranslation();
 				ret_data.point1 = xform.TransformPosition(ret_data.point1);
 				ret_data.point2 = xform.TransformPosition(ret_data.point2);
+
+				FMatrix no_scale = xform.ToMatrixNoScale();
+				ret_data.xform = ret_data.xform * FTransform(no_scale);
 			}
 
 			break;

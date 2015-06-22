@@ -26,6 +26,9 @@ struct FCreatureBoneData
 	FVector point2;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	FTransform xform;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	FString name;
 };
 
@@ -63,6 +66,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	float animation_speed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	float bone_data_size;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	float bone_data_length_factor;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	bool smooth_transitions;
