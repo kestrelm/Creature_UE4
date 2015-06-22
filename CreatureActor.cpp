@@ -24,8 +24,8 @@ ACreatureActor::ACreatureActor()
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	animation_speed = 1.0f;
 	smooth_transitions = false;
-	bone_data_size = 0.1f;
-	bone_data_length_factor = 0.2f;
+	bone_data_size = 0.01f;
+	bone_data_length_factor = 0.02f;
 
 	mesh = CreateDefaultSubobject<UCustomProceduralMeshComponent>(TEXT("CreatureActor"));
 	RootComponent = mesh;
@@ -338,8 +338,8 @@ ACreatureActor::GetBluePrintBoneData(FString name_in, bool world_transform)
 				ret_data.point1 = xform.TransformPosition(ret_data.point1);
 				ret_data.point2 = xform.TransformPosition(ret_data.point2);
 
-				FMatrix no_scale = xform.ToMatrixNoScale();
-				ret_data.xform = ret_data.xform * FTransform(no_scale);
+				//FMatrix no_scale = xform.ToMatrixNoScale();
+				ret_data.xform = ret_data.xform * xform;
 			}
 
 			break;
