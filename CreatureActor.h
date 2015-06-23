@@ -44,12 +44,16 @@ protected:
 
 	TArray<FCreatureBoneData> bone_data;
 
+	FString absolute_creature_filename;
+
 
 	void UpdateCreatureRender();
 
 	bool InitCreatureRender();
 
 	void FillBoneData();
+
+	void ParseEvents(float deltaTime);
 
 public:
 	ACreatureActor();
@@ -78,6 +82,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	FString start_animation_name;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
+	float animation_frame;
 
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent);
@@ -115,6 +122,17 @@ public:
 	// BLueprint function that returns whether a given input point is colliding with any of the bones
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	bool IsBluePrintBonesCollide(FVector test_point, float bone_size);
+
+	// Blueprint function that decides whether the animation will loop or not
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintAnimationLoop(bool flag_in);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Components|Creature", meta = (FriendlyName = "Calback when animation has started"))
+	virtual void BlueprintAnimationStart(float frame_in);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Components|Creature", meta = (FriendlyName = "Calback when animation has ended"))
+	virtual void BlueprintAnimationEnd(float frame_in);
+
 
 	// Sets the an active animation by name
 	void SetActiveAnimation(const std::string& name_in);

@@ -97,6 +97,7 @@ bool ACreatureActor::InitCreatureRender()
 
 	if (does_exist)
 	{
+		absolute_creature_filename = cur_creature_filename;
 		auto load_filename = ConvertToString(cur_creature_filename);
 		// try to load creature
 		ACreatureActor::LoadDataPacket(load_filename);
@@ -272,6 +273,12 @@ void ACreatureActor::SetBluePrintActiveAnimation(FString name_in)
 }
 
 void 
+ACreatureActor::SetBluePrintAnimationLoop(bool flag_in)
+{
+	creature_manager->SetShouldLoop(flag_in);
+}
+
+void 
 ACreatureActor::SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time)
 {
 	auto cur_str = ConvertToString(name_in);
@@ -405,6 +412,45 @@ void ACreatureActor::Tick(float DeltaTime)
 		UpdateCreatureRender();
 
 		FillBoneData();
+
+		ParseEvents(DeltaTime);
+	}
+}
+
+void ACreatureActor::ParseEvents(float deltaTime)
+{
+	float cur_runtime = (creature_manager->getRunTime());
+	animation_frame = cur_runtime;
+
+	auto load_filename = ConvertToString(absolute_creature_filename);
+
+	auto cur_animation_name = creature_manager->GetActiveAnimationName();
+
+	auto cur_token = GetAnimationToken(load_filename, cur_animation_name);
+	CreatureModule::CreatureAnimation * cur_animation = NULL;
+	if (global_animations.count(cur_token) > 0)
+	{
+		cur_animation = global_animations[cur_token].get();
+	}
+
+
+	if (cur_animation)
+	{
+		int cur_start_time = cur_animation->getStartTime();
+		int cur_end_time = cur_animation->getEndTime();
+
+		float diff_val_start = fabs(cur_runtime - cur_start_time);
+		const float cutoff = 0.01f;
+
+		if (diff_val_start <= cutoff)
+		{
+			this->BlueprintAnimationStart(cur_runtime);
+		}
+
+		if (cur_runtime + 1.0f >= cur_end_time)
+		{
+			this->BlueprintAnimationEnd(cur_runtime);
+		}
 	}
 }
 
