@@ -39,7 +39,7 @@ ACreatureActor::ACreatureActor()
 	rootCollider = CreateDefaultSubobject<UCapsuleComponent>(TEXT("RootCollider"));
 	rootCollider->SetRelativeRotation(FQuat(0, 1, 0, FMath::DegreesToRadians(90)));
 	rootCollider->AttachParent = RootComponent;
-	rootCollider->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	rootCollider->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 	rootCollider->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
 	
 
@@ -192,6 +192,7 @@ void ACreatureActor::FillBoneData()
 
 void ACreatureActor::BeginPlay()
 {
+	Super::BeginPlay();
 	InitCreatureRender();
 }
 

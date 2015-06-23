@@ -58,7 +58,7 @@ public:
 	UPROPERTY(VisibleAnywhere, Category=Materials)
 	UCustomProceduralMeshComponent* mesh;
 
-	UPROPERTY(VisibleAnywhere, Category = Collision)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Collision)
 	UCapsuleComponent * rootCollider;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)

@@ -276,7 +276,8 @@ UCustomProceduralMeshComponent::UCustomProceduralMeshComponent(const FObjectInit
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
+//	SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
+	SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 }
 
 bool UCustomProceduralMeshComponent::SetProceduralMeshTriangles(const TArray<FProceduralMeshTriangle>& Triangles)
