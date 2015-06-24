@@ -286,6 +286,9 @@ void
 ACreatureActor::SetBluePrintAnimationPlay(bool flag_in)
 {
 	should_play = flag_in;
+	if (creature_manager) {
+		creature_manager->ResetToStartTimes();
+	}
 }
 
 void 
