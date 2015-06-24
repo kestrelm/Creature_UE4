@@ -14,21 +14,11 @@
  * 
  */
 
-USTRUCT()
 struct FCreatureBoneData
 {
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	FVector point1;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	FVector point2;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	FTransform xform;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	FString name;
 };
 
@@ -86,7 +76,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
 	float animation_frame;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	bool should_play;
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent);
@@ -117,9 +107,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time);
 
-	// Blueprint function that returns the bone data given a bone name
+	// Blueprint function that returns the transform given a bone name
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	FCreatureBoneData GetBluePrintBoneData(FString name_in, bool world_transform);
+	FTransform GetBluePrintBoneXform(FString name_in, bool world_transform);
 
 	// BLueprint function that returns whether a given input point is colliding with any of the bones
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")

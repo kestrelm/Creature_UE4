@@ -136,6 +136,7 @@ bool ACreatureActor::InitCreatureRender()
 	}
 	else {
 		UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::BeginPlay() - ERROR! Could not load creature file: %s"), *creature_filename);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("ACreatureActor::BeginPlay() - ERROR! Could not load creature file: %s"), *creature_filename));
 	}
 
 
@@ -332,32 +333,33 @@ ACreatureActor::SetAutoBlendActiveAnimation(const std::string& name_in, float fa
 	creature_manager->AutoBlendTo(name_in, factor);
 }
 
-FCreatureBoneData 
-ACreatureActor::GetBluePrintBoneData(FString name_in, bool world_transform)
+FTransform
+ACreatureActor::GetBluePrintBoneXform(FString name_in, bool world_transform)
 {
 
-	FCreatureBoneData ret_data;
+	FTransform ret_xform;
 	for (size_t i = 0; i < bone_data.Num(); i++)
 	{
 		if (bone_data[i].name == name_in)
 		{
-			ret_data = bone_data[i];
+			ret_xform = bone_data[i].xform;
 			if (world_transform)
 			{
 				FTransform xform = GetTransform();
+				/*
 				FVector world_location = xform.GetTranslation();
 				ret_data.point1 = xform.TransformPosition(ret_data.point1);
 				ret_data.point2 = xform.TransformPosition(ret_data.point2);
-
+				*/
 				//FMatrix no_scale = xform.ToMatrixNoScale();
-				ret_data.xform = ret_data.xform * xform;
+				ret_xform = ret_xform * xform;
 			}
 
 			break;
 		}
 	}
 
-	return ret_data;
+	return ret_xform;
 }
 
 bool
