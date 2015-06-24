@@ -20,6 +20,9 @@ static std::string ConvertToString(FString str)
 
 ACreatureActor::ACreatureActor()
 {
+	UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::Constructor Called()"));
+
+
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	animation_speed = 1.0f;
@@ -74,6 +77,7 @@ void ACreatureActor::OnConstruction(const FTransform & Transform)
 	}
 }
 
+#if WITH_EDITOR
 void ACreatureActor::PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
@@ -84,9 +88,12 @@ void ACreatureActor::PostEditChangeProperty(FPropertyChangedEvent & PropertyChan
 	}
 
 }
+#endif
 
 bool ACreatureActor::InitCreatureRender()
 {
+	UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::InitCreatureRender Called()"));
+
 	FString cur_creature_filename = creature_filename;
 	bool does_exist = FPlatformFileManager::Get().GetPlatformFile().FileExists(*cur_creature_filename);
 	if (!does_exist)

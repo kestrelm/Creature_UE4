@@ -284,7 +284,7 @@ bool UCustomProceduralMeshComponent::SetProceduralMeshTriangles(const TArray<FPr
 {
 	ProceduralMeshTris = Triangles;
 
-	UpdateCollision();
+	//UpdateCollision();
 
 	// Need to recreate scene proxy to send it over
 	MarkRenderStateDirty();
@@ -388,7 +388,7 @@ FBoxSphereBounds UCustomProceduralMeshComponent::CalcBounds(const FTransform & L
 	}
 }
 
-
+/*
 bool UCustomProceduralMeshComponent::GetPhysicsTriMeshData(struct FTriMeshCollisionData* CollisionData, bool InUseAllTriData)
 {
 	FTriIndices Triangle;
@@ -414,19 +414,23 @@ bool UCustomProceduralMeshComponent::ContainsPhysicsTriMeshData(bool InUseAllTri
 {
 	return (ProceduralMeshTris.Num() > 0);
 }
+*/
 
 void UCustomProceduralMeshComponent::UpdateBodySetup()
 {
 	if(ModelBodySetup == NULL)
 	{
+		/*
 		ModelBodySetup = ConstructObject<UBodySetup>(UBodySetup::StaticClass(), this);
 		ModelBodySetup->CollisionTraceFlag = CTF_UseComplexAsSimple;
 		ModelBodySetup->bMeshCollideAll = true;
+		*/
 	}
 }
 
 void UCustomProceduralMeshComponent::UpdateCollision()
 {
+	/*
 	if(bPhysicsStateCreated)
 	{
 		DestroyPhysicsState();
@@ -437,6 +441,7 @@ void UCustomProceduralMeshComponent::UpdateCollision()
 		ModelBodySetup->InvalidatePhysicsData();
 		ModelBodySetup->CreatePhysicsMeshes();
 	}
+	*/
 }
 
 UBodySetup* UCustomProceduralMeshComponent::GetBodySetup()

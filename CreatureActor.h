@@ -77,7 +77,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
 	float animation_frame;
 
+#if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent);
+#endif
 
 	virtual void OnConstruction(const FTransform & Transform);
 

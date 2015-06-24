@@ -9,4 +9,4 @@ void CreaturePlugin::ShutdownModule()
 {
 }
 
-IMPLEMENT_MODULE(CreaturePlugin, Module)
+IMPLEMENT_MODULE(CreaturePlugin, CreaturePlugin)

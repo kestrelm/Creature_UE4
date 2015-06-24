@@ -41,7 +41,7 @@ struct FProceduralMeshTriangle
 
 /** Component that allows you to specify custom triangle mesh geometry */
 UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup=Rendering)
-class UCustomProceduralMeshComponent : public UMeshComponent, public IInterface_CollisionDataProvider
+class UCustomProceduralMeshComponent : public UMeshComponent //, public IInterface_CollisionDataProvider
 {
 	GENERATED_UCLASS_BODY()
 
@@ -67,9 +67,11 @@ public:
 	class UBodySetup* ModelBodySetup;
 
 	// Begin Interface_CollisionDataProvider Interface
+	/*
 	virtual bool GetPhysicsTriMeshData(struct FTriMeshCollisionData* CollisionData, bool InUseAllTriData) override;
 	virtual bool ContainsPhysicsTriMeshData(bool InUseAllTriData) const override;
 	virtual bool WantsNegXTriMesh() override{ return false; }
+	*/
 	// End Interface_CollisionDataProvider Interface
 
 	// Begin UPrimitiveComponent interface.
