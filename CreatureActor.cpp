@@ -283,6 +283,12 @@ ACreatureActor::SetBluePrintAnimationLoop(bool flag_in)
 }
 
 void 
+ACreatureActor::SetBluePrintAnimationPlay(bool flag_in)
+{
+	should_play = flag_in;
+}
+
+void 
 ACreatureActor::SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time)
 {
 	auto cur_str = ConvertToString(name_in);

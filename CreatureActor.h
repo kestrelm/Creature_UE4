@@ -36,6 +36,7 @@ protected:
 
 	FString absolute_creature_filename;
 
+	bool should_play;
 
 	void UpdateCreatureRender();
 
@@ -76,9 +77,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
 	float animation_frame;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	bool should_play;
-
 	virtual void PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent);
 
 	virtual void OnConstruction(const FTransform & Transform);
@@ -118,6 +116,10 @@ public:
 	// Blueprint function that decides whether the animation will loop or not
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAnimationLoop(bool flag_in);
+
+	// Blueprint function that decides whether to play the animation or not
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintAnimationPlay(bool flag_in);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Components|Creature", meta = (DisplayName = "Calback when animation has started"))
 	virtual void BlueprintAnimationStart(float frame_in);
