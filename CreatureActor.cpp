@@ -26,6 +26,7 @@ ACreatureActor::ACreatureActor()
 	smooth_transitions = false;
 	bone_data_size = 0.01f;
 	bone_data_length_factor = 0.02f;
+	should_play = true;
 
 	mesh = CreateDefaultSubobject<UCustomProceduralMeshComponent>(TEXT("CreatureActor"));
 	RootComponent = mesh;
@@ -193,8 +194,8 @@ void ACreatureActor::FillBoneData()
 
 void ACreatureActor::BeginPlay()
 {
-	Super::BeginPlay();
 	InitCreatureRender();
+	Super::BeginPlay();
 }
 
 void ACreatureActor::LoadDataPacket(const std::string& filename_in)
@@ -275,7 +276,9 @@ void ACreatureActor::SetBluePrintActiveAnimation(FString name_in)
 void 
 ACreatureActor::SetBluePrintAnimationLoop(bool flag_in)
 {
-	creature_manager->SetShouldLoop(flag_in);
+	if (creature_manager) {
+		creature_manager->SetShouldLoop(flag_in);
+	}
 }
 
 void 
@@ -408,7 +411,10 @@ void ACreatureActor::Tick(float DeltaTime)
 
 	if (creature_manager)
 	{
-		creature_manager->Update(DeltaTime * animation_speed);
+		if (should_play) {
+			creature_manager->Update(DeltaTime * animation_speed);
+		}
+
 		UpdateCreatureRender();
 
 		FillBoneData();

@@ -86,6 +86,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
 	float animation_frame;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
+	bool should_play;
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent);
 
@@ -127,10 +129,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAnimationLoop(bool flag_in);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Components|Creature", meta = (FriendlyName = "Calback when animation has started"))
+	UFUNCTION(BlueprintImplementableEvent, Category = "Components|Creature", meta = (DisplayName = "Calback when animation has started"))
 	virtual void BlueprintAnimationStart(float frame_in);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Components|Creature", meta = (FriendlyName = "Calback when animation has ended"))
+	UFUNCTION(BlueprintImplementableEvent, Category = "Components|Creature", meta = (DisplayName = "Calback when animation has ended"))
 	virtual void BlueprintAnimationEnd(float frame_in);
 
 
