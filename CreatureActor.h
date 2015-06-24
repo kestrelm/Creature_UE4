@@ -25,7 +25,7 @@ struct FCreatureBoneData
 UCLASS(Blueprintable)
 class ACreatureActor : public AActor
 {
-	GENERATED_BODY()
+	GENERATED_UCLASS_BODY()
 
 protected:
 	TArray<FProceduralMeshTriangle> draw_triangles;
@@ -46,12 +46,14 @@ protected:
 
 	void ParseEvents(float deltaTime);
 
+	void InitStandardValues();
+
 public:
 	ACreatureActor();
 
 	// Allow viewing/changing the Material ot the procedural Mesh in editor (if placed in a level at construction)
 	UPROPERTY(VisibleAnywhere, Category=Materials)
-	UCustomProceduralMeshComponent* mesh;
+	UCustomProceduralMeshComponent* creature_mesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Collision)
 	UCapsuleComponent * rootCollider;

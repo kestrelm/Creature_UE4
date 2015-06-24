@@ -18,34 +18,13 @@ static std::string ConvertToString(FString str)
 	return t;
 }
 
-ACreatureActor::ACreatureActor()
+ACreatureActor::ACreatureActor(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::Constructor Called()"));
 
 
-	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bStartWithTickEnabled = true;
-	animation_speed = 1.0f;
-	smooth_transitions = false;
-	bone_data_size = 0.01f;
-	bone_data_length_factor = 0.02f;
-	should_play = true;
-
-	mesh = CreateDefaultSubobject<UCustomProceduralMeshComponent>(TEXT("CreatureActor"));
-	RootComponent = mesh;
-
-	// Generate a single dummy triangle
-	TArray<FProceduralMeshTriangle> triangles;
-	GenerateTriangle(triangles);
-	mesh->SetProceduralMeshTriangles(triangles);
-
-	// Root collider capsule
-	rootCollider = CreateDefaultSubobject<UCapsuleComponent>(TEXT("RootCollider"));
-	rootCollider->SetRelativeRotation(FQuat(0, 1, 0, FMath::DegreesToRadians(90)));
-	rootCollider->AttachParent = RootComponent;
-	rootCollider->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-	rootCollider->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
-	
+	InitStandardValues();
 
 	// Test Creature code
 	/*
@@ -61,11 +40,38 @@ ACreatureActor::ACreatureActor()
 	*/
 }
 
+void ACreatureActor::InitStandardValues()
+{
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+	animation_speed = 1.0f;
+	smooth_transitions = false;
+	bone_data_size = 0.01f;
+	bone_data_length_factor = 0.02f;
+	should_play = true;
+
+	creature_mesh = CreateDefaultSubobject<UCustomProceduralMeshComponent>(TEXT("CreatureActor"));
+	RootComponent = creature_mesh;
+
+	// Generate a single dummy triangle
+	TArray<FProceduralMeshTriangle> triangles;
+	GenerateTriangle(triangles);
+	creature_mesh->SetProceduralMeshTriangles(triangles);
+
+	// Root collider capsule
+	rootCollider = CreateDefaultSubobject<UCapsuleComponent>(TEXT("RootCollider"));
+	rootCollider->SetRelativeRotation(FQuat(0, 1, 0, FMath::DegreesToRadians(90)));
+	rootCollider->AttachParent = RootComponent;
+	rootCollider->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	rootCollider->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+}
+
+
 void ACreatureActor::OnConstruction(const FTransform & Transform)
 {
 	Super::OnConstruction(Transform);
 
-	if (!mesh)
+	if (!creature_mesh)
 	{
 		return;
 	}
@@ -80,7 +86,6 @@ void ACreatureActor::OnConstruction(const FTransform & Transform)
 #if WITH_EDITOR
 void ACreatureActor::PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent)
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
 	bool retval = InitCreatureRender();
 	if (retval)
 	{
@@ -92,7 +97,12 @@ void ACreatureActor::PostEditChangeProperty(FPropertyChangedEvent & PropertyChan
 
 bool ACreatureActor::InitCreatureRender()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::InitCreatureRender Called()"));
+	/*
+	if (!creature_mesh)
+	{
+		return true;
+	}
+	*/
 
 	FString cur_creature_filename = creature_filename;
 	bool does_exist = FPlatformFileManager::Get().GetPlatformFile().FileExists(*cur_creature_filename);
@@ -240,7 +250,7 @@ void ACreatureActor::LoadAnimation(const std::string& filename_in, const std::st
 
 void ACreatureActor::LoadCreature(const std::string& filename_in)
 {
-	if (!mesh)
+	if (!creature_mesh)
 	{
 		return;
 	}
@@ -255,7 +265,7 @@ void ACreatureActor::LoadCreature(const std::string& filename_in)
 
 	draw_triangles.SetNum(creature_manager->GetCreature()->GetTotalNumIndices() / 3, true);
 
-	mesh->SetProceduralMeshTriangles(draw_triangles);
+	creature_mesh->SetProceduralMeshTriangles(draw_triangles);
 }
 
 bool ACreatureActor::AddLoadedAnimation(const std::string& filename_in, const std::string& name_in)
@@ -503,7 +513,7 @@ void ACreatureActor::UpdateCreatureRender()
 	}
 
 	// Build render triangles
-	TArray<FProceduralMeshTriangle>& write_triangles = mesh->GetProceduralTriangles();
+	TArray<FProceduralMeshTriangle>& write_triangles = creature_mesh->GetProceduralTriangles();
 
 	static const FColor White(255, 255, 255, 255);
 	int cur_pt_idx = 0, cur_uv_idx = 0;
@@ -543,7 +553,7 @@ void ACreatureActor::UpdateCreatureRender()
 	}
 
 	//mesh->SetProceduralMeshTriangles(draw_triangles);
-	mesh->ForceAnUpdate();
+	creature_mesh->ForceAnUpdate();
 }
 
 // Generate a single horizontal triangle counterclockwise to point up (one face, visible only from the top, not from the bottom)
