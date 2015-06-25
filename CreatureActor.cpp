@@ -180,13 +180,19 @@ void ACreatureActor::FillBoneData()
 		auto pt1 = cur_data.second->getWorldStartPt();
 		auto pt2 = cur_data.second->getWorldEndPt();
 
+		/* Id References
+		const int x_id = 0;
+		const int y_id = 2;
+		const int z_id = 1;
+		*/
+
 		bone_data[i].point1 = FVector(pt1.x, pt1.y, pt1.z);
 		bone_data[i].point2 = FVector(pt2.x, pt2.y, pt2.z);
 
 		// figure out bone transform
 		auto cur_bone = cur_data.second;
-		auto bone_start_pt = cur_bone->getWorldStartPt();
-		auto bone_end_pt = cur_bone->getWorldEndPt();
+		auto bone_start_pt = pt1;
+		auto bone_end_pt = pt2;
 
 		auto bone_vec = bone_end_pt - bone_start_pt;
 		auto bone_length = glm::length(bone_vec);
@@ -205,7 +211,19 @@ void ACreatureActor::FillBoneData()
 		FTransform scaleXform(FVector(0, 0, 0));
 		scaleXform.SetScale3D(FVector(bone_length * bone_data_length_factor, bone_data_size, bone_data_size));
 
-		bone_data[i].xform = scaleXform * FTransform(bone_axis_x, bone_axis_y, bone_axis_z, bone_midpt);
+
+		//std::swap(bone_midpt.Y, bone_midpt.Z);
+
+		FTransform fixXform;
+		fixXform.SetRotation(FQuat::MakeFromEuler(FVector(-90, 0, 0)));
+
+		FTransform rotXform(bone_axis_x, bone_axis_y, bone_axis_z, FVector(0, 0, 0));
+
+		FTransform posXform;
+		posXform.SetTranslation(bone_midpt);
+
+//		bone_data[i].xform = scaleXform * FTransform(bone_axis_x, bone_axis_y, bone_axis_z, bone_midpt);
+		bone_data[i].xform = scaleXform  * rotXform  * posXform * fixXform;
 
 		i++;
 	}
@@ -519,6 +537,9 @@ void ACreatureActor::UpdateCreatureRender()
 
 	static const FColor White(255, 255, 255, 255);
 	int cur_pt_idx = 0, cur_uv_idx = 0;
+	const int x_id = 0;
+	const int y_id = 2;
+	const int z_id = 1;
 
 	for (int i = 0; i < num_triangles; i++)
 	{
@@ -530,21 +551,21 @@ void ACreatureActor::UpdateCreatureRender()
 
 		cur_pt_idx = real_idx_1 * 3;
 		cur_uv_idx = real_idx_1 * 2;
-		triangle.Vertex0.Position.Set(cur_pts[cur_pt_idx], cur_pts[cur_pt_idx + 1], cur_pts[cur_pt_idx + 2]);
+		triangle.Vertex0.Position.Set(cur_pts[cur_pt_idx + x_id], cur_pts[cur_pt_idx + y_id], cur_pts[cur_pt_idx + z_id]);
 		triangle.Vertex0.Color = White;
 		triangle.Vertex0.U = cur_uvs[cur_uv_idx];
 		triangle.Vertex0.V = cur_uvs[cur_uv_idx + 1];
 
 		cur_pt_idx = real_idx_2 * 3;
 		cur_uv_idx = real_idx_2 * 2;
-		triangle.Vertex1.Position.Set(cur_pts[cur_pt_idx], cur_pts[cur_pt_idx + 1], cur_pts[cur_pt_idx + 2]);
+		triangle.Vertex1.Position.Set(cur_pts[cur_pt_idx + x_id], cur_pts[cur_pt_idx + y_id], cur_pts[cur_pt_idx + z_id]);
 		triangle.Vertex1.Color = White;
 		triangle.Vertex1.U = cur_uvs[cur_uv_idx];
 		triangle.Vertex1.V = cur_uvs[cur_uv_idx + 1];
 
 		cur_pt_idx = real_idx_3 * 3;
 		cur_uv_idx = real_idx_3 * 2;
-		triangle.Vertex2.Position.Set(cur_pts[cur_pt_idx], cur_pts[cur_pt_idx + 1], cur_pts[cur_pt_idx + 2]);
+		triangle.Vertex2.Position.Set(cur_pts[cur_pt_idx + x_id], cur_pts[cur_pt_idx + y_id], cur_pts[cur_pt_idx + z_id]);
 		triangle.Vertex2.Color = White;
 		triangle.Vertex2.U = cur_uvs[cur_uv_idx];
 		triangle.Vertex2.V = cur_uvs[cur_uv_idx + 1];
