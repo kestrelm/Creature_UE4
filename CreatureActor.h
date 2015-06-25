@@ -55,8 +55,10 @@ public:
 	UPROPERTY(VisibleAnywhere, Category=Materials)
 	UCustomProceduralMeshComponent* creature_mesh;
 
+	/* Removed, put this in if you need a default capsule root collider
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Collision)
 	UCapsuleComponent * rootCollider;
+	*/
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	FString creature_filename;

@@ -59,11 +59,13 @@ void ACreatureActor::InitStandardValues()
 	creature_mesh->SetProceduralMeshTriangles(triangles);
 
 	// Root collider capsule
+	/*
 	rootCollider = CreateDefaultSubobject<UCapsuleComponent>(TEXT("RootCollider"));
 	rootCollider->SetRelativeRotation(FQuat(0, 1, 0, FMath::DegreesToRadians(90)));
 	rootCollider->AttachParent = RootComponent;
 	rootCollider->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 	rootCollider->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
+	*/
 }
 
 
