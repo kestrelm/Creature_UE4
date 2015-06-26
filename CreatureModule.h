@@ -285,6 +285,8 @@ namespace CreatureModule {
         void AutoBlendTo(const std::string& animation_name_in, float blend_delta);
         
     protected:
+
+		float correctRunTime(float time_in, const std::string& animation_name);
         
         std::string ProcessContactBone(const glm::vec2& pt_in,
                                        float radius,
@@ -292,9 +294,14 @@ namespace CreatureModule {
 
         
         void PoseCreature(const std::string& animation_name_in,
-                          glm::float32 * target_pts);
+                          glm::float32 * target_pts,
+						  float input_run_time);
         
         void ProcessAutoBlending();
+
+		void increAutoBlendRuntimes(float delta_in);
+
+		void ResetBlendTime(const std::string& name_in);
         
         std::unordered_map<std::string, std::shared_ptr<CreatureModule::CreatureAnimation> > animations;
         std::shared_ptr<CreatureModule::Creature> target_creature;
@@ -306,6 +313,7 @@ namespace CreatureModule {
         bool do_blending;
         float blending_factor;
         std::string active_blend_animation_names[2];
+		std::unordered_map<std::string, float> active_blend_run_times;
         bool mirror_y;
         bool use_custom_time_range;
         int custom_start_time, custom_end_time;
