@@ -237,6 +237,9 @@ namespace CreatureModule {
         
         // Returns the current run time of the animation
         float getRunTime() const;
+
+		// Returns the actual run time if auto blending is involved
+		float getActualRunTime() const;
         
         // Runs a single step of the animation for a given delta timestep
         void Update(float delta);

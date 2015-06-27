@@ -127,9 +127,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAnimationPlay(bool flag_in);
 
+	// Blueprint function that returns the current animation frame
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")	
+	float GetBluePrintAnimationFrame();
+
+	// Blueprint event that is triggered when the animation just started
 	UFUNCTION(BlueprintImplementableEvent, Category = "Components|Creature", meta = (DisplayName = "Calback when animation has started"))
 	virtual void BlueprintAnimationStart(float frame_in);
 
+	// Blueprint event that is triggered when the animation just ended
 	UFUNCTION(BlueprintImplementableEvent, Category = "Components|Creature", meta = (DisplayName = "Calback when animation has ended"))
 	virtual void BlueprintAnimationEnd(float frame_in);
 

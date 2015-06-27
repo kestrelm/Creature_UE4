@@ -1340,7 +1340,21 @@ namespace CreatureModule {
     {
         run_time = time_in;
     }
-    
+
+	float 
+	CreatureManager::getActualRunTime() const
+	{
+		if (do_auto_blending)
+		{
+			if (active_blend_run_times.count(active_animation_name)) {
+				return active_blend_run_times[active_animation_name];
+			}
+		}
+
+		return run_time;
+	}
+
+ 
 	float 
 	CreatureManager::correctRunTime(float time_in, const std::string& animation_name)
 	{

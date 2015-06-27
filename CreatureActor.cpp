@@ -471,9 +471,15 @@ void ACreatureActor::Tick(float DeltaTime)
 	}
 }
 
+float 
+ACreatureActor::GetBluePrintAnimationFrame()
+{
+	return animation_frame;
+}
+
 void ACreatureActor::ParseEvents(float deltaTime)
 {
-	float cur_runtime = (creature_manager->getRunTime());
+	float cur_runtime = (creature_manager->getActualRunTime());
 	animation_frame = cur_runtime;
 
 	auto load_filename = ConvertToString(absolute_creature_filename);
