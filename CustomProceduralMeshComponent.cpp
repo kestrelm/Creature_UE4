@@ -236,7 +236,7 @@ public:
 	virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View)
 	{
 		FPrimitiveViewRelevance Result;
-		Result.bDrawRelevance = IsShown(View);
+		Result.bDrawRelevance = true; // IsShown(View);
 		Result.bShadowRelevance = IsShadowCast(View);
 		Result.bDynamicRelevance = true;
 		MaterialRelevance.SetPrimitiveViewRelevance(Result);
