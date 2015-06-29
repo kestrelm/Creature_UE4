@@ -279,6 +279,8 @@ UCustomProceduralMeshComponent::UCustomProceduralMeshComponent(const FObjectInit
 	: Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	bounds_scale = 15.0f;
+	bounds_offset = FVector(0, 0, 0);
 
 //	SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
 	SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
@@ -388,7 +390,7 @@ FBoxSphereBounds UCustomProceduralMeshComponent::CalcBounds(const FTransform & L
 			vecMidPt += ProceduralMeshTris[TriIdx].Vertex2.Position;
 		}
 		
-		float lscale = 10.0f;
+		const float lscale = bounds_scale;
 		FVector lScaleVec(lscale, lscale, lscale);
 		vecMidPt = (vecMax + vecMin) * 0.5f;
 		vecMax = (vecMax - vecMidPt) * lScaleVec + vecMidPt;
@@ -402,6 +404,7 @@ FBoxSphereBounds UCustomProceduralMeshComponent::CalcBounds(const FTransform & L
 		FBox curBox(vecMin, vecMax);
 		FBoxSphereBounds retBounds(curBox);
 		retBounds.Origin.Y = -retBounds.SphereRadius;
+		retBounds.Origin += bounds_offset;
 
 		// Debugging
 		FSphere sphereBounds = retBounds.GetSphere();
@@ -413,6 +416,16 @@ FBoxSphereBounds UCustomProceduralMeshComponent::CalcBounds(const FTransform & L
 	{
 		return FBoxSphereBounds();
 	}
+}
+
+void UCustomProceduralMeshComponent::SetBoundsScale(float value_in)
+{
+	bounds_scale = value_in;
+}
+
+void UCustomProceduralMeshComponent::SetBoundsOffset(const FVector& offset_in)
+{
+	bounds_offset = offset_in;
 }
 
 void 

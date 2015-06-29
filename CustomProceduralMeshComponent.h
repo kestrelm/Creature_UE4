@@ -90,6 +90,10 @@ public:
 
 	void SetExtraXForm(const FTransform& xformIn);
 
+	void SetBoundsScale(float value_in);
+
+	void SetBoundsOffset(const FVector& offset_in);
+
 private:
 	FTransform extraXForm;
 
@@ -101,4 +105,6 @@ private:
 	TArray<FProceduralMeshTriangle> ProceduralMeshTris;
 
 	friend class FProceduralMeshSceneProxy;
+	float bounds_scale;
+	FVector bounds_offset;
 };

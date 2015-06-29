@@ -69,6 +69,15 @@ public:
 	float bone_data_size;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	float creature_bounds_scale;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	FVector creature_bounds_offset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	bool creature_debug_draw;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	float bone_data_length_factor;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)

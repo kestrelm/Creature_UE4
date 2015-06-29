@@ -49,6 +49,9 @@ void ACreatureActor::InitStandardValues()
 	bone_data_size = 0.01f;
 	bone_data_length_factor = 0.02f;
 	should_play = true;
+	creature_bounds_scale = 15.0f;
+	creature_debug_draw = false;
+	creature_bounds_offset = FVector(0, 0, 0);
 
 	creature_mesh = CreateDefaultSubobject<UCustomProceduralMeshComponent>(TEXT("CreatureActor"));
 	RootComponent = creature_mesh;
@@ -585,27 +588,29 @@ void ACreatureActor::UpdateCreatureRender()
 	}
 
 	//mesh->SetProceduralMeshTriangles(draw_triangles);
+	creature_mesh->SetBoundsScale(creature_bounds_scale);
+	creature_mesh->SetBoundsOffset(creature_bounds_offset);
 	creature_mesh->SetExtraXForm(GetTransform());
 	creature_mesh->ForceAnUpdate();
 
 	// Debug
 
-	/*
-	FSphere debugSphere = creature_mesh->GetDebugBoundsSphere();
-	DrawDebugSphere(
-		GetWorld(),
-		debugSphere.Center,
-		debugSphere.W,
-		32,
-		FColor(255, 0, 0)
-		);
+	if (creature_debug_draw) {
+		FSphere debugSphere = creature_mesh->GetDebugBoundsSphere();
+		DrawDebugSphere(
+			GetWorld(),
+			debugSphere.Center,
+			debugSphere.W,
+			32,
+			FColor(255, 0, 0)
+			);
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Sphere pos is: (%f, %f, %f)"), debugSphere.Center.X, debugSphere.Center.Y, debugSphere.Center.Z));
-	FTransform wTransform = GetTransform();
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Walk pos is: (%f, %f, %f)"), wTransform.GetLocation().X, 
-		wTransform.GetLocation().Y,
-		wTransform.GetLocation().Z));
-	*/
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Sphere pos is: (%f, %f, %f)"), debugSphere.Center.X, debugSphere.Center.Y, debugSphere.Center.Z));
+		FTransform wTransform = GetTransform();
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Walk pos is: (%f, %f, %f)"), wTransform.GetLocation().X,
+			wTransform.GetLocation().Y,
+			wTransform.GetLocation().Z));
+	}
 }
 
 // Generate a single horizontal triangle counterclockwise to point up (one face, visible only from the top, not from the bottom)
