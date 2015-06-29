@@ -344,8 +344,6 @@ int32 UCustomProceduralMeshComponent::GetNumMaterials() const
 	return 1;
 }
 
-static FSphere debugSphere;
-
 FBoxSphereBounds UCustomProceduralMeshComponent::CalcBounds(const FTransform & LocalToWorld) const
 {
 	// Only if have enough triangles

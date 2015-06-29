@@ -107,4 +107,5 @@ private:
 	friend class FProceduralMeshSceneProxy;
 	float bounds_scale;
 	FVector bounds_offset;
+	mutable FSphere debugSphere;
 };
