@@ -86,7 +86,13 @@ public:
 	void UpdateBodySetup();
 	void UpdateCollision();
 
+	FSphere GetDebugBoundsSphere() const;
+
+	void SetExtraXForm(const FTransform& xformIn);
+
 private:
+	FTransform extraXForm;
+
 	// Begin USceneComponent interface.
 	virtual FBoxSphereBounds CalcBounds(const FTransform & LocalToWorld) const override;
 	// Begin USceneComponent interface.

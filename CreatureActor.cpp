@@ -585,7 +585,27 @@ void ACreatureActor::UpdateCreatureRender()
 	}
 
 	//mesh->SetProceduralMeshTriangles(draw_triangles);
+	creature_mesh->SetExtraXForm(GetTransform());
 	creature_mesh->ForceAnUpdate();
+
+	// Debug
+
+	/*
+	FSphere debugSphere = creature_mesh->GetDebugBoundsSphere();
+	DrawDebugSphere(
+		GetWorld(),
+		debugSphere.Center,
+		debugSphere.W,
+		32,
+		FColor(255, 0, 0)
+		);
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Sphere pos is: (%f, %f, %f)"), debugSphere.Center.X, debugSphere.Center.Y, debugSphere.Center.Z));
+	FTransform wTransform = GetTransform();
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Walk pos is: (%f, %f, %f)"), wTransform.GetLocation().X, 
+		wTransform.GetLocation().Y,
+		wTransform.GetLocation().Z));
+	*/
 }
 
 // Generate a single horizontal triangle counterclockwise to point up (one face, visible only from the top, not from the bottom)

@@ -222,7 +222,11 @@ public:
 		Mesh.bWireframe = bWireframe;
 		Mesh.VertexFactory = &VertexFactory;
 		Mesh.MaterialRenderProxy = MaterialProxy;
-		BatchElement.PrimitiveUniformBuffer = CreatePrimitiveUniformBufferImmediate(GetLocalToWorld(), GetBounds(), GetLocalBounds(), true, UseEditorDepthTest());
+
+		FBoxSphereBounds WorldBounds = GetBounds();
+		FBoxSphereBounds LocalBounds = GetLocalBounds();
+
+		BatchElement.PrimitiveUniformBuffer = CreatePrimitiveUniformBufferImmediate(GetLocalToWorld(), WorldBounds, LocalBounds, true, UseEditorDepthTest());
 		BatchElement.FirstIndex = 0;
 		BatchElement.NumPrimitives = IndexBuffer.Indices.Num() / 3;
 		BatchElement.MinVertexIndex = 0;
@@ -338,6 +342,7 @@ int32 UCustomProceduralMeshComponent::GetNumMaterials() const
 	return 1;
 }
 
+static FSphere debugSphere;
 
 FBoxSphereBounds UCustomProceduralMeshComponent::CalcBounds(const FTransform & LocalToWorld) const
 {
@@ -351,6 +356,7 @@ FBoxSphereBounds UCustomProceduralMeshComponent::CalcBounds(const FTransform & L
 		FVector vecMax = ProceduralMeshTris[0].Vertex0.Position;
 
 		// Get maximum and minimum X, Y and Z positions of vectors
+		FVector vecMidPt(0, 0, 0);
 		for(int32 TriIdx = 0; TriIdx < ProceduralMeshTris.Num(); TriIdx++)
 		{
 			vecMin.X = (vecMin.X > ProceduralMeshTris[TriIdx].Vertex0.Position.X) ? ProceduralMeshTris[TriIdx].Vertex0.Position.X : vecMin.X;
@@ -376,16 +382,49 @@ FBoxSphereBounds UCustomProceduralMeshComponent::CalcBounds(const FTransform & L
 			vecMax.Z = (vecMax.Z < ProceduralMeshTris[TriIdx].Vertex0.Position.Z) ? ProceduralMeshTris[TriIdx].Vertex0.Position.Z : vecMax.Z;
 			vecMax.Z = (vecMax.Z < ProceduralMeshTris[TriIdx].Vertex1.Position.Z) ? ProceduralMeshTris[TriIdx].Vertex1.Position.Z : vecMax.Z;
 			vecMax.Z = (vecMax.Z < ProceduralMeshTris[TriIdx].Vertex2.Position.Z) ? ProceduralMeshTris[TriIdx].Vertex2.Position.Z : vecMax.Z;
-		}
 
-		FVector vecOrigin = ((vecMax - vecMin) / 2) + vecMin;	/* Origin = ((Max Vertex's Vector - Min Vertex's Vector) / 2 ) + Min Vertex's Vector */
-		FVector BoxPoint = vecMax - vecMin;			/* The difference between the "Maximum Vertex" and the "Minimum Vertex" is our actual Bounds Box */
-		return FBoxSphereBounds(vecOrigin, BoxPoint, BoxPoint.Size()).TransformBy(LocalToWorld);
+			vecMidPt += ProceduralMeshTris[TriIdx].Vertex0.Position;
+			vecMidPt += ProceduralMeshTris[TriIdx].Vertex1.Position;
+			vecMidPt += ProceduralMeshTris[TriIdx].Vertex2.Position;
+		}
+		
+		float lscale = 10.0f;
+		FVector lScaleVec(lscale, lscale, lscale);
+		vecMidPt = (vecMax + vecMin) * 0.5f;
+		vecMax = (vecMax - vecMidPt) * lScaleVec + vecMidPt;
+		vecMin = (vecMin - vecMidPt) * lScaleVec + vecMidPt;
+
+		FTransform curXForm = extraXForm;
+
+		vecMin = curXForm.TransformPosition(vecMin);
+		vecMax = curXForm.TransformPosition(vecMax);
+
+		FBox curBox(vecMin, vecMax);
+		FBoxSphereBounds retBounds(curBox);
+		retBounds.Origin.Y = -retBounds.SphereRadius;
+
+		// Debugging
+		FSphere sphereBounds = retBounds.GetSphere();
+		debugSphere = sphereBounds;
+
+		return retBounds;
 	}
 	else
 	{
 		return FBoxSphereBounds();
 	}
+}
+
+void 
+UCustomProceduralMeshComponent::SetExtraXForm(const FTransform& xformIn)
+{
+	extraXForm = xformIn;
+}
+
+FSphere 
+UCustomProceduralMeshComponent::GetDebugBoundsSphere() const
+{
+	return debugSphere;
 }
 
 /*
