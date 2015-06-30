@@ -401,7 +401,7 @@ FBoxSphereBounds UCustomProceduralMeshComponent::CalcBounds(const FTransform & L
 
 		FBox curBox(vecMin, vecMax);
 		FBoxSphereBounds retBounds(curBox);
-		retBounds.Origin.Y = -retBounds.SphereRadius;
+		//retBounds.Origin.Y = -retBounds.SphereRadius;
 		retBounds.Origin += bounds_offset;
 
 		// Debugging
