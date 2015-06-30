@@ -81,6 +81,9 @@ public:
 	float bone_data_length_factor;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
+	float region_overlap_z_delta;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	bool smooth_transitions;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)

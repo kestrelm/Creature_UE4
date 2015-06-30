@@ -52,6 +52,7 @@ void ACreatureActor::InitStandardValues()
 	creature_bounds_scale = 15.0f;
 	creature_debug_draw = false;
 	creature_bounds_offset = FVector(0, 0, 0);
+	region_overlap_z_delta = 0.01f;
 
 	creature_mesh = CreateDefaultSubobject<UCustomProceduralMeshComponent>(TEXT("CreatureActor"));
 	RootComponent = creature_mesh;
@@ -531,7 +532,7 @@ void ACreatureActor::UpdateCreatureRender()
 	// Update depth per region
 	std::vector<meshRenderRegion *>& cur_regions =
 		cur_creature->GetRenderComposition()->getRegions();
-	float region_z = 0.0f, delta_z = -0.01f;
+	float region_z = 0.0f, delta_z = region_overlap_z_delta;
 	for (auto& single_region : cur_regions)
 	{
 		glm::float32 * region_pts = cur_pts + (single_region->getStartPtIndex() * 3);
