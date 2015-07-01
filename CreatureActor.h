@@ -35,7 +35,11 @@ protected:
 
 	FString absolute_creature_filename;
 
-	bool should_play;
+	bool should_play, is_looping;
+
+	bool play_start_done, play_end_done;
+
+	FCriticalSection  msg_lock;
 
 	void UpdateCreatureRender();
 
@@ -137,6 +141,14 @@ public:
 	// Blueprint function that decides whether to play the animation or not
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAnimationPlay(bool flag_in);
+
+	// Blueprint function that plays the animation from the start
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintAnimationPlayFromStart();
+
+	// Blueprint function that resets the animation to the start time
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintAnimationResetToStart();
 
 	// Blueprint function that returns the current animation frame
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")	

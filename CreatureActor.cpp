@@ -53,6 +53,10 @@ void ACreatureActor::InitStandardValues()
 	creature_debug_draw = false;
 	creature_bounds_offset = FVector(0, 0, 0);
 	region_overlap_z_delta = 0.01f;
+	is_looping = true;
+	play_start_done = false;
+	play_end_done = false;
+
 
 	creature_mesh = CreateDefaultSubobject<UCustomProceduralMeshComponent>(TEXT("CreatureActor"));
 	RootComponent = creature_mesh;
@@ -302,7 +306,7 @@ bool ACreatureActor::AddLoadedAnimation(const std::string& filename_in, const st
 	{
 		creature_manager->AddAnimation(global_animations[cur_token]);
 		creature_manager->SetIsPlaying(true);
-		creature_manager->SetShouldLoop(true);
+		creature_manager->SetShouldLoop(is_looping);
 		return true;
 	}
 	else {
@@ -321,8 +325,9 @@ void ACreatureActor::SetBluePrintActiveAnimation(FString name_in)
 void 
 ACreatureActor::SetBluePrintAnimationLoop(bool flag_in)
 {
+	is_looping = flag_in;
 	if (creature_manager) {
-		creature_manager->SetShouldLoop(flag_in);
+		creature_manager->SetShouldLoop(is_looping);
 	}
 }
 
@@ -330,9 +335,28 @@ void
 ACreatureActor::SetBluePrintAnimationPlay(bool flag_in)
 {
 	should_play = flag_in;
+	play_start_done = false;
+	play_end_done = false;
+}
+
+void 
+ACreatureActor::SetBluePrintAnimationResetToStart()
+{
 	if (creature_manager) {
 		creature_manager->ResetToStartTimes();
+		float cur_runtime = (creature_manager->getActualRunTime());
+		animation_frame = cur_runtime;
 	}
+
+	play_start_done = false;
+	play_end_done = false;
+}
+
+void 
+ACreatureActor::SetBluePrintAnimationPlayFromStart()
+{
+	SetBluePrintAnimationResetToStart();
+	SetBluePrintAnimationPlay(true);
 }
 
 void 
@@ -466,6 +490,8 @@ void ACreatureActor::Tick(float DeltaTime)
 
 	if (creature_manager)
 	{
+		ParseEvents(DeltaTime);
+
 		if (should_play) {
 			creature_manager->Update(DeltaTime * animation_speed);
 		}
@@ -474,7 +500,6 @@ void ACreatureActor::Tick(float DeltaTime)
 
 		FillBoneData();
 
-		ParseEvents(DeltaTime);
 	}
 }
 
@@ -509,13 +534,22 @@ void ACreatureActor::ParseEvents(float deltaTime)
 		float diff_val_start = fabs(cur_runtime - cur_start_time);
 		const float cutoff = 0.01f;
 
-		if (diff_val_start <= cutoff)
+		if ((diff_val_start <= cutoff)
+			&& !is_looping 
+			&& !play_start_done
+			&& should_play)
 		{
+			play_start_done = true;
 			this->BlueprintAnimationStart(cur_runtime);
 		}
 
-		if (cur_runtime + 1.0f >= cur_end_time)
+		if ((cur_runtime + 1.0f >= cur_end_time)
+			&& !is_looping 
+			&& !play_end_done
+			&& should_play)
 		{
+			play_end_done = true;
+			should_play = false;
 			this->BlueprintAnimationEnd(cur_runtime);
 		}
 	}
