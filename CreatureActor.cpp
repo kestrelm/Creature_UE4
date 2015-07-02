@@ -257,7 +257,21 @@ void ACreatureActor::LoadDataPacket(const std::string& filename_in)
 
 	std::shared_ptr<CreatureModule::CreatureLoadDataPacket> new_packet =
 		std::make_shared<CreatureModule::CreatureLoadDataPacket>();
-	CreatureModule::LoadCreatureJSONData(filename_in, *new_packet);
+
+	bool is_zip = false;
+	if (filename_in.substr(filename_in.find_last_of(".") + 1) == "zip") {
+		is_zip = true;
+	}
+
+	if (is_zip)
+	{
+		// load zip archive
+		CreatureModule::LoadCreatureZipJSONData(filename_in, *new_packet);
+	}
+	else {
+		// load regular JSON
+		CreatureModule::LoadCreatureJSONData(filename_in, *new_packet);
+	}
 
 	global_load_data_packets[filename_in] = new_packet;
 }
