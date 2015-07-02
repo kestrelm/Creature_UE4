@@ -230,11 +230,16 @@ void ACreatureActor::FillBoneData()
 
 		FTransform rotXform(bone_axis_x, bone_axis_y, bone_axis_z, FVector(0, 0, 0));
 
-		FTransform posXform;
+		FTransform posXform, posStartXform, posEndXform;
 		posXform.SetTranslation(bone_midpt);
+		posStartXform.SetTranslation(bone_data[i].point1);
+		posEndXform.SetTranslation(bone_data[i].point2);
 
 //		bone_data[i].xform = scaleXform * FTransform(bone_axis_x, bone_axis_y, bone_axis_z, bone_midpt);
 		bone_data[i].xform = scaleXform  * rotXform  * posXform * fixXform;
+
+		bone_data[i].startXform = scaleXform  * rotXform  * posStartXform * fixXform;
+		bone_data[i].endXform = scaleXform  * rotXform  * posEndXform * fixXform;
 
 		i++;
 	}
@@ -425,7 +430,7 @@ ACreatureActor::SetAutoBlendActiveAnimation(const std::string& name_in, float fa
 }
 
 FTransform
-ACreatureActor::GetBluePrintBoneXform(FString name_in, bool world_transform)
+ACreatureActor::GetBluePrintBoneXform(FString name_in, bool world_transform, float position_slide_factor)
 {
 
 	FTransform ret_xform;
@@ -434,6 +439,15 @@ ACreatureActor::GetBluePrintBoneXform(FString name_in, bool world_transform)
 		if (bone_data[i].name == name_in)
 		{
 			ret_xform = bone_data[i].xform;
+			float diff_slide_factor = fabs(position_slide_factor);
+			const float diff_cutoff = 0.01f;
+			if (diff_slide_factor > diff_cutoff)
+			{
+				// interpolate between start and end
+				ret_xform.Blend(bone_data[i].startXform, bone_data[i].endXform, position_slide_factor + 0.5f);
+			}
+
+
 			if (world_transform)
 			{
 				FTransform xform = GetTransform();
@@ -443,6 +457,7 @@ ACreatureActor::GetBluePrintBoneXform(FString name_in, bool world_transform)
 				ret_data.point2 = xform.TransformPosition(ret_data.point2);
 				*/
 				//FMatrix no_scale = xform.ToMatrixNoScale();
+				
 				ret_xform = ret_xform * xform;
 			}
 

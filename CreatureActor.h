@@ -18,6 +18,8 @@ struct FCreatureBoneData
 	FVector point1;
 	FVector point2;
 	FTransform xform;
+	FTransform startXform;
+	FTransform endXform;
 	FString name;
 };
 
@@ -126,9 +128,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time);
 
-	// Blueprint function that returns the transform given a bone name
+	// Blueprint function that returns the transform given a bone name, position_slide_factor
+	// determines how far left or right the transform is placed. The default value of 0 places it
+	// in the center of the bone, positve values places it to the right, negative to the left
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	FTransform GetBluePrintBoneXform(FString name_in, bool world_transform);
+	FTransform GetBluePrintBoneXform(FString name_in, bool world_transform, float position_slide_factor);
 
 	// BLueprint function that returns whether a given input point is colliding with any of the bones
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
