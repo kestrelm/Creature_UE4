@@ -23,6 +23,10 @@ struct FCreatureBoneData
 	FString name;
 };
 
+// Blueprint event delegates event declarations
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCreatureAnimationStartEvent, float, frame);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCreatureAnimationEndEvent, float, frame);
+
 UCLASS(Blueprintable)
 class ACreatureActor : public AActor
 {
@@ -98,6 +102,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
 	float animation_frame;
 
+	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
+	FCreatureAnimationStartEvent CreatureAnimationStartEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
+	FCreatureAnimationEndEvent CreatureAnimationEndEvent;
+
 #if WITH_EDITOR
 	//virtual void PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent);
 #endif
@@ -165,6 +175,7 @@ public:
 	// Blueprint event that is triggered when the animation just ended
 	UFUNCTION(BlueprintImplementableEvent, Category = "Components|Creature", meta = (DisplayName = "Calback when animation has ended"))
 	virtual void BlueprintAnimationEnd(float frame_in);
+
 
 
 	// Sets the an active animation by name

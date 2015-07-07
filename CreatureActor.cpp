@@ -570,6 +570,7 @@ void ACreatureActor::ParseEvents(float deltaTime)
 		{
 			play_start_done = true;
 			this->BlueprintAnimationStart(cur_runtime);
+			CreatureAnimationStartEvent.Broadcast(cur_runtime);
 		}
 
 		if ((cur_runtime + 1.0f >= cur_end_time)
@@ -580,6 +581,7 @@ void ACreatureActor::ParseEvents(float deltaTime)
 			play_end_done = true;
 			should_play = false;
 			this->BlueprintAnimationEnd(cur_runtime);
+			CreatureAnimationEndEvent.Broadcast(cur_runtime);
 		}
 	}
 }
