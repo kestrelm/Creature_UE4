@@ -39,6 +39,10 @@ protected:
 
 	TArray<FCreatureBoneData> bone_data;
 
+	TArray<uint8> region_alphas;
+
+	TMap<FString, uint8> region_alpha_map;
+
 	FString absolute_creature_filename;
 
 	bool should_play, is_looping;
@@ -56,6 +60,8 @@ protected:
 	void ParseEvents(float deltaTime);
 
 	void InitStandardValues();
+
+	void ProcessRenderRegions(TArray<FProceduralMeshTriangle>& draw_tris);
 
 public:
 	ACreatureActor();
@@ -176,6 +182,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Components|Creature", meta = (DisplayName = "Calback when animation has ended"))
 	virtual void BlueprintAnimationEnd(float frame_in);
 
+	// Blueprint function that sets the alpha(opacity value) of a region
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintRegionAlpha(FString region_name_in, uint8 alpha_in);
 
 
 	// Sets the an active animation by name

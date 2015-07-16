@@ -87,6 +87,8 @@ void ACreatureActor::OnConstruction(const FTransform & Transform)
 	Super::OnConstruction(Transform);
 
 	bool retval = InitCreatureRender();
+	region_alpha_map.Empty();
+
 	if (retval)
 	{
 		Tick(0.1f);
@@ -249,6 +251,7 @@ void ACreatureActor::FillBoneData()
 void ACreatureActor::BeginPlay()
 {
 	InitCreatureRender();
+	region_alpha_map.Empty();
 	Super::BeginPlay();
 }
 
@@ -399,6 +402,17 @@ void ACreatureActor::SetBluePrintBlendActiveAnimation(FString name_in, float fac
 {
 	auto cur_str = ConvertToString(name_in);
 	SetAutoBlendActiveAnimation(cur_str, factor);
+}
+
+void 
+ACreatureActor::SetBluePrintRegionAlpha(FString region_name_in, uint8 alpha_in)
+{
+	if (region_name_in.IsEmpty())
+	{
+		return;
+	}
+
+	region_alpha_map.Add(region_name_in, alpha_in);
 }
 
 void 
@@ -653,6 +667,9 @@ void ACreatureActor::UpdateCreatureRender()
 		cur_idx += 3;
 	}
 
+	// process the render regions
+	ProcessRenderRegions(write_triangles);
+
 	//mesh->SetProceduralMeshTriangles(draw_triangles);
 	creature_mesh->SetBoundsScale(creature_bounds_scale);
 	creature_mesh->SetBoundsOffset(creature_bounds_offset);
@@ -677,6 +694,63 @@ void ACreatureActor::UpdateCreatureRender()
 			wTransform.GetLocation().Y,
 			wTransform.GetLocation().Z));
 	}
+}
+
+void ACreatureActor::ProcessRenderRegions(TArray<FProceduralMeshTriangle>& draw_tris)
+{
+	auto cur_creature = creature_manager->GetCreature();
+	auto& regions_map = cur_creature->GetRenderComposition()->getRegionsMap();
+	int num_triangles = cur_creature->GetTotalNumIndices() / 3;
+
+	// process alphas
+	if (region_alpha_map.Num() > 0)
+	{
+		if (region_alphas.Num() <= 0)
+		{
+			region_alphas.Init(255, cur_creature->GetTotalNumPoints());
+		}
+
+		// fill up the alphas for specific regions
+		for (auto cur_iter : region_alpha_map)
+		{
+			auto cur_name = ConvertToString(cur_iter.Key);
+			auto cur_alpha = cur_iter.Value;
+
+			if (regions_map.count(cur_name) > 0)
+			{
+				meshRenderRegion * cur_region = regions_map[cur_name];
+				auto start_pt_index = cur_region->getStartPtIndex();
+				auto end_pt_index = cur_region->getEndPtIndex();
+
+				for (auto i = start_pt_index; i <= end_pt_index; i++)
+				{
+					region_alphas[i] = cur_alpha;
+ 				}
+			}
+		}
+
+		// now write out alphas into render triangles
+		glm::uint32 * cur_idx = cur_creature->GetGlobalIndices();
+		for (int i = 0; i < num_triangles; i++)
+		{
+			int real_idx_1 = cur_idx[0];
+			int real_idx_2 = cur_idx[1];
+			int real_idx_3 = cur_idx[2];
+
+			auto& cur_tri = draw_tris[i];
+			auto set_alpha_1 = region_alphas[real_idx_1];
+			auto set_alpha_2 = region_alphas[real_idx_2];
+			auto set_alpha_3 = region_alphas[real_idx_3];
+
+			cur_tri.Vertex0.Color = FColor(set_alpha_1, set_alpha_1, set_alpha_1, set_alpha_1);
+			cur_tri.Vertex1.Color = FColor(set_alpha_2, set_alpha_2, set_alpha_1, set_alpha_2);
+			cur_tri.Vertex2.Color = FColor(set_alpha_3, set_alpha_3, set_alpha_1, set_alpha_3);
+
+			cur_idx += 3;
+		}
+	}
+
+
 }
 
 // Generate a single horizontal triangle counterclockwise to point up (one face, visible only from the top, not from the bottom)
