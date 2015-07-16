@@ -368,6 +368,8 @@ ACreatureActor::SetBluePrintAnimationResetToStart()
 		creature_manager->ResetToStartTimes();
 		float cur_runtime = (creature_manager->getActualRunTime());
 		animation_frame = cur_runtime;
+
+		creature_manager->Update(0.001f);
 	}
 
 	play_start_done = false;
