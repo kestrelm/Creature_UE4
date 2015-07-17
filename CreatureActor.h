@@ -43,6 +43,8 @@ protected:
 
 	TMap<FString, uint8> region_alpha_map;
 
+	TArray<FString> region_custom_order;
+
 	FString absolute_creature_filename;
 
 	bool should_play, is_looping;
@@ -186,6 +188,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintRegionAlpha(FString region_name_in, uint8 alpha_in);
 
+	// Blueprint function that sets up a custom z order for the various regions
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintRegionCustomOrder(TArray<FString> order_in);
+
+	// Blueprint function that clears the custom z order for the various regions
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void ClearBluePrintRegionCustomOrder();
 
 	// Sets the an active animation by name
 	void SetActiveAnimation(const std::string& name_in);

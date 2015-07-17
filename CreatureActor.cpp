@@ -602,6 +602,16 @@ void ACreatureActor::ParseEvents(float deltaTime)
 	}
 }
 
+void ACreatureActor::SetBluePrintRegionCustomOrder(TArray<FString> order_in)
+{
+	region_custom_order = order_in;
+}
+
+void ACreatureActor::ClearBluePrintRegionCustomOrder()
+{
+	region_custom_order.Empty();
+}
+
 void ACreatureActor::UpdateCreatureRender()
 {
 	auto cur_creature = creature_manager->GetCreature();
@@ -614,16 +624,41 @@ void ACreatureActor::UpdateCreatureRender()
 	std::vector<meshRenderRegion *>& cur_regions =
 		cur_creature->GetRenderComposition()->getRegions();
 	float region_z = 0.0f, delta_z = region_overlap_z_delta;
-	for (auto& single_region : cur_regions)
-	{
-		glm::float32 * region_pts = cur_pts + (single_region->getStartPtIndex() * 3);
-		for (size_t i = 0; i < single_region->getNumPts(); i++)
-		{
-			region_pts[2] = region_z;
-			region_pts += 3;
-		}
 
-		region_z += delta_z;
+	if (region_custom_order.Num() != cur_regions.size())
+	{
+		// Normal update in default order
+		for (auto& single_region : cur_regions)
+		{
+			glm::float32 * region_pts = cur_pts + (single_region->getStartPtIndex() * 3);
+			for (size_t i = 0; i < single_region->getNumPts(); i++)
+			{
+				region_pts[2] = region_z;
+				region_pts += 3;
+			}
+
+			region_z += delta_z;
+		}
+	}
+	else {
+		// Custom order update
+		auto& regions_map = cur_creature->GetRenderComposition()->getRegionsMap();
+		for (auto& custom_region_name : region_custom_order)
+		{
+			auto real_name = ConvertToString(custom_region_name);
+			if (regions_map.count(real_name) > 0)
+			{
+				auto single_region = regions_map[real_name];
+				glm::float32 * region_pts = cur_pts + (single_region->getStartPtIndex() * 3);
+				for (size_t i = 0; i < single_region->getNumPts(); i++)
+				{
+					region_pts[2] = region_z;
+					region_pts += 3;
+				}
+
+				region_z += delta_z;
+			}
+		}
 	}
 
 	// Build render triangles
