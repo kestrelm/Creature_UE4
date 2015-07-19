@@ -164,6 +164,10 @@ public:
     void setTagId(int value_in);
     
     int getTagId() const;
+
+	void setParent(meshBone * parent_in);
+
+	meshBone * getParent();
     
 protected:
     std::pair<glm::vec4, glm::vec4> computeDirs(const glm::vec4& start_pt, const glm::vec4& end_pt);
@@ -188,6 +192,7 @@ protected:
     dualQuat world_dq;
 
     std::vector<meshBone *> children;
+	meshBone * parent;
 };
 
 class meshRenderRegion {
@@ -228,7 +233,10 @@ public:
     void poseFinalPts(glm::float32 * output_pts,
                       std::unordered_map<std::string, meshBone *>& bones_map);
     
-    void poseFastFinalPts(glm::float32 * output_pts);
+    void poseFastFinalPts(glm::float32 * output_pts,
+						  bool try_local_displacements=true,
+						  bool try_post_displacements=true,
+						  bool try_uv_swap=true);
     
     void setMainBoneKey(const std::string& key_in);
 
@@ -294,6 +302,10 @@ public:
 
 	int getUVLevel() const;
 
+	void setOpacity(float value_in);
+
+	float getOpacity() const;
+
 protected:
     
     void initUvWarp();
@@ -311,6 +323,7 @@ protected:
     glm::vec2 uv_warp_local_offset, uv_warp_global_offset, uv_warp_scale;
     std::vector<glm::vec2> uv_warp_ref_uvs;
 	int uv_level;
+	float opacity;
     std::unordered_map<std::string, std::vector<float> > normal_weight_map;
 //    std::unordered_map<int, std::vector<float> > fast_normal_weight_map;
     std::vector<std::vector<float> > fast_normal_weight_map;
@@ -480,6 +493,40 @@ protected:
     glm::vec2 uv_warp_local_offset, uv_warp_global_offset, uv_warp_scale;
     bool enabled;
 	int level;
+};
+
+class meshOpacityCache {
+public:
+	meshOpacityCache(const std::string& key_in)
+	{
+		key = key_in;
+		opacity = 100.0f;
+	}
+
+	virtual ~meshOpacityCache() {}
+
+	void setOpacity(float value_in)
+	{
+		opacity = value_in;
+	}
+
+	float getOpacity() const
+	{
+		return opacity;
+	}
+
+	const std::string& getKey() const {
+		return key;
+	}
+
+	void setKey(const std::string& key_in)
+	{
+		key = key_in;
+	}
+
+protected:
+	std::string key;
+	float opacity;
 };
 
 class meshBoneCacheManager {
@@ -663,6 +710,64 @@ protected:
     
     std::mutex data_lock;
 };
+
+class meshOpacityCacheManager {
+public:
+	meshOpacityCacheManager();
+
+	meshOpacityCacheManager(const meshOpacityCacheManager& other)
+		: opacity_cache_table(other.opacity_cache_table),
+		opacity_cache_data_ready(other.opacity_cache_data_ready),
+		start_time(other.start_time),
+		end_time(other.end_time),
+		is_ready(other.is_ready)
+	{}
+
+	meshOpacityCacheManager& operator=(const meshOpacityCacheManager& other) {
+		opacity_cache_table = other.opacity_cache_table;
+		opacity_cache_data_ready = other.opacity_cache_data_ready;
+		start_time = other.start_time;
+		end_time = other.end_time;
+		is_ready = other.is_ready;
+
+		return *this;
+	}
+
+	virtual ~meshOpacityCacheManager();
+
+	void init(int start_time_in, int end_time_in);
+
+	int getStartTime() const;
+
+	int getEndime() const;
+
+	int getIndexByTime(int time_in) const;
+
+	void setValuesAtTime(int time_in,
+		std::unordered_map<std::string, meshRenderRegion *>& regions_map);
+
+	void retrieveValuesAtTime(float time_in,
+		std::unordered_map<std::string, meshRenderRegion *>& regions_map);
+
+	void retrieveSingleValueAtTime(float time_in,
+		meshRenderRegion * region,
+		float& out_opacity);
+
+	bool allReady();
+
+	void makeAllReady();
+
+	std::vector<std::vector<meshOpacityCache> >& getCacheTable();
+
+protected:
+	std::vector<std::vector<meshOpacityCache> > opacity_cache_table;
+	std::vector<bool> opacity_cache_data_ready;
+	int start_time, end_time;
+	bool is_ready;
+
+	std::mutex data_lock;
+};
+
 
 
 #endif /* defined(__EngineApp__MeshBone__) */

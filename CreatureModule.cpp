@@ -106,7 +106,7 @@ static std::vector<float> GetJSONNodeFloatArray(JsonNode& json_obj)
         it != JsonEnd(json_obj.value); ++it)
     {
         JsonNode * cur_node = *it;
-        ret_vals.push_back(cur_node->value.toNumber());
+        ret_vals.push_back((float)cur_node->value.toNumber());
     }
     
     return ret_vals;
@@ -549,6 +549,53 @@ static void FillUVSwapCache(JsonNode& json_obj,
     cache_manager.makeAllReady();
 }
 
+static void FillOpacityCache(JsonNode& json_obj,
+	const std::string& key,
+	int start_time,
+	int end_time,
+	meshOpacityCacheManager& cache_manager)
+{
+	JsonNode * base_obj = GetJSONNodeFromKey(json_obj, key);
+
+	cache_manager.init(start_time, end_time);
+
+	if (base_obj == NULL)
+	{
+		return;
+	}
+
+	for (JsonIterator it = JsonBegin(base_obj->value);
+		it != JsonEnd(base_obj->value);
+		++it)
+	{
+		JsonNode * cur_node = *it;
+
+		int cur_time = atoi(cur_node->key);
+		std::vector<meshOpacityCache> cache_list;
+
+		for (JsonIterator uv_it = JsonBegin(cur_node->value);
+			uv_it != JsonEnd(cur_node->value);
+			++uv_it)
+		{
+			JsonNode * opacity_node = *uv_it;
+
+			std::string cur_name(opacity_node->key);
+
+			meshOpacityCache cache_data(cur_name);
+			float cur_opacity = (float)GetJSONNodeFromKey(*opacity_node, "opacity")->value.toNumber();
+			cache_data.setOpacity(cur_opacity);
+
+			cache_list.push_back(cache_data);
+		}
+
+		int set_index = cache_manager.getIndexByTime(cur_time);
+		cache_manager.getCacheTable()[set_index] = cache_list;
+	}
+
+	cache_manager.makeAllReady();
+
+}
+
 
 namespace CreatureModule {
     // Load the json structure
@@ -808,6 +855,12 @@ namespace CreatureModule {
     {
         return uv_warp_cache;
     }
+
+	meshOpacityCacheManager& 
+	CreatureAnimation::getOpacityCache()
+	{
+		return opacity_cache;
+	}
     
     const std::string&
     CreatureAnimation::getName() const
@@ -824,8 +877,8 @@ namespace CreatureModule {
         JsonNode * json_clip = GetJSONNodeFromKey(*json_anim_base, name_in);
         
         std::pair<int, int> start_end_times = GetStartEndTimes(*json_clip, "bones");
-        start_time = start_end_times.first;
-        end_time = start_end_times.second;
+        start_time = (float)start_end_times.first;
+        end_time = (float)start_end_times.second;
         
         // bone animation
         FillBoneCache(*json_clip,
@@ -847,6 +900,13 @@ namespace CreatureModule {
                         start_time,
                         end_time,
                         uv_warp_cache);
+
+		// opacity animation
+		FillOpacityCache(*json_clip,
+			"mesh_opacities",
+			start_time,
+			end_time,
+			opacity_cache);
     }
     
     bool
@@ -1156,6 +1216,7 @@ namespace CreatureModule {
         auto& bone_cache_manager = cur_animation->getBonesCache();
         auto& displacement_cache_manager = cur_animation->getDisplacementCache();
         auto& uv_warp_cache_manager = cur_animation->getUVWarpCache();
+		auto& opacity_cache_manager = cur_animation->getOpacityCache();
         
         meshRenderBoneComposition * render_composition =
         target_creature->GetRenderComposition();
@@ -1178,6 +1239,8 @@ namespace CreatureModule {
                                                         regions_map);
 		uv_warp_cache_manager.retrieveValuesAtTime(input_run_time,
                                                    regions_map);
+		opacity_cache_manager.retrieveValuesAtTime(input_run_time,
+													regions_map);
         
         
         // Do posing, decide if we are blending or not
@@ -1347,7 +1410,7 @@ namespace CreatureModule {
 		if (do_auto_blending)
 		{
 			if (active_blend_run_times.count(active_animation_name)) {
-				return active_blend_run_times[active_animation_name];
+				return active_blend_run_times.at(active_animation_name);
 			}
 		}
 

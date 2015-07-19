@@ -164,6 +164,8 @@ namespace CreatureModule {
         meshDisplacementCacheManager& getDisplacementCache();
         
         meshUVWarpCacheManager& getUVWarpCache();
+
+		meshOpacityCacheManager& getOpacityCache();
         
         const std::string& getName() const;
         
@@ -185,7 +187,8 @@ namespace CreatureModule {
         meshBoneCacheManager bones_cache;
         meshDisplacementCacheManager displacement_cache;
         meshUVWarpCacheManager uv_warp_cache;
-        std::vector<glm::float32 *> cache_pts;
+		meshOpacityCacheManager opacity_cache;
+		std::vector<glm::float32 *> cache_pts;
     };
     
     // Class for managing a collection of animations and a creature character
