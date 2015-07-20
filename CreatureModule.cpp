@@ -999,7 +999,7 @@ namespace CreatureModule {
     CreatureManager::GetAnimation(const std::string name_in)
     {
         if(animations.count(name_in) > 0) {
-            animations[name_in];
+            return animations[name_in].get();
         }
         
         return NULL;
