@@ -1977,6 +1977,12 @@ meshUVWarpCacheManager::setValuesAtTime(int time_in,
         new_data.setUvWarpScale(cur_iter.second->getUvWarpScale());
 		new_data.setLevel(cur_iter.second->getUVLevel());
         
+        auto cur_region = cur_iter.second;
+        if(cur_region->getUseUvWarp())
+        {
+            new_data.setEnabled(true);
+        }
+        
         cache_list.push_back(new_data);
     }
     
@@ -2012,7 +2018,8 @@ meshUVWarpCacheManager::retrieveValuesAtTime(float time_in,
         const std::string& cur_key = base_data.getKey();
         
         meshRenderRegion * set_region = regions_map[cur_key];
-        if(set_region->getUseUvWarp()) {
+        if(set_region->getUseUvWarp() || base_data.getEnabled())
+        {
             glm::vec2 final_local_offset = base_data.getUvWarpLocalOffset();
             
             glm::vec2 final_global_offset = base_data.getUvWarpGlobalOffset();
@@ -2066,7 +2073,7 @@ meshUVWarpCacheManager::retrieveSingleValueAtTime(float time_in,
         
         meshRenderRegion * set_region = region;
         if(cur_key == set_region->getName()) {
-            if(set_region->getUseUvWarp()) {
+            if(set_region->getUseUvWarp() || base_data.getEnabled()) {
 				local_offset = base_data.getUvWarpLocalOffset();
                 
 				global_offset = base_data.getUvWarpGlobalOffset();
