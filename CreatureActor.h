@@ -134,6 +134,9 @@ public:
 	// Adds a loaded animation onto the creature character
 	bool AddLoadedAnimation(const std::string& filename_in, const std::string& name_in);
 
+	// Returns the CreatureManager associated with this actor
+	CreatureModule::CreatureManager * GetCreatureManager();
+
 	// Blueprint version of setting the active animation name
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintActiveAnimation(FString name_in);

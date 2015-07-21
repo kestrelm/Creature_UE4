@@ -248,6 +248,12 @@ void ACreatureActor::FillBoneData()
 }
 
 
+CreatureModule::CreatureManager * 
+ACreatureActor::GetCreatureManager()
+{
+	return creature_manager.get();
+}
+
 void ACreatureActor::BeginPlay()
 {
 	InitCreatureRender();
