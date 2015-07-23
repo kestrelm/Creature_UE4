@@ -308,6 +308,8 @@ namespace CreatureModule {
 		void increAutoBlendRuntimes(float delta_in);
 
 		void ResetBlendTime(const std::string& name_in);
+
+		void UpdateRegionSwitches(const std::string& animation_name_in);
         
         std::unordered_map<std::string, std::shared_ptr<CreatureModule::CreatureAnimation> > animations;
         std::shared_ptr<CreatureModule::Creature> target_creature;

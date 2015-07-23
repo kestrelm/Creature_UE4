@@ -883,29 +883,29 @@ namespace CreatureModule {
         // bone animation
         FillBoneCache(*json_clip,
                       "bones",
-                      start_time,
-                      end_time,
+                      (int)start_time,
+					  (int)end_time,
                       bones_cache);
         
         // mesh deformation animation
         FillDeformationCache(*json_clip,
                              "meshes",
-                             start_time,
-                             end_time,
+							 (int)start_time,
+							 (int)end_time,
                              displacement_cache);
         
         // uv swapping animation
         FillUVSwapCache(*json_clip,
                         "uv_swaps",
-                        start_time,
-                        end_time,
+						(int)start_time,
+						(int)end_time,
                         uv_warp_cache);
 
 		// opacity animation
 		FillOpacityCache(*json_clip,
 			"mesh_opacities",
-			start_time,
-			end_time,
+			(int)start_time,
+			(int)end_time,
 			opacity_cache);
     }
     
@@ -924,7 +924,7 @@ namespace CreatureModule {
     int
     CreatureAnimation::getIndexByTime(int time_in) const
     {
-        int retval = time_in - start_time;
+        int retval = time_in - (int)start_time;
         retval = clipNum(retval, 0, (int)cache_pts.size() - 1);
         
         return retval;
@@ -1028,34 +1028,44 @@ namespace CreatureModule {
             auto& cur_animation = animations[active_animation_name];
             run_time = cur_animation->getStartTime();
             
-            auto& displacement_cache_manager = cur_animation->getDisplacementCache();
-            std::vector<meshDisplacementCache>& displacement_table =
-                displacement_cache_manager.getCacheTable()[0];
-            
-            auto& uv_warp_cache_manager = cur_animation->getUVWarpCache();
-            std::vector<meshUVWarpCache>& uv_swap_table =
-                uv_warp_cache_manager.getCacheTable()[0];
-            
-            meshRenderBoneComposition * render_composition =
-                target_creature->GetRenderComposition();
-            std::vector<meshRenderRegion *>& all_regions = render_composition->getRegions();
-            
-            int index = 0;
-            for(auto& cur_region : all_regions) {
-                // Setup active or inactive displacements
-                bool use_local_displacements = !displacement_table[index].getLocalDisplacements().empty();
-                bool use_post_displacements = !displacement_table[index].getPostDisplacements().empty();
-                cur_region->setUseLocalDisplacements(use_local_displacements);
-                cur_region->setUsePostDisplacements(use_post_displacements);
-                
-                // Setup active or inactive uv swaps
-                cur_region->setUseUvWarp(uv_swap_table[index].getEnabled());
-                
-                index++;
-            }
+			UpdateRegionSwitches(name_in);
         }
     }
-    
+
+	void 
+	CreatureManager::UpdateRegionSwitches(const std::string& animation_name_in)
+	{
+		if (animations.count(animation_name_in) > 0) {
+			auto& cur_animation = animations[animation_name_in];
+
+			auto& displacement_cache_manager = cur_animation->getDisplacementCache();
+			std::vector<meshDisplacementCache>& displacement_table =
+				displacement_cache_manager.getCacheTable()[0];
+
+			auto& uv_warp_cache_manager = cur_animation->getUVWarpCache();
+			std::vector<meshUVWarpCache>& uv_swap_table =
+				uv_warp_cache_manager.getCacheTable()[0];
+
+			meshRenderBoneComposition * render_composition =
+				target_creature->GetRenderComposition();
+			std::vector<meshRenderRegion *>& all_regions = render_composition->getRegions();
+
+			int index = 0;
+			for (auto& cur_region : all_regions) {
+				// Setup active or inactive displacements
+				bool use_local_displacements = !displacement_table[index].getLocalDisplacements().empty();
+				bool use_post_displacements = !displacement_table[index].getPostDisplacements().empty();
+				cur_region->setUseLocalDisplacements(use_local_displacements);
+				cur_region->setUsePostDisplacements(use_post_displacements);
+
+				// Setup active or inactive uv swaps
+				cur_region->setUseUvWarp(uv_swap_table[index].getEnabled());
+
+				index++;
+			}
+		}
+	}
+
     const std::string&
     CreatureManager::GetActiveAnimationName() const
     {
@@ -1187,7 +1197,7 @@ namespace CreatureModule {
         
         std::vector<glm::float32 *>& cache_pts_list = cur_animation->getCachePts();
         
-        for(int i = cur_animation->getStartTime(); i <= cur_animation->getEndTime(); i++)
+        for(int i = (int)cur_animation->getStartTime(); i <= (int)cur_animation->getEndTime(); i++)
         {
             setRunTime((float)i);
             auto new_pts = new glm::float32[target_creature->GetTotalNumPoints() * 3];
@@ -1297,6 +1307,7 @@ namespace CreatureModule {
 					cur_animation->poseFromCachePts(cur_animation_run_time, blend_render_pts[i], target_creature->GetTotalNumPoints());
                 }
                 else {
+					UpdateRegionSwitches(active_blend_animation_names[i]);
 					PoseCreature(active_blend_animation_names[i], blend_render_pts[i], cur_animation_run_time);
                 }
             }
@@ -1428,8 +1439,8 @@ namespace CreatureModule {
 
 		if (use_custom_time_range)
 		{
-			anim_start_time = custom_start_time;
-			anim_end_time = custom_end_time;
+			anim_start_time = (float)custom_start_time;
+			anim_end_time = (float)custom_end_time;
 		}
 
 
