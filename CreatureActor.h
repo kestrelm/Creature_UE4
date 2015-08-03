@@ -51,6 +51,10 @@ protected:
 
 	bool play_start_done, play_end_done;
 
+	bool is_disabled;
+
+	bool is_driven;
+
 	FCriticalSection  msg_lock;
 
 	void UpdateCreatureRender();
@@ -205,7 +209,11 @@ public:
 	// Sets the active animation by smoothly blending, factor is a range of ( 0 < factor < 1 )
 	void SetAutoBlendActiveAnimation(const std::string& name_in, float factor);
 
+	// Blueprint function that turns on/turns off internal updates of this object
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetIsDisabled(bool flag_in);
 	
+	void SetDriven(bool flag_in);
 
 	// Update callback
 	virtual void Tick(float DeltaTime) override;

@@ -56,6 +56,8 @@ void ACreatureActor::InitStandardValues()
 	is_looping = true;
 	play_start_done = false;
 	play_end_done = false;
+	is_disabled = false;
+	is_driven = false;
 
 
 	creature_mesh = CreateDefaultSubobject<UCustomProceduralMeshComponent>(TEXT("CreatureActor"));
@@ -535,9 +537,32 @@ ACreatureActor::IsBluePrintBonesCollide(FVector test_point, float bone_size)
 	return false;
 }
 
+void ACreatureActor::SetIsDisabled(bool flag_in)
+{
+	is_disabled = flag_in;
+}
+
+void ACreatureActor::SetDriven(bool flag_in)
+{
+	is_driven = flag_in;
+}
+
 void ACreatureActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime); // Call parent class tick function  
+
+	if (is_driven)
+	{
+		UpdateCreatureRender();
+		FillBoneData();
+
+		return;
+	}
+
+	if (is_disabled)
+	{
+		return;
+	}
 
 	if (creature_manager)
 	{
