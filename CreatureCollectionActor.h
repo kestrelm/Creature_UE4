@@ -34,11 +34,13 @@ protected:
 	bool is_looping;
 	std::string active_clip_name;
 	bool should_play;
-	bool delay_set_animation;
+	std::string delay_set_clip_name;
 
 	void UpdateActorAnimationToStart(ACreatureCollectionClip& collection_data);
 
 	void UpdateActorsVisibility(ACreatureCollectionClip& collection_data);
+
+	bool AreAllActorsReady() const;
 
 public:
 	ACreatureCollectionActor();
@@ -75,6 +77,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
 	FCreatureAnimationCollectionEndEvent CreatureAnimationEndEvent;
+
+	// Called on startup
+	virtual void BeginPlay();
 
 	// Update callback
 	virtual void Tick(float DeltaTime) override;

@@ -55,6 +55,8 @@ protected:
 
 	bool is_driven;
 
+	bool is_ready_play;
+
 	FCriticalSection  msg_lock;
 
 	void UpdateCreatureRender();
@@ -214,6 +216,8 @@ public:
 	void SetIsDisabled(bool flag_in);
 	
 	void SetDriven(bool flag_in);
+
+	bool GetIsReadyPlay() const;
 
 	// Update callback
 	virtual void Tick(float DeltaTime) override;

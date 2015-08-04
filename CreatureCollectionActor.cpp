@@ -15,7 +15,6 @@ ACreatureCollectionActor::ACreatureCollectionActor(const FObjectInitializer& Obj
 	is_looping = true;
 	animation_speed = 2.0f;
 	should_play = true;
-	delay_set_animation = false;
 
 	default_mesh = CreateDefaultSubobject<UCustomProceduralMeshComponent>(TEXT("CreatureCollectionActor"));
 	RootComponent = default_mesh;
@@ -50,6 +49,12 @@ void ACreatureCollectionActor::SetBluePrintIsLooping(bool flag_in)
 
 void ACreatureCollectionActor::SetBluePrintActiveClip(FString clipName)
 {
+	if (AreAllActorsReady() == false)
+	{
+		delay_set_clip_name = ConvertToString(clipName);
+		return;
+	}
+
 	active_clip_name = ConvertToString(clipName);
 
 	if (collection_clips.count(active_clip_name))
@@ -60,16 +65,8 @@ void ACreatureCollectionActor::SetBluePrintActiveClip(FString clipName)
 		{
 			auto cur_actor = cur_data.first;
 			auto cur_actor_clip = cur_data.second;
-
-			if (cur_actor->GetCreatureManager())
-			{
-				cur_actor->SetActiveAnimation(cur_actor_clip);
-				cur_actor->SetBluePrintAnimationResetToStart();
-				delay_set_animation = false;
-			}
-			else {
-				delay_set_animation = true;
-			}
+			cur_actor->SetActiveAnimation(cur_actor_clip);
+			cur_actor->SetBluePrintAnimationResetToStart();
 		}
 	}
 }
@@ -121,6 +118,32 @@ void ACreatureCollectionActor::UpdateActorsVisibility(ACreatureCollectionClip& c
 	}
 }
 
+bool 
+ACreatureCollectionActor::AreAllActorsReady() const
+{
+	for (auto& collection_data : collection_clips)
+	{
+		
+		for (auto& cur_data : collection_data.second.actor_sequence)
+		{
+			auto cur_actor = cur_data.first;
+			if (cur_actor->GetIsReadyPlay() == false)
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+
+void ACreatureCollectionActor::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+
 void ACreatureCollectionActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime); // Call parent class tick function  
@@ -130,9 +153,17 @@ void ACreatureCollectionActor::Tick(float DeltaTime)
 		return;
 	}
 
-	if (delay_set_animation)
+	if(AreAllActorsReady() == false)
 	{
-		SetBluePrintActiveClip(FString(active_clip_name.c_str()));
+		return;
+	}
+	else {
+		if (delay_set_clip_name.empty() == false)
+		{
+			SetBluePrintActiveClip(FString(delay_set_clip_name.c_str()));
+			delay_set_clip_name = std::string("");
+			return;
+		}
 	}
 
 	float true_delta_time = DeltaTime * animation_speed;

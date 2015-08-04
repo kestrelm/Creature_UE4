@@ -58,7 +58,7 @@ void ACreatureActor::InitStandardValues()
 	play_end_done = false;
 	is_disabled = false;
 	is_driven = false;
-
+	is_ready_play = false;
 
 	creature_mesh = CreateDefaultSubobject<UCustomProceduralMeshComponent>(TEXT("CreatureActor"));
 	RootComponent = creature_mesh;
@@ -258,9 +258,17 @@ ACreatureActor::GetCreatureManager()
 
 void ACreatureActor::BeginPlay()
 {
+	is_ready_play = false;
 	InitCreatureRender();
+	is_ready_play = true;
+
 	region_alpha_map.Empty();
 	Super::BeginPlay();
+}
+
+bool ACreatureActor::GetIsReadyPlay() const
+{
+	return is_ready_play;
 }
 
 void ACreatureActor::LoadDataPacket(const std::string& filename_in)
