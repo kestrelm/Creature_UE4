@@ -7,6 +7,26 @@ static std::string ConvertToString(FString str)
 	return t;
 }
 
+static void GenerateTriangle(TArray<FProceduralMeshTriangle>& OutTriangles)
+{
+	FProceduralMeshTriangle triangle;
+	triangle.Vertex0.Position.Set(0.f, -1.f, 0.f);
+	triangle.Vertex1.Position.Set(0.f, -0.9, 0.f);
+	triangle.Vertex2.Position.Set(0.1f, 0.f, 0.f);
+	static const FColor Blue(51, 51, 255);
+	triangle.Vertex0.Color = Blue;
+	triangle.Vertex1.Color = Blue;
+	triangle.Vertex2.Color = Blue;
+	triangle.Vertex0.U = 0.0f;
+	triangle.Vertex0.V = 0.0f;
+	triangle.Vertex1.U = 1.0f;
+	triangle.Vertex1.V = 0.0f;
+	triangle.Vertex2.U = 0.5f;
+	triangle.Vertex2.V = 0.75f;
+	OutTriangles.Add(triangle);
+}
+
+
 ACreatureCollectionActor::ACreatureCollectionActor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -18,10 +38,20 @@ ACreatureCollectionActor::ACreatureCollectionActor(const FObjectInitializer& Obj
 
 	default_mesh = CreateDefaultSubobject<UCustomProceduralMeshComponent>(TEXT("CreatureCollectionActor"));
 	RootComponent = default_mesh;
+
+	// Generate a single dummy triangle
+	TArray<FProceduralMeshTriangle> triangles;
+	GenerateTriangle(triangles);
+	default_mesh->SetProceduralMeshTriangles(triangles);
 }
 
 void ACreatureCollectionActor::AddBluePrintCollectionClipData(FString clipName, ACreatureActor * creatureActor, FString creatureActorClipName)
 {
+	if (creatureActor == NULL)
+	{
+		return;
+	}
+
 	std::string new_clip_name = ConvertToString(clipName);
 	std::string real_actor_clip_name = ConvertToString(creatureActorClipName);
 
@@ -66,6 +96,7 @@ void ACreatureCollectionActor::SetBluePrintActiveClip(FString clipName)
 			auto cur_actor = cur_data.first;
 			auto cur_actor_clip = cur_data.second;
 			cur_actor->SetActiveAnimation(cur_actor_clip);
+			cur_actor->SetBluePrintAnimationLoop(false);
 			cur_actor->SetBluePrintAnimationResetToStart();
 		}
 	}
@@ -96,6 +127,17 @@ void ACreatureCollectionActor::UpdateActorAnimationToStart(ACreatureCollectionCl
 	cur_actor = cur_data.first;
 	cur_actor->SetActiveAnimation(cur_data.second);
 	cur_actor->SetBluePrintAnimationResetToStart();
+}
+
+void ACreatureCollectionActor::HideAllActors(ACreatureCollectionClip& collection_data)
+{
+	for (auto& cur_data : collection_data.actor_sequence)
+	{
+		auto cur_actor = cur_data.first;
+
+		cur_actor->SetDriven(false);
+		cur_actor->SetActorHiddenInGame(true);
+	}
 }
 
 void ACreatureCollectionActor::UpdateActorsVisibility(ACreatureCollectionClip& collection_data)
@@ -168,6 +210,15 @@ void ACreatureCollectionActor::Tick(float DeltaTime)
 
 	float true_delta_time = DeltaTime * animation_speed;
 
+	// hide other actors in other clips
+	for (auto& cur_collection_data : collection_clips)
+	{
+		if (cur_collection_data.first != active_clip_name) {
+			HideAllActors(cur_collection_data.second);
+		}
+	}
+
+	// process active clip
 	if (collection_clips.count(active_clip_name))
 	{
 		auto& cur_collection = collection_clips[active_clip_name];

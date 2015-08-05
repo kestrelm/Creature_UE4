@@ -40,6 +40,8 @@ protected:
 
 	void UpdateActorsVisibility(ACreatureCollectionClip& collection_data);
 
+	void HideAllActors(ACreatureCollectionClip& collection_data);
+
 	bool AreAllActorsReady() const;
 
 public:
