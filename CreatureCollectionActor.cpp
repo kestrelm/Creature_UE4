@@ -91,14 +91,7 @@ void ACreatureCollectionActor::SetBluePrintActiveClip(FString clipName)
 	{
 		auto& cur_collection = collection_clips[active_clip_name];
 		cur_collection.ref_index = 0;
-		for (auto& cur_data : cur_collection.actor_sequence)
-		{
-			auto cur_actor = cur_data.first;
-			auto cur_actor_clip = cur_data.second;
-			cur_actor->SetActiveAnimation(cur_actor_clip);
-			cur_actor->SetBluePrintAnimationLoop(false);
-			cur_actor->SetBluePrintAnimationResetToStart();
-		}
+		UpdateActorAnimationToStart(cur_collection);
 	}
 }
 
@@ -129,34 +122,40 @@ void ACreatureCollectionActor::UpdateActorAnimationToStart(ACreatureCollectionCl
 	cur_actor->SetBluePrintAnimationResetToStart();
 }
 
-void ACreatureCollectionActor::HideAllActors(ACreatureCollectionClip& collection_data)
+void ACreatureCollectionActor::HideAllActors(ACreatureCollectionClip& collection_data, ACreatureActor * exceptActor)
 {
 	for (auto& cur_data : collection_data.actor_sequence)
 	{
 		auto cur_actor = cur_data.first;
 
-		cur_actor->SetDriven(false);
-		cur_actor->SetActorHiddenInGame(true);
+		if (exceptActor != cur_actor) {
+			cur_actor->SetDriven(false);
+			cur_actor->SetActorHiddenInGame(true);
+		}
 	}
 }
 
 void ACreatureCollectionActor::UpdateActorsVisibility(ACreatureCollectionClip& collection_data)
 {
 	int i = 0;
+	ACreatureActor * active_actor = GetActiveActor();
+
 	for (auto& cur_data : collection_data.actor_sequence)
 	{
 		auto cur_actor = cur_data.first;
-		if (i != collection_data.ref_index)
+		if ((i != collection_data.ref_index)
+			&& (cur_actor != active_actor))
 		{
 			cur_actor->SetDriven(false);
 			cur_actor->SetActorHiddenInGame(true);
 		}
-		else {
-			cur_actor->SetDriven(true);
-			cur_actor->SetActorHiddenInGame(false);
-		}
 
 		i++;
+	}
+
+	if (active_actor) {
+		active_actor->SetDriven(true);
+		active_actor->SetActorHiddenInGame(false);
 	}
 }
 
@@ -179,6 +178,21 @@ ACreatureCollectionActor::AreAllActorsReady() const
 	return true;
 }
 
+ACreatureActor * 
+ACreatureCollectionActor::GetActiveActor()
+{
+	if (collection_clips.count(active_clip_name))
+	{
+		auto& cur_collection = collection_clips[active_clip_name];
+		int& ref_index = cur_collection.ref_index;
+		auto& cur_data = cur_collection.actor_sequence[ref_index];
+
+		auto cur_actor = cur_data.first;
+		return cur_actor;
+	}
+
+	return NULL;
+}
 
 void ACreatureCollectionActor::BeginPlay()
 {
@@ -214,7 +228,7 @@ void ACreatureCollectionActor::Tick(float DeltaTime)
 	for (auto& cur_collection_data : collection_clips)
 	{
 		if (cur_collection_data.first != active_clip_name) {
-			HideAllActors(cur_collection_data.second);
+			HideAllActors(cur_collection_data.second, GetActiveActor());
 		}
 	}
 

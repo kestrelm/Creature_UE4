@@ -40,9 +40,11 @@ protected:
 
 	void UpdateActorsVisibility(ACreatureCollectionClip& collection_data);
 
-	void HideAllActors(ACreatureCollectionClip& collection_data);
+	void HideAllActors(ACreatureCollectionClip& collection_data, ACreatureActor * exceptActor);
 
 	bool AreAllActorsReady() const;
+
+	ACreatureActor * GetActiveActor();
 
 public:
 	ACreatureCollectionActor();
