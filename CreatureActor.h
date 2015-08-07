@@ -185,14 +185,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")	
 	float GetBluePrintAnimationFrame();
 
-	// Blueprint event that is triggered when the animation just started
-	UFUNCTION(BlueprintImplementableEvent, Category = "Components|Creature", meta = (DisplayName = "Calback when animation has started"))
-	virtual void BlueprintAnimationStart(float frame_in);
-
-	// Blueprint event that is triggered when the animation just ended
-	UFUNCTION(BlueprintImplementableEvent, Category = "Components|Creature", meta = (DisplayName = "Calback when animation has ended"))
-	virtual void BlueprintAnimationEnd(float frame_in);
-
 	// Blueprint function that sets the alpha(opacity value) of a region
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintRegionAlpha(FString region_name_in, uint8 alpha_in);

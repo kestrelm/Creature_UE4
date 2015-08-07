@@ -21,7 +21,7 @@ static std::string ConvertToString(FString str)
 ACreatureActor::ACreatureActor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::Constructor Called()"));
+	//UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::Constructor Called()"));
 
 
 	InitStandardValues();
@@ -624,7 +624,6 @@ void ACreatureActor::ParseEvents(float deltaTime)
 			&& should_play)
 		{
 			play_start_done = true;
-			this->BlueprintAnimationStart(cur_runtime);
 			CreatureAnimationStartEvent.Broadcast(cur_runtime);
 		}
 
@@ -635,7 +634,6 @@ void ACreatureActor::ParseEvents(float deltaTime)
 		{
 			play_end_done = true;
 			should_play = false;
-			this->BlueprintAnimationEnd(cur_runtime);
 			CreatureAnimationEndEvent.Broadcast(cur_runtime);
 		}
 	}
