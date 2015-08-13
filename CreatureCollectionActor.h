@@ -35,6 +35,7 @@ protected:
 	std::string active_clip_name;
 	bool should_play;
 	std::string delay_set_clip_name;
+	bool hide_all_actors;
 
 	void UpdateActorAnimationToStart(ACreatureCollectionClip& collection_data);
 
@@ -72,6 +73,10 @@ public:
 	// Blueprints function that sets the active collection clip 
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintActiveClip(FString clipName);
+
+	// Blueprints function to hide all actors belonging to this CollectionActor
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintHideAllActors(bool flag_in);
 
 	// Blueprint function that returns the transform given a bone name, position_slide_factor
 	// determines how far left or right the transform is placed. The default value of 0 places it

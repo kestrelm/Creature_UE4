@@ -35,6 +35,7 @@ ACreatureCollectionActor::ACreatureCollectionActor(const FObjectInitializer& Obj
 	is_looping = true;
 	animation_speed = 2.0f;
 	should_play = true;
+	hide_all_actors = false;
 
 	default_mesh = CreateDefaultSubobject<UCustomProceduralMeshComponent>(TEXT("CreatureCollectionActor"));
 	RootComponent = default_mesh;
@@ -75,6 +76,12 @@ void ACreatureCollectionActor::SetBluePrintShouldPlay(bool flag_in)
 void ACreatureCollectionActor::SetBluePrintIsLooping(bool flag_in)
 {
 	is_looping = flag_in;
+}
+
+void 
+ACreatureCollectionActor::SetBluePrintHideAllActors(bool flag_in)
+{
+	hide_all_actors = flag_in;
 }
 
 void ACreatureCollectionActor::SetBluePrintActiveClip(FString clipName)
@@ -230,6 +237,17 @@ void ACreatureCollectionActor::Tick(float DeltaTime)
 		if (cur_collection_data.first != active_clip_name) {
 			HideAllActors(cur_collection_data.second, GetActiveActor());
 		}
+	}
+
+	// see if we need to hide everybody and return
+	if (hide_all_actors)
+	{
+		for (auto& cur_collection_data : collection_clips)
+		{
+			HideAllActors(cur_collection_data.second, nullptr);
+		}
+
+		return;
 	}
 
 	// process active clip
