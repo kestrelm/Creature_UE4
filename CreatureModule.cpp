@@ -1233,6 +1233,8 @@ namespace CreatureModule {
         std::vector<glm::float32 *>& cache_pts_list = cur_animation->getCachePts();
 		int array_size = target_creature->GetTotalNumPoints() * 3;
 
+        UpdateRegionSwitches(animation_name_in);
+
         //for(int i = (int)cur_animation->getStartTime(); i <= (int)cur_animation->getEndTime(); i++)
 		int i = (int)cur_animation->getStartTime();
 		while (true)
