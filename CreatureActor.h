@@ -155,6 +155,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time);
 
+	// Blueprint function to create a point cache for the creature character. This speeds up the playback performance.
+	// A small amount of time will be spent precomputing the point cache. You can reduce this time by increasing the approximation level.
+	// name_in is the name of the animation to cache, approximation_level is the approximation level. The higher the approximation level
+	// the faster the cache generation but lower the quality. 1 means no approximation, with 10 being the maximum value allowed.
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void MakeBluePrintPointCache(FString name_in, int32 approximation_level);
+
+	// Blueprint function to clear the point cache of a given animation
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void ClearBluePrintPointCache(FString name_in, int32 approximation_level);
+
 	// Blueprint function that returns the transform given a bone name, position_slide_factor
 	// determines how far left or right the transform is placed. The default value of 0 places it
 	// in the center of the bone, positve values places it to the right, negative to the left
@@ -216,6 +227,9 @@ public:
 
 	// Called on startup
 	virtual void BeginPlay();
+
+	UFUNCTION(BlueprintCallable, Category = "Rendering", meta = (DisplayName = "Set Actor Hidden In Game", Keywords = "Visible Hidden Show Hide"))
+	virtual void SetActorHiddenInGame(bool bNewHidden) override;
 
 	void GenerateTriangle(TArray<FProceduralMeshTriangle>& OutTriangles);
 };

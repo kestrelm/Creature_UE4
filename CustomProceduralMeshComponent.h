@@ -4,7 +4,10 @@
 
 #pragma once
 
+#include <mutex>
 #include "CustomProceduralMeshComponent.generated.h"
+
+class FProceduralMeshSceneProxy;
 
 USTRUCT(BlueprintType)
 struct FProceduralMeshVertex
@@ -94,8 +97,13 @@ public:
 
 	void SetBoundsOffset(const FVector& offset_in);
 
+	void SetTagString(FString tag_in);
+
+	void RecreateRenderProxy(bool flag_in);
+
 private:
 	FTransform extraXForm;
+	FString tagStr;
 
 	// Begin USceneComponent interface.
 	virtual FBoxSphereBounds CalcBounds(const FTransform & LocalToWorld) const override;
@@ -108,4 +116,8 @@ private:
 	float bounds_scale;
 	FVector bounds_offset;
 	mutable FSphere debugSphere;
+	FProceduralMeshSceneProxy * localRenderProxy;
+	bool render_proxy_ready;
+	std::mutex local_lock;
+	bool recreate_render_proxy;
 };

@@ -17,6 +17,11 @@ public:
 	{
 		FRHIResourceCreateInfo CreateInfo;
 		VertexBufferRHI = RHICreateVertexBuffer(Vertices.Num() * sizeof(FDynamicMeshVertex), BUF_Static, CreateInfo);
+		UpdateRenderData();
+	}
+
+	void UpdateRenderData() const
+	{
 		// Copy the vertex data into the vertex buffer.
 		void* VertexBufferData = RHILockVertexBuffer(VertexBufferRHI, 0, Vertices.Num() * sizeof(FDynamicMeshVertex), RLM_WriteOnly);
 		FMemory::Memcpy(VertexBufferData, Vertices.GetData(), Vertices.Num() * sizeof(FDynamicMeshVertex));
@@ -85,6 +90,9 @@ public:
 		: FPrimitiveSceneProxy(Component)
 		, MaterialRelevance(Component->GetMaterialRelevance(GetScene().GetFeatureLevel()))
 	{
+		parentComponent = Component;
+		needs_updating = false;
+
 		// Add each triangle to the vertex/index buffer
 		for(int TriIdx = 0; TriIdx<Component->ProceduralMeshTris.Num(); TriIdx++)
 		{
@@ -145,10 +153,88 @@ public:
 		VertexFactory.ReleaseResource();
 	}
 
-    virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap, FMeshElementCollector& Collector) const override
+	void UpdateDynamicComponentData()
 	{
-		QUICK_SCOPE_CYCLE_COUNTER( STAT_ProceduralMeshSceneProxy_GetDynamicMeshElements );
+		if (VertexBuffer.Vertices.Num() != parentComponent->ProceduralMeshTris.Num() * 3)
+		{
+			return;
+		}
 
+		int cnter = 0;
+		FDynamicMeshVertex FillVert;
+
+		for (int TriIdx = 0; TriIdx<parentComponent->ProceduralMeshTris.Num(); TriIdx++)
+		{
+			FProceduralMeshTriangle& Tri = parentComponent->ProceduralMeshTris[TriIdx];
+
+			// Fill in data
+			const FVector Edge01 = (Tri.Vertex1.Position - Tri.Vertex0.Position);
+			const FVector Edge02 = (Tri.Vertex2.Position - Tri.Vertex0.Position);
+
+			const FVector TangentX = Edge01.GetSafeNormal();
+			const FVector TangentZ = (Edge02 ^ Edge01).GetSafeNormal();
+			const FVector TangentY = (TangentX ^ TangentZ).GetSafeNormal();
+
+			//FillVert.Position = Tri.Vertex0.Position;
+			//FillVert.Color = Tri.Vertex0.Color;
+			//FillVert.SetTangents(TangentX, TangentY, TangentZ);
+			//FillVert.TextureCoordinate.Set(Tri.Vertex0.U, Tri.Vertex0.V);
+
+			//VertexBuffer.Vertices[cnter] = FillVert;
+			VertexBuffer.Vertices[cnter].Position = Tri.Vertex0.Position;
+			VertexBuffer.Vertices[cnter].Color = Tri.Vertex0.Color;
+			VertexBuffer.Vertices[cnter].SetTangents(TangentX, TangentY, TangentZ);
+			VertexBuffer.Vertices[cnter].TextureCoordinate.Set(Tri.Vertex0.U, Tri.Vertex0.V);
+
+			cnter++;
+
+			//FillVert.Position = Tri.Vertex1.Position;
+			//FillVert.Color = Tri.Vertex1.Color;
+			//FillVert.SetTangents(TangentX, TangentY, TangentZ);
+			//FillVert.TextureCoordinate.Set(Tri.Vertex1.U, Tri.Vertex1.V);
+
+			//VertexBuffer.Vertices[cnter] = FillVert;
+			VertexBuffer.Vertices[cnter].Position = Tri.Vertex1.Position;
+			VertexBuffer.Vertices[cnter].Color = Tri.Vertex1.Color;
+			VertexBuffer.Vertices[cnter].SetTangents(TangentX, TangentY, TangentZ);
+			VertexBuffer.Vertices[cnter].TextureCoordinate.Set(Tri.Vertex1.U, Tri.Vertex1.V);
+
+			cnter++;
+
+			//FillVert.Position = Tri.Vertex2.Position;
+			//FillVert.Color = Tri.Vertex2.Color;
+			//FillVert.SetTangents(TangentX, TangentY, TangentZ);
+			//FillVert.TextureCoordinate.Set(Tri.Vertex2.U, Tri.Vertex2.V);
+
+			//VertexBuffer.Vertices[cnter] = FillVert;
+			VertexBuffer.Vertices[cnter].Position = Tri.Vertex2.Position;
+			VertexBuffer.Vertices[cnter].Color = Tri.Vertex2.Color;
+			VertexBuffer.Vertices[cnter].SetTangents(TangentX, TangentY, TangentZ);
+			VertexBuffer.Vertices[cnter].TextureCoordinate.Set(Tri.Vertex2.U, Tri.Vertex2.V);
+
+			cnter++;
+		}
+
+		needs_updating = true;
+	}
+
+	void DoneUpdating()
+	{
+		needs_updating = false;
+	}
+
+    virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views,
+		const FSceneViewFamily& ViewFamily,
+		uint32 VisibilityMap,
+		FMeshElementCollector& Collector) const override
+	{
+		if (needs_updating) {
+			VertexBuffer.UpdateRenderData();
+			(const_cast<FProceduralMeshSceneProxy*>(this))->DoneUpdating();
+		}
+
+		QUICK_SCOPE_CYCLE_COUNTER( STAT_ProceduralMeshSceneProxy_GetDynamicMeshElements );
+		
 		const bool bWireframe = AllowDebugViewmodes() && ViewFamily.EngineShowFlags.Wireframe;
 
 		auto WireframeMaterialInstance = new FColoredMaterialRenderProxy(
@@ -174,6 +260,7 @@ public:
 			{
 				const FSceneView* View = Views[ViewIndex];
 				// Draw the mesh.
+
 				FMeshBatch& Mesh = Collector.AllocateMesh();
 				FMeshBatchElement& BatchElement = Mesh.Elements[0];
 				BatchElement.IndexBuffer = &IndexBuffer;
@@ -263,13 +350,14 @@ public:
 	}
 
 private:
-
+	UCustomProceduralMeshComponent* parentComponent;
 	UMaterialInterface* Material;
 	FProceduralMeshVertexBuffer VertexBuffer;
 	FProceduralMeshIndexBuffer IndexBuffer;
 	FProceduralMeshVertexFactory VertexFactory;
 
 	FMaterialRelevance MaterialRelevance;
+	bool needs_updating;
 };
 
 
@@ -281,6 +369,8 @@ UCustomProceduralMeshComponent::UCustomProceduralMeshComponent(const FObjectInit
 	PrimaryComponentTick.bCanEverTick = false;
 	bounds_scale = 15.0f;
 	bounds_offset = FVector(0, 0, 0);
+	localRenderProxy = NULL;
+	render_proxy_ready = false;
 
 //	SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
 	SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
@@ -298,12 +388,32 @@ bool UCustomProceduralMeshComponent::SetProceduralMeshTriangles(const TArray<FPr
 	return true;
 }
 
+void UCustomProceduralMeshComponent::RecreateRenderProxy(bool flag_in)
+{
+	recreate_render_proxy = flag_in;
+}
+
 void UCustomProceduralMeshComponent::ForceAnUpdate()
 {
 	// Need to recreate scene proxy to send it over
-	MarkRenderStateDirty();
+	if (recreate_render_proxy)
+	{
+		MarkRenderStateDirty();
+		recreate_render_proxy = false;
+		return;
+	}
+
+	std::lock_guard<std::mutex> cur_lock(local_lock);
+	if (render_proxy_ready && localRenderProxy) {
+		localRenderProxy->UpdateDynamicComponentData();
+	}
 }
 
+void 
+UCustomProceduralMeshComponent::SetTagString(FString tag_in)
+{
+	tagStr = tag_in;
+}
 
 TArray<FProceduralMeshTriangle>& 
 UCustomProceduralMeshComponent::GetProceduralTriangles()
@@ -327,15 +437,19 @@ void  UCustomProceduralMeshComponent::ClearProceduralMeshTriangles()
 	MarkRenderStateDirty();
 }
 
-
 FPrimitiveSceneProxy* UCustomProceduralMeshComponent::CreateSceneProxy()
 {
+	std::lock_guard<std::mutex> cur_lock(local_lock);
+
 	FPrimitiveSceneProxy* Proxy = NULL;
 	// Only if have enough triangles
 	if(ProceduralMeshTris.Num() > 0)
 	{
-		Proxy = new FProceduralMeshSceneProxy(this);
+		localRenderProxy = new FProceduralMeshSceneProxy(this);
+		Proxy = localRenderProxy;
+		render_proxy_ready = true;
 	}
+
 	return Proxy;
 }
 

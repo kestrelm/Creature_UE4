@@ -172,6 +172,8 @@ namespace CreatureModule {
         bool hasCachePts() const;
         
         std::vector<glm::float32 *>& getCachePts();
+
+		void clearCachePts();
         
         void poseFromCachePts(float time_in, glm::float32 * target_pts, int num_pts);
         
@@ -282,7 +284,10 @@ namespace CreatureModule {
         void SetBonesOverrideCallback(std::function<void (std::unordered_map<std::string, meshBone *>&) >& callback_in);
         
         // Creates point cache for animation
-        void MakePointCache(const std::string& animation_name_in);
+        void MakePointCache(const std::string& animation_name_in, int gap_step);
+
+		// Clears point cache for animation
+		void ClearPointCache(const std::string& animation_name_in);
         
         // Sets auto blending
         void SetAutoBlending(bool flag_in);
@@ -307,9 +312,17 @@ namespace CreatureModule {
 
 		void increAutoBlendRuntimes(float delta_in);
 
+		glm::float32 * interpFloatArray(glm::float32 * first_list, glm::float32 * second_list, float factor, int array_size);
+
 		void ResetBlendTime(const std::string& name_in);
 
 		void UpdateRegionSwitches(const std::string& animation_name_in);
+
+		void PoseJustBones(const std::string& animation_name_in,
+								glm::float32 * target_pts,
+								float input_run_time);
+
+		void JustRunUVWarps(const std::string& animation_name_in, float input_run_time);
         
         std::unordered_map<std::string, std::shared_ptr<CreatureModule::CreatureAnimation> > animations;
         std::shared_ptr<CreatureModule::Creature> target_creature;

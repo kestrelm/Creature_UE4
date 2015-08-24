@@ -3,6 +3,7 @@
 
 #include "CustomProceduralMesh.h"
 #include "CreatureActor.h"
+#include <chrono>
 
 static std::map<std::string, std::shared_ptr<CreatureModule::CreatureAnimation> > global_animations;
 static std::map<std::string, std::shared_ptr<CreatureModule::CreatureLoadDataPacket> > global_load_data_packets;
@@ -16,6 +17,31 @@ static std::string ConvertToString(FString str)
 {
 	std::string t = TCHAR_TO_UTF8(*str);
 	return t;
+}
+
+typedef std::chrono::high_resolution_clock Time;
+static auto profileTimeStart = Time::now();
+static auto profileTimeEnd = Time::now();
+
+static void StartProfileTimer()
+{
+	typedef std::chrono::milliseconds ms;
+	typedef std::chrono::duration<float> fsec;
+
+	profileTimeStart = Time::now();
+}
+
+static float StopProfileTimer()
+{
+	typedef std::chrono::milliseconds ms;
+	typedef std::chrono::duration<float> fsec;
+
+	profileTimeEnd = Time::now();
+
+	fsec fs = profileTimeEnd - profileTimeStart;
+	ms d = std::chrono::duration_cast<ms>(fs);
+	auto time_passed_fs = fs.count();
+	return time_passed_fs * 1000.0f;
 }
 
 ACreatureActor::ACreatureActor(const FObjectInitializer& ObjectInitializer)
@@ -62,6 +88,7 @@ void ACreatureActor::InitStandardValues()
 
 	creature_mesh = CreateDefaultSubobject<UCustomProceduralMeshComponent>(TEXT("CreatureActor"));
 	RootComponent = creature_mesh;
+	creature_mesh->SetTagString(GetName());
 
 	// Generate a single dummy triangle
 	TArray<FProceduralMeshTriangle> triangles;
@@ -177,6 +204,12 @@ bool ACreatureActor::InitCreatureRender()
 	return false;
 }
 
+void ACreatureActor::SetActorHiddenInGame(bool bNewHidden)
+{
+	creature_mesh->RecreateRenderProxy(true);
+	Super::SetActorHiddenInGame(bNewHidden);
+}
+
 void ACreatureActor::FillBoneData()
 {
 	auto  render_composition = creature_manager->GetCreature()->GetRenderComposition();
@@ -254,6 +287,42 @@ CreatureModule::CreatureManager *
 ACreatureActor::GetCreatureManager()
 {
 	return creature_manager.get();
+}
+
+void 
+ACreatureActor::MakeBluePrintPointCache(FString name_in, int32 approximation_level)
+{
+	auto cur_creature_manager = GetCreatureManager();
+	if (!cur_creature_manager)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::MakeBluePrintPointCache() - ERROR! Could not generate point cache for %s"), *name_in);
+		return;
+	}
+
+	int32 real_approximation_level = approximation_level;
+	if (real_approximation_level <= 0)
+	{
+		real_approximation_level = 1;
+	}
+	else if (real_approximation_level > 10)
+	{
+		real_approximation_level = 10;
+	}
+
+	cur_creature_manager->MakePointCache(ConvertToString(name_in), real_approximation_level);
+}
+
+void 
+ACreatureActor::ClearBluePrintPointCache(FString name_in, int32 approximation_level)
+{
+	auto cur_creature_manager = GetCreatureManager();
+	if (!cur_creature_manager)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::MakeBluePrintPointCache() - ERROR! Could not generate point cache for %s"), *name_in);
+		return;
+	}
+
+	cur_creature_manager->ClearPointCache(ConvertToString(name_in));
 }
 
 void ACreatureActor::BeginPlay()
@@ -557,6 +626,8 @@ void ACreatureActor::SetDriven(bool flag_in)
 
 void ACreatureActor::Tick(float DeltaTime)
 {
+	//StartProfileTimer();
+
 	Super::Tick(DeltaTime); // Call parent class tick function  
 
 	if (is_driven)
@@ -585,6 +656,9 @@ void ACreatureActor::Tick(float DeltaTime)
 		FillBoneData();
 
 	}
+
+	//auto execTime = StopProfileTimer();
+	//std::cout << "Exec Time: " << execTime << std::endl;
 }
 
 float 
@@ -651,6 +725,11 @@ void ACreatureActor::ClearBluePrintRegionCustomOrder()
 
 void ACreatureActor::UpdateCreatureRender()
 {
+	if (bHidden)
+	{
+		return;
+	}
+
 	auto cur_creature = creature_manager->GetCreature();
 	int num_triangles = cur_creature->GetTotalNumIndices() / 3;
 	glm::uint32 * cur_idx = cur_creature->GetGlobalIndices();
@@ -748,6 +827,8 @@ void ACreatureActor::UpdateCreatureRender()
 	creature_mesh->SetBoundsScale(creature_bounds_scale);
 	creature_mesh->SetBoundsOffset(creature_bounds_offset);
 	creature_mesh->SetExtraXForm(GetTransform());
+
+	creature_mesh->SetTagString(GetName());
 	creature_mesh->ForceAnUpdate();
 
 	// Debug
@@ -777,7 +858,7 @@ void ACreatureActor::ProcessRenderRegions(TArray<FProceduralMeshTriangle>& draw_
 	int num_triangles = cur_creature->GetTotalNumIndices() / 3;
 
 	// process alphas
-	if (region_alphas.Num() <= 0)
+	if (region_alphas.Num() != cur_creature->GetTotalNumPoints())
 	{
 		region_alphas.Init(255, cur_creature->GetTotalNumPoints());
 	}
