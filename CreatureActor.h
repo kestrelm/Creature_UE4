@@ -7,21 +7,12 @@
 #include <map>
 
 #include "CustomProceduralMeshComponent.h"
+#include "CreatureCore.h"
 #include "CreatureActor.generated.h"
 
 /**
  * 
  */
-
-struct FCreatureBoneData
-{
-	FVector point1;
-	FVector point2;
-	FTransform xform;
-	FTransform startXform;
-	FTransform endXform;
-	FString name;
-};
 
 // Blueprint event delegates event declarations
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCreatureAnimationStartEvent, float, frame);
@@ -33,43 +24,13 @@ class ACreatureActor : public AActor
 	GENERATED_UCLASS_BODY()
 
 protected:
-	TArray<FProceduralMeshTriangle> draw_triangles;
-
-	std::shared_ptr<CreatureModule::CreatureManager> creature_manager;
-
-	TArray<FCreatureBoneData> bone_data;
-
-	TArray<uint8> region_alphas;
-
-	TMap<FString, uint8> region_alpha_map;
-
-	TArray<FString> region_custom_order;
-
-	FString absolute_creature_filename;
-
-	bool should_play, is_looping;
-
-	bool play_start_done, play_end_done;
-
-	bool is_disabled;
-
-	bool is_driven;
-
-	bool is_ready_play;
-
-	FCriticalSection  msg_lock;
-
-	void UpdateCreatureRender();
-
-	bool InitCreatureRender();
-
-	void FillBoneData();
-
-	void ParseEvents(float deltaTime);
+	CreatureCore creature_core;
 
 	void InitStandardValues();
 
-	void ProcessRenderRegions(TArray<FProceduralMeshTriangle>& draw_tris);
+	void UpdateCoreValues();
+
+	void PrepareRenderData();
 
 public:
 	ACreatureActor();
@@ -127,18 +88,6 @@ public:
 #endif
 
 	virtual void OnConstruction(const FTransform & Transform);
-
-	// Loads a data packet from a file
-	static void LoadDataPacket(const std::string& filename_in);
-
-	// Loads an animation from a file
-	static void LoadAnimation(const std::string& filename_in, const std::string& name_in);
-
-	// Loads the creature character from a file
-	void LoadCreature(const std::string& filename_in);
-
-	// Adds a loaded animation onto the creature character
-	bool AddLoadedAnimation(const std::string& filename_in, const std::string& name_in);
 
 	// Returns the CreatureManager associated with this actor
 	CreatureModule::CreatureManager * GetCreatureManager();
@@ -208,19 +157,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void ClearBluePrintRegionCustomOrder();
 
-	// Sets the an active animation by name
-	void SetActiveAnimation(const std::string& name_in);
-
-	// Sets the active animation by smoothly blending, factor is a range of ( 0 < factor < 1 )
-	void SetAutoBlendActiveAnimation(const std::string& name_in, float factor);
-
 	// Blueprint function that turns on/turns off internal updates of this object
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetIsDisabled(bool flag_in);
-	
+
 	void SetDriven(bool flag_in);
 
-	bool GetIsReadyPlay() const;
+	CreatureCore& GetCore();
 
 	// Update callback
 	virtual void Tick(float DeltaTime) override;
