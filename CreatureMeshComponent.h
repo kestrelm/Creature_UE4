@@ -39,9 +39,54 @@
 #pragma once
 
 #include <mutex>
+#include <vector>
 #include "CustomProceduralMeshComponent.h"
 #include "CreatureCore.h"
 #include "CreatureMeshComponent.generated.h"
+
+USTRUCT()
+struct FCreatureMeshCollectionToken
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	FString animation_name;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	int32 collection_data_index;
+};
+
+USTRUCT()
+struct FCreatureMeshCollectionClip
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	FString collection_name;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	TArray<FCreatureMeshCollectionToken> sequence_clips;
+
+	int32 active_index;
+};
+
+USTRUCT()
+struct FCreatureMeshCollection
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	FString creature_filename;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	float animation_speed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	UMaterialInterface * collection_material;
+
+	CreatureCore creature_core;
+	TArray<FProceduralMeshTriangle> ProceduralMeshTris;
+};
 
 // Blueprint event delegates event declarations
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCreatureMeshAnimationStartEvent, float, frame);
@@ -54,42 +99,66 @@ class UCreatureMeshComponent : public UCustomProceduralMeshComponent //, public 
 	GENERATED_UCLASS_BODY()
 
 public:
+	/** Path/Filename to the Creature JSON. Will accept .zip archives, make sure the file is with a .zip extension */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	FString creature_filename;
 
+	/** Playback speed of the animation, 2.0 is the default */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	float animation_speed;
 
+	/** Size of the returned bone data xform, for colliders */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	float bone_data_size;
 
+	/** Size of the bounding box, used for culling during rendering */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	float creature_bounds_scale;
 
+	/** Offset of the bounding box, used for culling during rendering */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	FVector creature_bounds_offset;
 
+	/** Displays the bouding box */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	bool creature_debug_draw;
 
+	/** Size of the returned bone data xform, for colliders */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	float bone_data_length_factor;
 
+	/** How much each region is offset by z, useful if you are encountering z fighting rendering artifacts */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	float region_overlap_z_delta;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	bool smooth_transitions;
 
+	/** Starting animation clip */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	FString start_animation_name;
 
+	/** Current frame of the animation during playback */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
 	float animation_frame;
 
+	/** A collection of Creature JSONs to load when the game starts, you should fill in this information if you want to playback a collection of Creature JSONs as a single animation clip */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	TArray<FCreatureMeshCollection> collectionData;
+
+	/** Use this in conjunction with the collectionData property. This defines how the collection of JSONs are played back and in what order they are displayed. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	TArray<FCreatureMeshCollectionClip> collectionClips;
+
+	/** This enables/disables collection clip playback */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	bool enable_collection_playback;
+
+	/** Event that is triggered when the animation starts */
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
 	FCreatureMeshAnimationStartEvent CreatureAnimationStartEvent;
 
+	/** Event that is triggered when the animation ends */
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
 	FCreatureMeshAnimationEndEvent CreatureAnimationEndEvent;
 
@@ -161,15 +230,25 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetIsDisabled(bool flag_in);
 
+	// Blueprint function that sets the active collection clip
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintActiveCollectionClip(FString name_in);
+
 	CreatureCore& GetCore();
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 
 	virtual void OnRegister() override;
 
+	virtual void InitializeComponent() override;
+
+	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;
 
 protected:
 	CreatureCore creature_core;
+	FString active_collection_clip_name;
+	FCreatureMeshCollectionClip * active_collection_clip;
+	bool active_collection_loop;
 
 	void InitStandardValues();
 
@@ -179,4 +258,20 @@ protected:
 
 	void RunTick(float DeltaTime);
 
+	void RunCollectionTick(float DeltaTime);
+
+	void StandardInit();
+
+	void CollectionInit();
+
+	void SwitchToCollectionClip(FCreatureMeshCollectionClip * clip_in);
+
+	void SetActiveCollectionAnimation(FCreatureMeshCollectionClip * clip_in);
+
+	FCreatureMeshCollection *
+	GetCollectionDataFromClip(FCreatureMeshCollectionClip * clip_in);
+
+	int GetCollectionDataIndexFromClip(FCreatureMeshCollectionClip * clip_in);
+
+	void DoCreatureMeshUpdate(int render_packet_idx = -1);
 };

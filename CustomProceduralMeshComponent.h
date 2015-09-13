@@ -7,7 +7,59 @@
 #include <mutex>
 #include "CustomProceduralMeshComponent.generated.h"
 
-class FProceduralMeshSceneProxy;
+class UCustomProceduralMeshComponent;
+class FProceduralMeshRenderPacket;
+
+/** Scene proxy */
+class FProceduralMeshSceneProxy : public FPrimitiveSceneProxy
+{
+public:
+
+	FProceduralMeshSceneProxy(UCustomProceduralMeshComponent* Component,
+		TArray<FProceduralMeshTriangle> * targetTrisIn);
+
+	virtual ~FProceduralMeshSceneProxy();
+
+	void AddRenderPacket(TArray<FProceduralMeshTriangle> * targetTrisIn);
+
+
+	void SetActiveRenderPacketIdx(int idxIn);
+
+	void UpdateDynamicIndexData();
+
+	void UpdateDynamicComponentData();
+
+	void SetNeedsMaterialUpdate(bool flag_in);
+
+	void UpdateMaterial();
+
+	void DoneUpdating();
+
+	virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views,
+		const FSceneViewFamily& ViewFamily,
+		uint32 VisibilityMap,
+		FMeshElementCollector& Collector) const override;
+
+
+	virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View);
+
+	virtual bool CanBeOccluded() const override;
+
+	virtual uint32 GetMemoryFootprint(void) const;
+
+	uint32 GetAllocatedSize(void) const;
+
+private:
+	UCustomProceduralMeshComponent* parentComponent;
+	UMaterialInterface* Material;
+	TArray<FProceduralMeshRenderPacket> renderPackets;
+	int active_render_packet_idx;
+
+	FMaterialRelevance MaterialRelevance;
+	bool needs_updating;
+	bool needs_index_updating;
+	bool needs_material_updating;
+};
 
 USTRUCT(BlueprintType)
 struct FProceduralMeshVertex
@@ -63,7 +115,8 @@ public:
 	void ClearProceduralMeshTriangles();
 
 	TArray<FProceduralMeshTriangle>& GetProceduralTriangles();
-	void ForceAnUpdate();
+
+	void ForceAnUpdate(int render_packet_idx=-1);
 
 	/** Description of collision */
 	UPROPERTY(BlueprintReadOnly, Category="Collision")
@@ -101,12 +154,13 @@ public:
 
 	void RecreateRenderProxy(bool flag_in);
 
-private:
+protected:
 	FTransform extraXForm;
 	FString tagStr;
 
 	// Begin USceneComponent interface.
 	virtual FBoxSphereBounds CalcBounds(const FTransform & LocalToWorld) const override;
+
 	// Begin USceneComponent interface.
 
 	/** */
