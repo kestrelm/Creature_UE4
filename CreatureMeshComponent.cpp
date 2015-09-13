@@ -68,24 +68,46 @@ UCreatureMeshComponent::GetBluePrintBoneXform(FString name_in, bool world_transf
 void UCreatureMeshComponent::SetBluePrintAnimationLoop(bool flag_in)
 {
 	creature_core.SetBluePrintAnimationLoop(flag_in);
-	active_collection_loop = flag_in;
+
+	if (enable_collection_playback && active_collection_clip)
+	{
+		active_collection_loop = flag_in;
+	}
 }
 
 void 
 UCreatureMeshComponent::SetBluePrintAnimationPlay(bool flag_in)
 {
 	creature_core.SetBluePrintAnimationPlay(flag_in);
+
+	if (enable_collection_playback && active_collection_clip)
+	{
+		active_collection_play = flag_in;
+	}
 }
 
 void 
 UCreatureMeshComponent::SetBluePrintAnimationPlayFromStart()
 {
 	creature_core.SetBluePrintAnimationPlayFromStart();
+
+	if (enable_collection_playback && active_collection_clip)
+	{
+		SetBluePrintAnimationResetToStart();
+		active_collection_play = true;
+	}
 }
 
 void UCreatureMeshComponent::SetBluePrintAnimationResetToStart()
 {
 	creature_core.SetBluePrintAnimationResetToStart();
+
+	if (enable_collection_playback && active_collection_clip)
+	{
+		SwitchToCollectionClip(active_collection_clip);
+		auto cur_data = GetCollectionDataFromClip(active_collection_clip);
+		cur_data->creature_core.SetBluePrintAnimationResetToStart();
+	}
 }
 
 float 
@@ -199,6 +221,7 @@ void UCreatureMeshComponent::InitStandardValues()
 	enable_collection_playback = false;
 	active_collection_clip = nullptr;
 	active_collection_loop = true;
+	active_collection_play = true;
 
 	// Generate a single dummy triangle
 	TArray<FProceduralMeshTriangle> triangles;
@@ -290,6 +313,16 @@ UCreatureMeshComponent::RunCollectionTick(float DeltaTime)
 		return;
 	}
 
+	if (cur_data->animation_speed > 0)
+	{
+		true_delta_time = DeltaTime * cur_data->animation_speed;
+	}
+
+	if (active_collection_play == false)
+	{
+		true_delta_time = 0;
+	}
+
 	TArray<FProceduralMeshTriangle>& write_triangles = cur_data->ProceduralMeshTris;
 	auto& cur_core = cur_data->creature_core;
 	if (cur_core.GetCreatureManager() == nullptr)
@@ -307,8 +340,8 @@ UCreatureMeshComponent::RunCollectionTick(float DeltaTime)
 
 		float cur_runtime = (cur_core.GetCreatureManager()->getActualRunTime());
 
-		bool is_collection_end = (active_collection_clip->active_index == 0) && announce_start;
-		bool is_collection_start = (active_collection_clip->active_index == active_collection_clip->sequence_clips.Num() - 1) && announce_end;
+		bool is_collection_start = (active_collection_clip->active_index == 0) && announce_start;
+		bool is_collection_end = (active_collection_clip->active_index == active_collection_clip->sequence_clips.Num() - 1) && announce_end;
 
 		if (is_collection_start)
 		{
@@ -507,12 +540,9 @@ FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
 	// Loop through and add in the collectionData
 	for (auto& cur_data : collectionData)
 	{
-		localRenderProxy->AddRenderPacket(&cur_data.ProceduralMeshTris);
-	}
-
-	if (collectionData.Num() > 0)
-	{
-		localRenderProxy->SetActiveRenderPacketIdx(0);
+		if (cur_data.ProceduralMeshTris.Num() > 0) {
+			localRenderProxy->AddRenderPacket(&cur_data.ProceduralMeshTris);
+		}
 	}
 
 	Proxy = localRenderProxy;

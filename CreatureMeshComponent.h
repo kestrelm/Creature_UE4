@@ -249,6 +249,7 @@ protected:
 	FString active_collection_clip_name;
 	FCreatureMeshCollectionClip * active_collection_clip;
 	bool active_collection_loop;
+	bool active_collection_play;
 
 	void InitStandardValues();
 

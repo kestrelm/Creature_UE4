@@ -222,7 +222,7 @@ void FProceduralMeshSceneProxy::SetActiveRenderPacketIdx(int idxIn)
 
 void FProceduralMeshSceneProxy::UpdateDynamicIndexData()
 {
-	if (active_render_packet_idx < 0)
+	if (active_render_packet_idx < 0 || active_render_packet_idx >= renderPackets.Num())
 	{
 		return;
 	}
