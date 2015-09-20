@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include "GameFramework/Actor.h"
 #include "CreatureModule.h"
 #include <map>

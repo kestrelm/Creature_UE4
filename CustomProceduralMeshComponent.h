@@ -5,10 +5,44 @@
 #pragma once
 
 #include <mutex>
+#include "glm.hpp"
 #include "CustomProceduralMeshComponent.generated.h"
 
 class UCustomProceduralMeshComponent;
 class FProceduralMeshRenderPacket;
+
+class FProceduralMeshTriData
+{
+public:
+	FProceduralMeshTriData()
+	{
+		FProceduralMeshTriData(nullptr, nullptr, nullptr, 0, 0, nullptr, nullptr);
+	}
+
+	FProceduralMeshTriData(glm::uint32 * indices_in,
+		glm::float32 * points_in,
+		glm::float32 * uvs_in,
+		int32 point_num_in,
+		int32 indices_num_in,
+		TArray<uint8> * region_alphas_in,
+		std::mutex * update_lock_in)
+	{
+		indices = indices_in;
+		points = points_in;
+		uvs = uvs_in;
+		point_num = point_num_in;
+		indices_num = indices_num_in;
+		region_alphas = region_alphas_in;
+		update_lock = update_lock_in;
+	}
+
+	glm::uint32 * indices;
+	glm::float32 * points;
+	glm::float32 * uvs;
+	int32 point_num, indices_num;
+	TArray<uint8> * region_alphas;
+	std::mutex * update_lock;
+};
 
 /** Scene proxy */
 class FProceduralMeshSceneProxy : public FPrimitiveSceneProxy
@@ -16,11 +50,11 @@ class FProceduralMeshSceneProxy : public FPrimitiveSceneProxy
 public:
 
 	FProceduralMeshSceneProxy(UCustomProceduralMeshComponent* Component,
-		TArray<FProceduralMeshTriangle> * targetTrisIn);
+		FProceduralMeshTriData * targetTrisIn);
 
 	virtual ~FProceduralMeshSceneProxy();
 
-	void AddRenderPacket(TArray<FProceduralMeshTriangle> * targetTrisIn);
+	void AddRenderPacket(FProceduralMeshTriData * targetTrisIn);
 
 
 	void SetActiveRenderPacketIdx(int idxIn);
@@ -48,6 +82,8 @@ public:
 	virtual uint32 GetMemoryFootprint(void) const;
 
 	uint32 GetAllocatedSize(void) const;
+
+	FProceduralMeshRenderPacket * GetActiveRenderPacket();
 
 private:
 	UCustomProceduralMeshComponent* parentComponent;
@@ -101,20 +137,6 @@ class UCustomProceduralMeshComponent : public UMeshComponent //, public IInterfa
 	GENERATED_UCLASS_BODY()
 
 public:
-	/** Set the geometry to use on this triangle mesh */
-	UFUNCTION(BlueprintCallable, Category="Components|CustomProceduralMesh")
-	bool SetProceduralMeshTriangles(const TArray<FProceduralMeshTriangle>& Triangles);
-
-
-	/** Add to the geometry to use on this triangle mesh.  This may cause an allocation.  Use SetCustomMeshTriangles() instead when possible to reduce allocations. */
-	UFUNCTION(BlueprintCallable, Category="Components|CustomProceduralMesh")
-	void AddProceduralMeshTriangles(const TArray<FProceduralMeshTriangle>& Triangles);
-
-	/** Removes all geometry from this triangle mesh.  Does not deallocate memory, allowing new geometry to reuse the existing allocation. */
-	UFUNCTION(BlueprintCallable, Category="Components|CustomProceduralMesh")
-	void ClearProceduralMeshTriangles();
-
-	TArray<FProceduralMeshTriangle>& GetProceduralTriangles();
 
 	void ForceAnUpdate(int render_packet_idx=-1);
 
@@ -154,9 +176,15 @@ public:
 
 	void RecreateRenderProxy(bool flag_in);
 
+	bool SetProceduralMeshTriData(const FProceduralMeshTriData& TriData);
+
+
 protected:
+	FProceduralMeshTriData defaultTriData;
 	FTransform extraXForm;
 	FString tagStr;
+
+	void ProcessCalcBounds();
 
 	// Begin USceneComponent interface.
 	virtual FBoxSphereBounds CalcBounds(const FTransform & LocalToWorld) const override;
@@ -164,12 +192,12 @@ protected:
 	// Begin USceneComponent interface.
 
 	/** */
-	TArray<FProceduralMeshTriangle> ProceduralMeshTris;
 
 	friend class FProceduralMeshSceneProxy;
 	float bounds_scale;
 	FVector bounds_offset;
 	mutable FSphere debugSphere;
+	FVector calc_local_vec_min, calc_local_vec_max;
 	FProceduralMeshSceneProxy * localRenderProxy;
 	bool render_proxy_ready;
 	std::mutex local_lock;

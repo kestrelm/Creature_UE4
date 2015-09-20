@@ -84,9 +84,11 @@ void ACreatureActor::InitStandardValues()
 	creature_mesh->SetTagString(GetName());
 
 	// Generate a single dummy triangle
+	/*
 	TArray<FProceduralMeshTriangle> triangles;
 	GenerateTriangle(triangles);
 	creature_mesh->SetProceduralMeshTriangles(triangles);
+	*/
 
 	// Root collider capsule
 	/*
@@ -114,8 +116,7 @@ void ACreatureActor::UpdateCoreValues()
 void ACreatureActor::PrepareRenderData()
 {
 	creature_mesh->RecreateRenderProxy(true);
-	auto& load_triangles = creature_core.draw_triangles;
-	creature_mesh->SetProceduralMeshTriangles(load_triangles);
+	creature_mesh->SetProceduralMeshTriData(creature_core.GetProcMeshData());
 }
 
 void ACreatureActor::OnConstruction(const FTransform & Transform)
@@ -272,8 +273,7 @@ void ACreatureActor::Tick(float DeltaTime)
 		return;
 	}
 
-	TArray<FProceduralMeshTriangle>& write_triangles = creature_mesh->GetProceduralTriangles();
-	bool can_tick = creature_core.RunTick(DeltaTime * animation_speed, write_triangles);
+	bool can_tick = creature_core.RunTick(DeltaTime * animation_speed);
 
 	if (can_tick) {
 		// Events

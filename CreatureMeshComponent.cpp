@@ -224,10 +224,11 @@ void UCreatureMeshComponent::InitStandardValues()
 	active_collection_play = true;
 
 	// Generate a single dummy triangle
+	/*
 	TArray<FProceduralMeshTriangle> triangles;
 	GenerateTriangle(triangles);
 	SetProceduralMeshTriangles(triangles);
-
+	*/
 }
 
 void UCreatureMeshComponent::UpdateCoreValues()
@@ -241,8 +242,7 @@ void UCreatureMeshComponent::UpdateCoreValues()
 void UCreatureMeshComponent::PrepareRenderData()
 {
 	RecreateRenderProxy(true);
-	auto& load_triangles = creature_core.draw_triangles;
-	SetProceduralMeshTriangles(load_triangles);
+	SetProceduralMeshTriData(creature_core.GetProcMeshData());
 }
 
 void UCreatureMeshComponent::InitializeComponent()
@@ -266,8 +266,7 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 		return;
 	}
 
-	TArray<FProceduralMeshTriangle>& write_triangles = GetProceduralTriangles();
-	bool can_tick = creature_core.RunTick(DeltaTime * animation_speed, write_triangles);
+	bool can_tick = creature_core.RunTick(DeltaTime * animation_speed);
 
 	if (can_tick) {
 		// Events
@@ -331,7 +330,7 @@ UCreatureMeshComponent::RunCollectionTick(float DeltaTime)
 	}
 
 	cur_core.should_play = true;
-	bool can_tick = cur_core.RunTick(true_delta_time, write_triangles);
+	bool can_tick = cur_core.RunTick(true_delta_time);
 
 	if (can_tick) {
 		// Events
@@ -540,8 +539,9 @@ FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
 	// Loop through and add in the collectionData
 	for (auto& cur_data : collectionData)
 	{
-		if (cur_data.ProceduralMeshTris.Num() > 0) {
-			localRenderProxy->AddRenderPacket(&cur_data.ProceduralMeshTris);
+		auto proc_mesh_data = cur_data.creature_core.GetProcMeshData();
+		if (proc_mesh_data.point_num > 0) {
+			localRenderProxy->AddRenderPacket(&proc_mesh_data);
 		}
 	}
 

@@ -41,9 +41,11 @@ ACreatureCollectionActor::ACreatureCollectionActor(const FObjectInitializer& Obj
 	RootComponent = default_mesh;
 
 	// Generate a single dummy triangle
+	/*
 	TArray<FProceduralMeshTriangle> triangles;
 	GenerateTriangle(triangles);
 	default_mesh->SetProceduralMeshTriangles(triangles);
+	*/
 }
 
 void ACreatureCollectionActor::AddBluePrintCollectionClipData(FString clipName, ACreatureActor * creatureActor, FString creatureActorClipName)

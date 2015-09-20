@@ -55,6 +55,7 @@ CreatureCore::CreatureCore()
 	is_ready_play = false;
 	should_process_animation_start = false;
 	should_process_animation_end = false;
+	update_lock = new std::mutex();
 }
 
 bool 
@@ -75,8 +76,30 @@ CreatureCore::GetAndClearShouldAnimEnd()
 	return retval;
 }
 
-void CreatureCore::UpdateCreatureRender(TArray<FProceduralMeshTriangle>& draw_tris)
+FProceduralMeshTriData 
+CreatureCore::GetProcMeshData()
 {
+	auto cur_creature = creature_manager->GetCreature();
+	int32 num_points = cur_creature->GetTotalNumPoints();
+	int32 num_indices = cur_creature->GetTotalNumIndices();
+	glm::uint32 * cur_idx = cur_creature->GetGlobalIndices();
+	glm::float32 * cur_pts = cur_creature->GetRenderPts();
+	glm::float32 * cur_uvs = cur_creature->GetGlobalUvs();
+
+	FProceduralMeshTriData ret_data(cur_idx,
+		cur_pts, cur_uvs,
+		num_points, num_indices,
+		&region_alphas,
+		update_lock);
+
+	return ret_data;
+}
+
+void CreatureCore::UpdateCreatureRender()
+{
+
+	std::lock_guard<std::mutex> scope_lock(*update_lock);
+
 	auto cur_creature = creature_manager->GetCreature();
 	int num_triangles = cur_creature->GetTotalNumIndices() / 3;
 	glm::uint32 * cur_idx = cur_creature->GetGlobalIndices();
@@ -125,6 +148,7 @@ void CreatureCore::UpdateCreatureRender(TArray<FProceduralMeshTriangle>& draw_tr
 	}
 
 	// Build render triangles
+	/*
 	TArray<FProceduralMeshTriangle>& write_triangles = draw_tris;
 
 	static const FColor White(255, 255, 255, 255);
@@ -166,9 +190,10 @@ void CreatureCore::UpdateCreatureRender(TArray<FProceduralMeshTriangle>& draw_tr
 
 		cur_idx += 3;
 	}
+	*/
 
 	// process the render regions
-	ProcessRenderRegions(write_triangles);
+	ProcessRenderRegions();
 }
 
 bool CreatureCore::InitCreatureRender()
@@ -349,7 +374,7 @@ void CreatureCore::ParseEvents(float deltaTime)
 
 }
 
-void CreatureCore::ProcessRenderRegions(TArray<FProceduralMeshTriangle>& draw_tris)
+void CreatureCore::ProcessRenderRegions()
 {
 	auto cur_creature = creature_manager->GetCreature();
 	auto& regions_map = cur_creature->GetRenderComposition()->getRegionsMap();
@@ -400,6 +425,7 @@ void CreatureCore::ProcessRenderRegions(TArray<FProceduralMeshTriangle>& draw_tr
 	}
 
 	// now write out alphas into render triangles
+	/*
 	glm::uint32 * cur_idx = cur_creature->GetGlobalIndices();
 	for (int i = 0; i < num_triangles; i++)
 	{
@@ -418,7 +444,7 @@ void CreatureCore::ProcessRenderRegions(TArray<FProceduralMeshTriangle>& draw_tr
 
 		cur_idx += 3;
 	}
-
+	*/
 }
 
 void 
@@ -656,11 +682,11 @@ CreatureCore::IsBluePrintBonesCollide(FVector test_point, float bone_size, FTran
 }
 
 bool 
-CreatureCore::RunTick(float delta_time, TArray<FProceduralMeshTriangle>& write_triangles)
+CreatureCore::RunTick(float delta_time)
 {
 	if (is_driven)
 	{
-		UpdateCreatureRender(write_triangles);
+		UpdateCreatureRender();
 		FillBoneData();
 
 		return true;
@@ -679,7 +705,7 @@ CreatureCore::RunTick(float delta_time, TArray<FProceduralMeshTriangle>& write_t
 			creature_manager->Update(delta_time);
 		}
 
-		UpdateCreatureRender(write_triangles);
+		UpdateCreatureRender();
 
 		FillBoneData();
 

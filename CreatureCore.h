@@ -38,6 +38,7 @@
 #include "CustomProceduralMeshComponent.h"
 #include "CreatureModule.h"
 #include <map>
+#include <mutex>
 
 // Creature Core is a thin wrapper between the Creature Runtime and any UE4 Creature Object(s)
 // The variables of this class are all made public for easy access since it really just functions as a simple
@@ -65,7 +66,7 @@ public:
 
 	bool GetAndClearShouldAnimEnd();
 
-	void UpdateCreatureRender(TArray<FProceduralMeshTriangle>& draw_tris);
+	void UpdateCreatureRender();
 
 	bool InitCreatureRender();
 
@@ -73,7 +74,9 @@ public:
 
 	void ParseEvents(float deltaTime);
 
-	void ProcessRenderRegions(TArray<FProceduralMeshTriangle>& draw_tris);
+	void ProcessRenderRegions();
+
+	FProceduralMeshTriData GetProcMeshData();
 
 	// Loads a data packet from a file
 	static void LoadDataPacket(const std::string& filename_in);
@@ -122,7 +125,7 @@ public:
 
 	void RunBeginPlay();
 
-	bool RunTick(float delta_time, TArray<FProceduralMeshTriangle>& write_triangles);
+	bool RunTick(float delta_time);
 
 	// Sets the an active animation by name
 	void SetActiveAnimation(const std::string& name_in);
@@ -177,5 +180,7 @@ public:
 	bool is_ready_play;
 
 	bool should_process_animation_start, should_process_animation_end;
+
+	std::mutex * update_lock;
 
 };

@@ -27,6 +27,7 @@ public:
 		FMemory::Memcpy(VertexBufferData, Vertices.GetData(), Vertices.Num() * sizeof(FDynamicMeshVertex));
 		RHIUnlockVertexBuffer(VertexBufferRHI);
 	}
+
 };
 
 /** Index Buffer */
@@ -88,10 +89,16 @@ public:
 class FProceduralMeshRenderPacket
 {
 public:
-	FProceduralMeshRenderPacket(TArray<FProceduralMeshTriangle>& targetTrisIn)
-		: targetTris(&targetTrisIn), should_release(false)
+	FProceduralMeshRenderPacket(FProceduralMeshTriData * data_in)
 	{
-	
+		indices = data_in->indices;
+		points = data_in->points;
+		uvs = data_in->uvs;
+		point_num = data_in->point_num;
+		indices_num = data_in->indices_num;
+		region_alphas = data_in->region_alphas;
+		update_lock = data_in->update_lock;
+		should_release = false;
 	}
 
 	virtual ~FProceduralMeshRenderPacket()
@@ -103,11 +110,6 @@ public:
 		}
 	}
 
-	TArray<FProceduralMeshTriangle>& GetTargetTris()
-	{
-		return *targetTris;
-	}
-
 	void InitForRender()
 	{
 		BeginInitResource(&VertexBuffer);
@@ -117,17 +119,51 @@ public:
 		should_release = true;
 	}
 
+	void UpdateDirectVertexData() const
+	{
+		const int x_id = 0;
+		const int y_id = 2;
+		const int z_id = 1;
+
+		std::lock_guard<std::mutex> scope_lock(*update_lock);
+
+		FDynamicMeshVertex* VertexBufferData = (FDynamicMeshVertex *)RHILockVertexBuffer(VertexBuffer.VertexBufferRHI, 0, this->point_num * sizeof(FDynamicMeshVertex), RLM_WriteOnly);
+
+		for (int32 i = 0; i < this->point_num; i++)
+		{
+			FDynamicMeshVertex* curVert = VertexBufferData + i;
+
+			int pos_idx = i * 3;
+			curVert->Position = FVector(this->points[pos_idx + x_id],
+				this->points[pos_idx + y_id],
+				this->points[pos_idx + z_id]);
+
+			float set_alpha = (*this->region_alphas)[i];
+			curVert->Color = FColor(set_alpha, set_alpha, set_alpha, set_alpha);
+
+			int uv_idx = i * 2;
+			curVert->TextureCoordinate.Set(this->uvs[uv_idx], this->uvs[uv_idx + 1]);
+		}
+
+		RHIUnlockVertexBuffer(VertexBuffer.VertexBufferRHI);
+	}
+
 	FProceduralMeshVertexBuffer VertexBuffer;
 	FProceduralMeshIndexBuffer IndexBuffer;
 	FProceduralMeshVertexFactory VertexFactory;
-	TArray<FProceduralMeshTriangle> * targetTris;
+	glm::uint32 * indices;
+	glm::float32 * points;
+	glm::float32 * uvs;
+	int32 point_num, indices_num;
+	TArray<uint8> * region_alphas;
+	std::mutex * update_lock;
 	bool should_release;
 };
 
 /** Scene proxy */
 
 FProceduralMeshSceneProxy::FProceduralMeshSceneProxy(UCustomProceduralMeshComponent* Component,
-	TArray<FProceduralMeshTriangle> * targetTrisIn)
+	FProceduralMeshTriData * targetTrisIn)
 	: FPrimitiveSceneProxy(Component),
 	MaterialRelevance(Component->GetMaterialRelevance(GetScene().GetFeatureLevel()))
 {
@@ -150,6 +186,17 @@ FProceduralMeshSceneProxy::~FProceduralMeshSceneProxy()
 {
 }
 
+FProceduralMeshRenderPacket * 
+FProceduralMeshSceneProxy::GetActiveRenderPacket()
+{
+	if (active_render_packet_idx < 0)
+	{
+		return nullptr;
+	}
+
+	return &renderPackets[active_render_packet_idx];
+}
+
 void FProceduralMeshSceneProxy::UpdateMaterial()
 {
 	// Grab material
@@ -160,52 +207,44 @@ void FProceduralMeshSceneProxy::UpdateMaterial()
 	}
 }
 
-void FProceduralMeshSceneProxy::AddRenderPacket(TArray<FProceduralMeshTriangle> * targetTrisIn)
+void FProceduralMeshSceneProxy::AddRenderPacket(FProceduralMeshTriData * targetTrisIn)
 {
-	FProceduralMeshRenderPacket new_packet(*targetTrisIn);
+	FProceduralMeshRenderPacket new_packet(targetTrisIn);
 	renderPackets.Add(new_packet);
 
 	FProceduralMeshRenderPacket& cur_packet = renderPackets[renderPackets.Num() - 1];
 
-	auto& targetTris = cur_packet.GetTargetTris();
 	auto& IndexBuffer = cur_packet.IndexBuffer;
 	auto& VertexBuffer = cur_packet.VertexBuffer;
 	auto& VertexFactory = cur_packet.VertexFactory;
 
-	for (int TriIdx = 0; TriIdx<targetTris.Num(); TriIdx++)
+	IndexBuffer.Indices.SetNum(cur_packet.indices_num);
+	VertexBuffer.Vertices.SetNum(cur_packet.point_num);
+
+	// Set topology/indices
+	for (int32 i = 0; i < cur_packet.indices_num; i++)
 	{
-		FProceduralMeshTriangle& Tri = targetTris[TriIdx];
+		IndexBuffer.Indices[i] = cur_packet.indices[i];
+	}
 
-		const FVector Edge01 = (Tri.Vertex1.Position - Tri.Vertex0.Position);
-		const FVector Edge02 = (Tri.Vertex2.Position - Tri.Vertex0.Position);
+	const int x_id = 0;
+	const int y_id = 2;
+	const int z_id = 1;
 
-		const FVector TangentX = Edge01.GetSafeNormal();
-		const FVector TangentZ = (Edge02 ^ Edge01).GetSafeNormal();
-		const FVector TangentY = (TangentX ^ TangentZ).GetSafeNormal();
-
+	// Fill initial points
+	for (int32 i = 0; i < cur_packet.point_num; i++)
+	{
 		FDynamicMeshVertex Vert0;
-		Vert0.Position = Tri.Vertex0.Position;
-		Vert0.Color = Tri.Vertex0.Color;
-		Vert0.SetTangents(TangentX, TangentY, TangentZ);
-		Vert0.TextureCoordinate.Set(Tri.Vertex0.U, Tri.Vertex0.V);
-		int32 VIndex = VertexBuffer.Vertices.Add(Vert0);
-		IndexBuffer.Indices.Add(VIndex);
+		int pos_idx = i * 3;
+		Vert0.Position = FVector(cur_packet.points[pos_idx + x_id], cur_packet.points[pos_idx + y_id], cur_packet.points[pos_idx + z_id]);
 
-		FDynamicMeshVertex Vert1;
-		Vert1.Position = Tri.Vertex1.Position;
-		Vert1.Color = Tri.Vertex1.Color;
-		Vert1.SetTangents(TangentX, TangentY, TangentZ);
-		Vert1.TextureCoordinate.Set(Tri.Vertex1.U, Tri.Vertex1.V);
-		VIndex = VertexBuffer.Vertices.Add(Vert1);
-		IndexBuffer.Indices.Add(VIndex);
+		float set_alpha = (*cur_packet.region_alphas)[i];
+		Vert0.Color = FColor(set_alpha, set_alpha, set_alpha, set_alpha);
+		Vert0.SetTangents(FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
 
-		FDynamicMeshVertex Vert2;
-		Vert2.Position = Tri.Vertex2.Position;
-		Vert2.Color = Tri.Vertex2.Color;
-		Vert2.SetTangents(TangentX, TangentY, TangentZ);
-		Vert2.TextureCoordinate.Set(Tri.Vertex2.U, Tri.Vertex2.V);
-		VIndex = VertexBuffer.Vertices.Add(Vert2);
-		IndexBuffer.Indices.Add(VIndex);
+		int uv_idx = i * 2;
+		Vert0.TextureCoordinate.Set(cur_packet.uvs[uv_idx], cur_packet.uvs[uv_idx + 1]);
+		VertexBuffer.Vertices[i] = Vert0;
 	}
 
 	// Init vertex factory
@@ -220,30 +259,6 @@ void FProceduralMeshSceneProxy::SetActiveRenderPacketIdx(int idxIn)
 	active_render_packet_idx = idxIn;
 }
 
-void FProceduralMeshSceneProxy::UpdateDynamicIndexData()
-{
-	if (active_render_packet_idx < 0 || active_render_packet_idx >= renderPackets.Num())
-	{
-		return;
-	}
-
-	auto& cur_packet = renderPackets[active_render_packet_idx];
-	auto& IndexBuffer = cur_packet.IndexBuffer;
-	auto& targetTris = cur_packet.GetTargetTris();
-
-	int VIndex = 0;
-	IndexBuffer.Indices.SetNumUninitialized(targetTris.Num() * 3);
-	for (int TriIdx = 0; TriIdx < targetTris.Num(); TriIdx++)
-	{
-		for (int j = 0; j < 3; j++) {
-			IndexBuffer.Indices[VIndex] = VIndex;
-			VIndex++;
-		}
-	}
-
-	needs_index_updating = true;
-}
-
 void FProceduralMeshSceneProxy::UpdateDynamicComponentData()
 {
 	if (active_render_packet_idx < 0)
@@ -256,6 +271,7 @@ void FProceduralMeshSceneProxy::UpdateDynamicComponentData()
 		UpdateMaterial();
 	}
 
+	/*
 	auto& cur_packet = renderPackets[active_render_packet_idx];
 	auto& VertexBuffer = cur_packet.VertexBuffer;
 	auto& targetTris = cur_packet.GetTargetTris();
@@ -301,6 +317,7 @@ void FProceduralMeshSceneProxy::UpdateDynamicComponentData()
 
 		cnter++;
 	}
+	*/
 
 	needs_updating = true;
 }
@@ -332,13 +349,14 @@ void FProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScene
 	auto& IndexBuffer = cur_packet.IndexBuffer;
 	auto& VertexFactory = cur_packet.VertexFactory;
 
-	if (needs_updating) {
-		VertexBuffer.UpdateRenderData();
+	if (cur_packet.point_num <= 0)
+	{
+		return;
 	}
 
-	if (needs_index_updating)
-	{
-		IndexBuffer.UpdateRenderData();
+	if (needs_updating) {
+		//VertexBuffer.UpdateRenderData();
+		cur_packet.UpdateDirectVertexData();
 	}
 
 	(const_cast<FProceduralMeshSceneProxy*>(this))->DoneUpdating();
@@ -428,14 +446,16 @@ UCustomProceduralMeshComponent::UCustomProceduralMeshComponent(const FObjectInit
 	bounds_offset = FVector(0, 0, 0);
 	localRenderProxy = NULL;
 	render_proxy_ready = false;
+	calc_local_vec_min = FVector(FLT_MIN, FLT_MIN, FLT_MIN);
+	calc_local_vec_min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
 
 //	SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
 	SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 }
 
-bool UCustomProceduralMeshComponent::SetProceduralMeshTriangles(const TArray<FProceduralMeshTriangle>& Triangles)
+bool UCustomProceduralMeshComponent::SetProceduralMeshTriData(const FProceduralMeshTriData& TriData)
 {
-	ProceduralMeshTris = Triangles;
+	defaultTriData = TriData;
 
 	//UpdateCollision();
 
@@ -468,6 +488,8 @@ void UCustomProceduralMeshComponent::ForceAnUpdate(int render_packet_idx)
 		}
 
 		localRenderProxy->UpdateDynamicComponentData();
+		ProcessCalcBounds();
+		MarkRenderTransformDirty();
 	}
 }
 
@@ -477,39 +499,18 @@ UCustomProceduralMeshComponent::SetTagString(FString tag_in)
 	tagStr = tag_in;
 }
 
-TArray<FProceduralMeshTriangle>& 
-UCustomProceduralMeshComponent::GetProceduralTriangles()
-{
-	return ProceduralMeshTris;
-}
-
-void UCustomProceduralMeshComponent::AddProceduralMeshTriangles(const TArray<FProceduralMeshTriangle>& Triangles)
-{
-	ProceduralMeshTris.Append(Triangles);
-
-	// Need to recreate scene proxy to send it over
-	MarkRenderStateDirty();
-}
-
-void  UCustomProceduralMeshComponent::ClearProceduralMeshTriangles()
-{
-	ProceduralMeshTris.Reset();
-
-	// Need to recreate scene proxy to send it over
-	MarkRenderStateDirty();
-}
-
 FPrimitiveSceneProxy* UCustomProceduralMeshComponent::CreateSceneProxy()
 {
 	std::lock_guard<std::mutex> cur_lock(local_lock);
 
 	FPrimitiveSceneProxy* Proxy = NULL;
 	// Only if have enough triangles
-	if(ProceduralMeshTris.Num() > 0)
+	if(defaultTriData.point_num > 0)
 	{
-		localRenderProxy = new FProceduralMeshSceneProxy(this, &ProceduralMeshTris);
+		localRenderProxy = new FProceduralMeshSceneProxy(this, &defaultTriData);
 		Proxy = localRenderProxy;
 		render_proxy_ready = true;
+		ProcessCalcBounds();
 	}
 
 	return Proxy;
@@ -520,50 +521,61 @@ int32 UCustomProceduralMeshComponent::GetNumMaterials() const
 	return 1;
 }
 
-FBoxSphereBounds UCustomProceduralMeshComponent::CalcBounds(const FTransform & LocalToWorld) const
+void UCustomProceduralMeshComponent::ProcessCalcBounds()
 {
-	// Only if have enough triangles
-	if(ProceduralMeshTris.Num() > 0)
+	FProceduralMeshRenderPacket * cur_packet = nullptr;
+	bool can_calc = false;
+	if (render_proxy_ready)
 	{
+		cur_packet = localRenderProxy->GetActiveRenderPacket();
+		if (cur_packet)
+		{
+			can_calc = (cur_packet->point_num > 0);
+		}
+	}
+
+	calc_local_vec_min = FVector(FLT_MIN, FLT_MIN, FLT_MIN);
+	calc_local_vec_min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+
+	// Only if have enough triangles
+	if (can_calc)
+	{
+		const int x_id = 0;
+		const int y_id = 2;
+		const int z_id = 1;
+
+		auto cur_pts = cur_packet->points;
+
 		// Minimum Vector: It's set to the first vertex's position initially (NULL == FVector::ZeroVector might be required and a known vertex vector has intrinsically valid values)
-		FVector vecMin = ProceduralMeshTris[0].Vertex0.Position;
+		FVector vecMin = FVector(cur_pts[x_id], cur_pts[y_id], cur_pts[z_id]);
 
 		// Maximum Vector: It's set to the first vertex's position initially (NULL == FVector::ZeroVector might be required and a known vertex vector has intrinsically valid values)
-		FVector vecMax = ProceduralMeshTris[0].Vertex0.Position;
+		FVector vecMax = vecMin;
 
 		// Get maximum and minimum X, Y and Z positions of vectors
 		FVector vecMidPt(0, 0, 0);
-		for(int32 TriIdx = 0; TriIdx < ProceduralMeshTris.Num(); TriIdx++)
+		for (int32 i = 0; i < cur_packet->point_num; i++)
 		{
-			vecMin.X = (vecMin.X > ProceduralMeshTris[TriIdx].Vertex0.Position.X) ? ProceduralMeshTris[TriIdx].Vertex0.Position.X : vecMin.X;
-			vecMin.X = (vecMin.X > ProceduralMeshTris[TriIdx].Vertex1.Position.X) ? ProceduralMeshTris[TriIdx].Vertex1.Position.X : vecMin.X;
-			vecMin.X = (vecMin.X > ProceduralMeshTris[TriIdx].Vertex2.Position.X) ? ProceduralMeshTris[TriIdx].Vertex2.Position.X : vecMin.X;
+			int32 ptIdx = i * 3;
+			auto posX = cur_pts[ptIdx + x_id];
+			auto posY = cur_pts[ptIdx + y_id];
+			auto posZ = cur_pts[ptIdx + z_id];
 
-			vecMin.Y = (vecMin.Y > ProceduralMeshTris[TriIdx].Vertex0.Position.Y) ? ProceduralMeshTris[TriIdx].Vertex0.Position.Y : vecMin.Y;
-			vecMin.Y = (vecMin.Y > ProceduralMeshTris[TriIdx].Vertex1.Position.Y) ? ProceduralMeshTris[TriIdx].Vertex1.Position.Y : vecMin.Y;
-			vecMin.Y = (vecMin.Y > ProceduralMeshTris[TriIdx].Vertex2.Position.Y) ? ProceduralMeshTris[TriIdx].Vertex2.Position.Y : vecMin.Y;
+			vecMin.X = (vecMin.X > posX) ? posX : vecMin.X;
 
-			vecMin.Z = (vecMin.Z > ProceduralMeshTris[TriIdx].Vertex0.Position.Z) ? ProceduralMeshTris[TriIdx].Vertex0.Position.Z : vecMin.Z;
-			vecMin.Z = (vecMin.Z > ProceduralMeshTris[TriIdx].Vertex1.Position.Z) ? ProceduralMeshTris[TriIdx].Vertex1.Position.Z : vecMin.Z;
-			vecMin.Z = (vecMin.Z > ProceduralMeshTris[TriIdx].Vertex2.Position.Z) ? ProceduralMeshTris[TriIdx].Vertex2.Position.Z : vecMin.Z;
+			vecMin.Y = (vecMin.Y > posY) ? posY : vecMin.Y;
 
-			vecMax.X = (vecMax.X < ProceduralMeshTris[TriIdx].Vertex0.Position.X) ? ProceduralMeshTris[TriIdx].Vertex0.Position.X : vecMax.X;
-			vecMax.X = (vecMax.X < ProceduralMeshTris[TriIdx].Vertex1.Position.X) ? ProceduralMeshTris[TriIdx].Vertex1.Position.X : vecMax.X;
-			vecMax.X = (vecMax.X < ProceduralMeshTris[TriIdx].Vertex2.Position.X) ? ProceduralMeshTris[TriIdx].Vertex2.Position.X : vecMax.X;
+			vecMin.Z = (vecMin.Z > posZ) ? posZ : vecMin.Z;
 
-			vecMax.Y = (vecMax.Y < ProceduralMeshTris[TriIdx].Vertex0.Position.Y) ? ProceduralMeshTris[TriIdx].Vertex0.Position.Y : vecMax.Y;
-			vecMax.Y = (vecMax.Y < ProceduralMeshTris[TriIdx].Vertex1.Position.Y) ? ProceduralMeshTris[TriIdx].Vertex1.Position.Y : vecMax.Y;
-			vecMax.Y = (vecMax.Y < ProceduralMeshTris[TriIdx].Vertex2.Position.Y) ? ProceduralMeshTris[TriIdx].Vertex2.Position.Y : vecMax.Y;
+			vecMax.X = (vecMax.X < posX) ? posX : vecMax.X;
 
-			vecMax.Z = (vecMax.Z < ProceduralMeshTris[TriIdx].Vertex0.Position.Z) ? ProceduralMeshTris[TriIdx].Vertex0.Position.Z : vecMax.Z;
-			vecMax.Z = (vecMax.Z < ProceduralMeshTris[TriIdx].Vertex1.Position.Z) ? ProceduralMeshTris[TriIdx].Vertex1.Position.Z : vecMax.Z;
-			vecMax.Z = (vecMax.Z < ProceduralMeshTris[TriIdx].Vertex2.Position.Z) ? ProceduralMeshTris[TriIdx].Vertex2.Position.Z : vecMax.Z;
+			vecMax.Y = (vecMax.Y < posY) ? posY : vecMax.Y;
 
-			vecMidPt += ProceduralMeshTris[TriIdx].Vertex0.Position;
-			vecMidPt += ProceduralMeshTris[TriIdx].Vertex1.Position;
-			vecMidPt += ProceduralMeshTris[TriIdx].Vertex2.Position;
+			vecMax.Z = (vecMax.Z < posZ) ? posZ : vecMax.Z;
+
+			//vecMidPt += FVector(posX, posY, posZ);
 		}
-		
+
 		const float lscale = bounds_scale;
 		FVector lScaleVec(lscale, lscale, lscale);
 		vecMidPt = (vecMax + vecMin) * 0.5f;
@@ -575,21 +587,17 @@ FBoxSphereBounds UCustomProceduralMeshComponent::CalcBounds(const FTransform & L
 		vecMin = curXForm.TransformPosition(vecMin);
 		vecMax = curXForm.TransformPosition(vecMax);
 
-		FBox curBox(vecMin, vecMax);
-		FBoxSphereBounds retBounds(curBox);
-		//retBounds.Origin.Y = -retBounds.SphereRadius;
-		retBounds.Origin += bounds_offset;
+		calc_local_vec_min = vecMin;
+		calc_local_vec_max = vecMax;
 
-		// Debugging
-		FSphere sphereBounds = retBounds.GetSphere();
-		debugSphere = sphereBounds;
+		debugSphere = FBoxSphereBounds(FBox(calc_local_vec_min, calc_local_vec_max)).GetSphere();
+	}
 
-		return retBounds;
-	}
-	else
-	{
-		return FBoxSphereBounds();
-	}
+}
+
+FBoxSphereBounds UCustomProceduralMeshComponent::CalcBounds(const FTransform & LocalToWorld) const
+{
+	return FBoxSphereBounds(FBox(calc_local_vec_min, calc_local_vec_max));
 }
 
 void UCustomProceduralMeshComponent::SetBoundsScale(float value_in)

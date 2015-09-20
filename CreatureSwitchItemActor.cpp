@@ -20,9 +20,11 @@ ACreatureSwitchItemActor::ACreatureSwitchItemActor(const FObjectInitializer& Obj
 	RootComponent = switch_mesh;
 
 	// Generate a single dummy triangle
+	/*
 	TArray<FProceduralMeshTriangle> triangles;
 	GenerateTriangle(triangles);
 	switch_mesh->SetProceduralMeshTriangles(triangles);
+	*/
 }
 
 void
@@ -44,6 +46,7 @@ void ACreatureSwitchItemActor::OnConstruction(const FTransform & Transform)
 
 void ACreatureSwitchItemActor::InitRealSwitchRegion()
 {
+	/*
 	int num_triangles = real_switch_region->getNumIndices() / 3;
 	draw_triangles.SetNum(num_triangles, true);
 	switch_mesh->SetProceduralMeshTriangles(draw_triangles);
@@ -86,6 +89,7 @@ void ACreatureSwitchItemActor::InitRealSwitchRegion()
 
 	switch_uv_width = switch_max_uv.X - switch_min_uv.X;
 	switch_uv_height = switch_max_uv.Y - switch_min_uv.Y;
+	*/
 }
 
 void 
@@ -106,6 +110,7 @@ void ACreatureSwitchItemActor::SwitchBluePrintData(FString name_in)
 void 
 ACreatureSwitchItemActor::UpdateSwitchRender()
 {
+	/*
 	if (switch_table.count(ConvertToString(switch_to_name)) <= 0)
 	{
 		return;
@@ -202,6 +207,7 @@ ACreatureSwitchItemActor::UpdateSwitchRender()
 	switch_mesh->SetBoundsOffset(creature_actor->creature_bounds_offset);
 	switch_mesh->SetExtraXForm(creature_actor->GetTransform());
 	switch_mesh->ForceAnUpdate();
+	*/
 }
 
 void
