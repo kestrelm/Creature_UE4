@@ -79,12 +79,28 @@ CreatureCore::GetAndClearShouldAnimEnd()
 FProceduralMeshTriData 
 CreatureCore::GetProcMeshData()
 {
+	if (!creature_manager)
+	{
+		FProceduralMeshTriData ret_data(nullptr,
+			nullptr, nullptr,
+			0, 0,
+			&region_alphas,
+			update_lock);
+
+		return ret_data;
+	}
+
 	auto cur_creature = creature_manager->GetCreature();
 	int32 num_points = cur_creature->GetTotalNumPoints();
 	int32 num_indices = cur_creature->GetTotalNumIndices();
 	glm::uint32 * cur_idx = cur_creature->GetGlobalIndices();
 	glm::float32 * cur_pts = cur_creature->GetRenderPts();
 	glm::float32 * cur_uvs = cur_creature->GetGlobalUvs();
+
+	if (region_alphas.Num() != num_points)
+	{
+		region_alphas.SetNum(num_points);
+	}
 
 	FProceduralMeshTriData ret_data(cur_idx,
 		cur_pts, cur_uvs,

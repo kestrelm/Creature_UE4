@@ -79,7 +79,7 @@ struct FCreatureMeshCollection
 	FString creature_filename;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	float animation_speed;
+	float animation_speed = 2.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	UMaterialInterface * collection_material;
