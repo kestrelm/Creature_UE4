@@ -534,8 +534,8 @@ void UCustomProceduralMeshComponent::ProcessCalcBounds()
 		}
 	}
 
-	calc_local_vec_min = FVector(FLT_MIN, FLT_MIN, FLT_MIN);
-	calc_local_vec_min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+	calc_local_vec_min = FVector(-10000, -10000, -10000);
+	calc_local_vec_min = FVector(10000, 10000, 10000);
 
 	// Only if have enough triangles
 	if (can_calc)
@@ -578,6 +578,15 @@ void UCustomProceduralMeshComponent::ProcessCalcBounds()
 
 		const float lscale = bounds_scale;
 		FVector lScaleVec(lscale, lscale, lscale);
+
+		if (vecMin.X == FLT_MIN || vecMin.Y == FLT_MIN || vecMin.Z == FLT_MIN) {
+			vecMin = FVector(-10000, -10000, -10000);
+		}
+
+		if (vecMax.X == FLT_MAX || vecMax.Y == FLT_MAX || vecMax.Z == FLT_MAX) {
+			vecMax = FVector(10000, 10000, 10000);
+		}
+
 		vecMidPt = (vecMax + vecMin) * 0.5f;
 		vecMax = (vecMax - vecMidPt) * lScaleVec + vecMidPt;
 		vecMin = (vecMin - vecMidPt) * lScaleVec + vecMidPt;

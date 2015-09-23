@@ -114,8 +114,6 @@ CreatureCore::GetProcMeshData()
 void CreatureCore::UpdateCreatureRender()
 {
 
-	std::lock_guard<std::mutex> scope_lock(*update_lock);
-
 	auto cur_creature = creature_manager->GetCreature();
 	int num_triangles = cur_creature->GetTotalNumIndices() / 3;
 	glm::uint32 * cur_idx = cur_creature->GetGlobalIndices();
@@ -700,6 +698,8 @@ CreatureCore::IsBluePrintBonesCollide(FVector test_point, float bone_size, FTran
 bool 
 CreatureCore::RunTick(float delta_time)
 {
+	std::lock_guard<std::mutex> scope_lock(*update_lock);
+
 	if (is_driven)
 	{
 		UpdateCreatureRender();
