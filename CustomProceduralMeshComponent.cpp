@@ -534,8 +534,9 @@ void UCustomProceduralMeshComponent::ProcessCalcBounds()
 		}
 	}
 
-	calc_local_vec_min = FVector(-10000, -10000, -10000);
-	calc_local_vec_min = FVector(10000, 10000, 10000);
+	const float bounds_max_scalar = 100000.0f;
+	calc_local_vec_min = FVector(-bounds_max_scalar, -bounds_max_scalar, -bounds_max_scalar);
+	calc_local_vec_min = FVector(bounds_max_scalar, bounds_max_scalar, bounds_max_scalar);
 
 	// Only if have enough triangles
 	if (can_calc)
@@ -548,6 +549,11 @@ void UCustomProceduralMeshComponent::ProcessCalcBounds()
 
 		// Minimum Vector: It's set to the first vertex's position initially (NULL == FVector::ZeroVector might be required and a known vertex vector has intrinsically valid values)
 		FVector vecMin = FVector(cur_pts[x_id], cur_pts[y_id], cur_pts[z_id]);
+		if ( (vecMin.X == FLT_MIN) || (vecMin.Y == FLT_MIN) || (vecMin.Z == FLT_MIN)
+			|| (vecMin.X == FLT_MAX) || (vecMin.Y == FLT_MAX) || (vecMin.Z == FLT_MAX))
+		{
+			vecMin.Set(0, 0, 0);
+		}
 
 		// Maximum Vector: It's set to the first vertex's position initially (NULL == FVector::ZeroVector might be required and a known vertex vector has intrinsically valid values)
 		FVector vecMax = vecMin;
@@ -561,31 +567,26 @@ void UCustomProceduralMeshComponent::ProcessCalcBounds()
 			auto posY = cur_pts[ptIdx + y_id];
 			auto posZ = cur_pts[ptIdx + z_id];
 
-			vecMin.X = (vecMin.X > posX) ? posX : vecMin.X;
+			bool not_flt_min = (posX != FLT_MIN) && (posY != FLT_MIN) && (posZ != FLT_MIN);
+			bool not_flt_max = (posX != FLT_MAX) && (posY != FLT_MAX) && (posZ != FLT_MAX);
 
-			vecMin.Y = (vecMin.Y > posY) ? posY : vecMin.Y;
+			if (not_flt_min && not_flt_max) {
+				vecMin.X = (vecMin.X > posX) ? posX : vecMin.X;
 
-			vecMin.Z = (vecMin.Z > posZ) ? posZ : vecMin.Z;
+				vecMin.Y = (vecMin.Y > posY) ? posY : vecMin.Y;
 
-			vecMax.X = (vecMax.X < posX) ? posX : vecMax.X;
+				vecMin.Z = (vecMin.Z > posZ) ? posZ : vecMin.Z;
 
-			vecMax.Y = (vecMax.Y < posY) ? posY : vecMax.Y;
+				vecMax.X = (vecMax.X < posX) ? posX : vecMax.X;
 
-			vecMax.Z = (vecMax.Z < posZ) ? posZ : vecMax.Z;
+				vecMax.Y = (vecMax.Y < posY) ? posY : vecMax.Y;
 
-			//vecMidPt += FVector(posX, posY, posZ);
+				vecMax.Z = (vecMax.Z < posZ) ? posZ : vecMax.Z;
+			}
 		}
 
 		const float lscale = bounds_scale;
 		FVector lScaleVec(lscale, lscale, lscale);
-
-		if (vecMin.X == FLT_MIN || vecMin.Y == FLT_MIN || vecMin.Z == FLT_MIN) {
-			vecMin = FVector(-10000, -10000, -10000);
-		}
-
-		if (vecMax.X == FLT_MAX || vecMax.Y == FLT_MAX || vecMax.Z == FLT_MAX) {
-			vecMax = FVector(10000, 10000, 10000);
-		}
 
 		vecMidPt = (vecMax + vecMin) * 0.5f;
 		vecMax = (vecMax - vecMidPt) * lScaleVec + vecMidPt;
