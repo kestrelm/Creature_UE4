@@ -162,7 +162,7 @@ public:
 
 /** Scene proxy */
 
-FProceduralMeshSceneProxy::FProceduralMeshSceneProxy(UCustomProceduralMeshComponent* Component,
+FCProceduralMeshSceneProxy::FCProceduralMeshSceneProxy(UCustomProceduralMeshComponent* Component,
 	FProceduralMeshTriData * targetTrisIn)
 	: FPrimitiveSceneProxy(Component),
 	MaterialRelevance(Component->GetMaterialRelevance(GetScene().GetFeatureLevel()))
@@ -182,12 +182,12 @@ FProceduralMeshSceneProxy::FProceduralMeshSceneProxy(UCustomProceduralMeshCompon
 	UpdateMaterial();
 }
 
-FProceduralMeshSceneProxy::~FProceduralMeshSceneProxy()
+FCProceduralMeshSceneProxy::~FCProceduralMeshSceneProxy()
 {
 }
 
 FProceduralMeshRenderPacket * 
-FProceduralMeshSceneProxy::GetActiveRenderPacket()
+FCProceduralMeshSceneProxy::GetActiveRenderPacket()
 {
 	if (active_render_packet_idx < 0)
 	{
@@ -197,7 +197,7 @@ FProceduralMeshSceneProxy::GetActiveRenderPacket()
 	return &renderPackets[active_render_packet_idx];
 }
 
-void FProceduralMeshSceneProxy::UpdateMaterial()
+void FCProceduralMeshSceneProxy::UpdateMaterial()
 {
 	// Grab material
 	Material = parentComponent->GetMaterial(0);
@@ -207,7 +207,7 @@ void FProceduralMeshSceneProxy::UpdateMaterial()
 	}
 }
 
-void FProceduralMeshSceneProxy::AddRenderPacket(FProceduralMeshTriData * targetTrisIn)
+void FCProceduralMeshSceneProxy::AddRenderPacket(FProceduralMeshTriData * targetTrisIn)
 {
 	FProceduralMeshRenderPacket new_packet(targetTrisIn);
 	renderPackets.Add(new_packet);
@@ -254,12 +254,12 @@ void FProceduralMeshSceneProxy::AddRenderPacket(FProceduralMeshTriData * targetT
 	cur_packet.InitForRender();
 }
 
-void FProceduralMeshSceneProxy::SetActiveRenderPacketIdx(int idxIn)
+void FCProceduralMeshSceneProxy::SetActiveRenderPacketIdx(int idxIn)
 {
 	active_render_packet_idx = idxIn;
 }
 
-void FProceduralMeshSceneProxy::UpdateDynamicComponentData()
+void FCProceduralMeshSceneProxy::UpdateDynamicComponentData()
 {
 	if (active_render_packet_idx < 0)
 	{
@@ -322,19 +322,19 @@ void FProceduralMeshSceneProxy::UpdateDynamicComponentData()
 	needs_updating = true;
 }
 
-void FProceduralMeshSceneProxy::DoneUpdating()
+void FCProceduralMeshSceneProxy::DoneUpdating()
 {
 	needs_updating = false;
 	needs_index_updating = false;
 	needs_material_updating = false;
 }
 
-void FProceduralMeshSceneProxy::SetNeedsMaterialUpdate(bool flag_in)
+void FCProceduralMeshSceneProxy::SetNeedsMaterialUpdate(bool flag_in)
 {
 	needs_material_updating = flag_in;
 }
 
-void FProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FSceneView*>& Views,
+void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FSceneView*>& Views,
 	const FSceneViewFamily& ViewFamily,
 	uint32 VisibilityMap,
 	FMeshElementCollector& Collector) const
@@ -359,7 +359,7 @@ void FProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScene
 		cur_packet.UpdateDirectVertexData();
 	}
 
-	(const_cast<FProceduralMeshSceneProxy*>(this))->DoneUpdating();
+	(const_cast<FCProceduralMeshSceneProxy*>(this))->DoneUpdating();
 
 	QUICK_SCOPE_CYCLE_COUNTER(STAT_ProceduralMeshSceneProxy_GetDynamicMeshElements);
 
@@ -409,7 +409,7 @@ void FProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScene
 	}
 }
 
-FPrimitiveViewRelevance FProceduralMeshSceneProxy::GetViewRelevance(const FSceneView* View)
+FPrimitiveViewRelevance FCProceduralMeshSceneProxy::GetViewRelevance(const FSceneView* View)
 {
 	FPrimitiveViewRelevance Result;
 	Result.bDrawRelevance = true; // IsShown(View);
@@ -419,17 +419,17 @@ FPrimitiveViewRelevance FProceduralMeshSceneProxy::GetViewRelevance(const FScene
 	return Result;
 }
 
-bool FProceduralMeshSceneProxy::CanBeOccluded() const
+bool FCProceduralMeshSceneProxy::CanBeOccluded() const
 {
 	return !MaterialRelevance.bDisableDepthTest;
 }
 
-uint32 FProceduralMeshSceneProxy::GetMemoryFootprint(void) const
+uint32 FCProceduralMeshSceneProxy::GetMemoryFootprint(void) const
 {
 	return(sizeof(*this) + GetAllocatedSize());
 }
 
-uint32 FProceduralMeshSceneProxy::GetAllocatedSize(void) const
+uint32 FCProceduralMeshSceneProxy::GetAllocatedSize(void) const
 {
 	return(FPrimitiveSceneProxy::GetAllocatedSize());
 }
@@ -507,7 +507,7 @@ FPrimitiveSceneProxy* UCustomProceduralMeshComponent::CreateSceneProxy()
 	// Only if have enough triangles
 	if(defaultTriData.point_num > 0)
 	{
-		localRenderProxy = new FProceduralMeshSceneProxy(this, &defaultTriData);
+		localRenderProxy = new FCProceduralMeshSceneProxy(this, &defaultTriData);
 		Proxy = localRenderProxy;
 		render_proxy_ready = true;
 		ProcessCalcBounds();

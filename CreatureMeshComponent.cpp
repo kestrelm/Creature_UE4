@@ -534,7 +534,7 @@ FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
 
 	FPrimitiveSceneProxy* Proxy = NULL;
 	// Only if have enough triangles
-	localRenderProxy = new FProceduralMeshSceneProxy(this, nullptr);
+	localRenderProxy = new FCProceduralMeshSceneProxy(this, nullptr);
 
 	// Loop through and add in the collectionData
 	for (auto& cur_data : collectionData)

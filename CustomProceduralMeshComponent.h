@@ -45,14 +45,14 @@ public:
 };
 
 /** Scene proxy */
-class FProceduralMeshSceneProxy : public FPrimitiveSceneProxy
+class FCProceduralMeshSceneProxy : public FPrimitiveSceneProxy
 {
 public:
 
-	FProceduralMeshSceneProxy(UCustomProceduralMeshComponent* Component,
+	FCProceduralMeshSceneProxy(UCustomProceduralMeshComponent* Component,
 		FProceduralMeshTriData * targetTrisIn);
 
-	virtual ~FProceduralMeshSceneProxy();
+	virtual ~FCProceduralMeshSceneProxy();
 
 	void AddRenderPacket(FProceduralMeshTriData * targetTrisIn);
 
@@ -193,12 +193,12 @@ protected:
 
 	/** */
 
-	friend class FProceduralMeshSceneProxy;
+	friend class FCProceduralMeshSceneProxy;
 	float bounds_scale;
 	FVector bounds_offset;
 	mutable FSphere debugSphere;
 	FVector calc_local_vec_min, calc_local_vec_max;
-	FProceduralMeshSceneProxy * localRenderProxy;
+	FCProceduralMeshSceneProxy * localRenderProxy;
 	bool render_proxy_ready;
 	std::mutex local_lock;
 	bool recreate_render_proxy;
