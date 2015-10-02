@@ -17,6 +17,8 @@ void CreatureEditor::StartupModule()
 
 	EAssetTypeCategories::Type CreatureAnimStoreAssetCategoryBit = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("CreatureAnimStore")), LOCTEXT("CreatureAnimStoreAssetCategory", "Creature"));
 	AssetTools.RegisterAssetTypeActions(MakeShareable(new FCreatureAnimStoreAssetTypeActions(CreatureAnimAssetCategoryBit)));
+
+	AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("CreatureAnimStore")), LOCTEXT("CreatureAnimationAssetCategory", "Creature"));
 }
 
 void CreatureEditor::ShutdownModule()
