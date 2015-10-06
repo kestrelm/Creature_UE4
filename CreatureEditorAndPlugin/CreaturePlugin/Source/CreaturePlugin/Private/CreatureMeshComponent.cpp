@@ -492,6 +492,7 @@ void UCreatureMeshComponent::StandardInit()
 	LoadAnimationFromStore();
 	UpdateCoreValues();
 
+	creature_core.do_file_warning = !enable_collection_playback;
 	bool retval = creature_core.InitCreatureRender();
 	creature_core.region_alpha_map.Empty();
 
@@ -520,6 +521,7 @@ void UCreatureMeshComponent::CollectionInit()
 		{
 			cur_core.pJsonData = cur_data.creature_core.pJsonData;
 		}
+
 		bool retval = cur_core.InitCreatureRender();
 		if (retval)
 		{

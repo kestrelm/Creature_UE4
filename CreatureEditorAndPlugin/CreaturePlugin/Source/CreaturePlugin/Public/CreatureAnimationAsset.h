@@ -20,7 +20,7 @@ public:
 		TArray<FString> AnimationClipList;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Creature")
-		float animation_speed=1.0f;
+		float animation_speed=2.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Creature")
 		UMaterialInterface * collection_material;

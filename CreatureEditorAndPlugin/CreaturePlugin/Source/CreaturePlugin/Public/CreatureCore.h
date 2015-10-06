@@ -188,6 +188,8 @@ public:
 
 	bool should_process_animation_start, should_process_animation_end;
 
+	bool do_file_warning;
+
 	std::mutex * update_lock;
 
 	//////////////////////////////////////////////////////////////////////////

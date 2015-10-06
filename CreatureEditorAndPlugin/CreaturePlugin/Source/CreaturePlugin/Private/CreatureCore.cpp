@@ -53,6 +53,7 @@ CreatureCore::CreatureCore()
 	is_disabled = false;
 	is_driven = false;
 	is_ready_play = false;
+	do_file_warning = true;
 	should_process_animation_start = false;
 	should_process_animation_end = false;
 	update_lock = new std::mutex();
@@ -306,8 +307,11 @@ bool CreatureCore::InitCreatureRender()
 			return true;
 		}
 		else {
-			UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::BeginPlay() - ERROR! Could not load creature file: %s"), *creature_filename);
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("ACreatureActor::BeginPlay() - ERROR! Could not load creature file: %s"), *creature_filename));
+
+			if (do_file_warning) {
+				UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::BeginPlay() - ERROR! Could not load creature file: %s"), *creature_filename);
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("ACreatureActor::BeginPlay() - ERROR! Could not load creature file: %s"), *creature_filename));
+			}
 		}
 	}
 	
