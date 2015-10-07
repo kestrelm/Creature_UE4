@@ -30,4 +30,6 @@ public:
 		UCreatureAnimState* TargetState;
 
 		bool Translate();
+		//Special Translate, Using when animation end
+		void AnimationEndTranslate();
 };

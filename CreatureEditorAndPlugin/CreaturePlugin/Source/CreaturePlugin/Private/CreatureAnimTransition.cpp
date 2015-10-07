@@ -3,6 +3,7 @@
 #include "CreatureAnimStateMachine.h"
 bool UCreatureAnimTransition::Translate()
 {
+
 	for (FCreatureTransitionCondition condition : TransitionConditions)
 	{
 		int32 index;
@@ -23,4 +24,17 @@ bool UCreatureAnimTransition::Translate()
 	AnimStateMachine->CurrentState->BeginState();
 	AnimStateMachine->CurrentState->bIsCurrentState = true;
 	return true;
+}
+
+void UCreatureAnimTransition::AnimationEndTranslate()
+{
+	//优先检查当前转换是否为AnimationEnd
+	if (TransitionConditions[0].TransitionName == FString(TEXT("AnimationEnd")))
+	{
+		AnimStateMachine->CurrentState->bIsCurrentState = false;
+		AnimStateMachine->CurrentState = TargetState;
+
+		AnimStateMachine->CurrentState->BeginState();
+		AnimStateMachine->CurrentState->bIsCurrentState = true;
+	}
 }

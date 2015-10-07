@@ -33,21 +33,34 @@ bool UCreatureAnimGraphSchema::TryCreateConnection(UEdGraphPin* A, UEdGraphPin* 
 	}
 	else
 	{
-		UCreatureAnimTransitionNode* TransitionNode = NewObject<UCreatureAnimTransitionNode>(A->GetOwningNode()->GetGraph());
-		TransitionNode->NodePosX = (A->GetOwningNode()->NodePosX+ B->GetOwningNode()->NodePosX) / 2;
-		TransitionNode->NodePosY = (A->GetOwningNode()->NodePosY+ B->GetOwningNode()->NodePosY) / 2;
-		if (UCreatureStateMachineGraph* Graph = Cast<UCreatureStateMachineGraph>(TransitionNode->GetGraph()))
+		if (Cast<UCreatureAnimStateNode>(A->GetOwningNode()) != nullptr&&Cast<UCreatureAnimStateNode>(B->GetOwningNode()))
 		{
-			if (TransitionNode->CompiledTransition != nullptr)
+			UCreatureAnimTransitionNode* TransitionNode = NewObject<UCreatureAnimTransitionNode>(A->GetOwningNode()->GetGraph());
+			TransitionNode->NodePosX = (A->GetOwningNode()->NodePosX + B->GetOwningNode()->NodePosX) / 2;
+			TransitionNode->NodePosY = (A->GetOwningNode()->NodePosY + B->GetOwningNode()->NodePosY) / 2;
+			if (UCreatureStateMachineGraph* Graph = Cast<UCreatureStateMachineGraph>(TransitionNode->GetGraph()))
 			{
-				TransitionNode->CompiledTransition = NewObject<UCreatureAnimTransition>(Graph->GetOuter());
-				TransitionNode->CompiledTransition->AnimStateMachine = Graph->ParentStateMachine;
+				if (TransitionNode->CompiledTransition != nullptr)
+				{
+					TransitionNode->CompiledTransition = NewObject<UCreatureAnimTransition>(Graph->GetOuter());
+					TransitionNode->CompiledTransition->AnimStateMachine = Graph->ParentStateMachine;
+				}
 			}
+			A->MakeLinkTo(TransitionNode->CreatePin(EEdGraphPinDirection::EGPD_Input, A->PinType, FString("In")));
+			TransitionNode->CreatePin(EEdGraphPinDirection::EGPD_Output, FEdGraphPinType(), FString("Out"))->MakeLinkTo(B);
+			A->GetOwningNode()->GetGraph()->AddNode(TransitionNode);
+			TransitionNode->TransitionTargetNode = Cast<UCreatureAnimStateNode>(B->GetOwningNode());
 		}
-		A->MakeLinkTo(TransitionNode->CreatePin(EEdGraphPinDirection::EGPD_Input, A->PinType, FString("In")));
-		TransitionNode->CreatePin(EEdGraphPinDirection::EGPD_Output, FEdGraphPinType(), FString("Out"))->MakeLinkTo(B);
-		A->GetOwningNode()->GetGraph()->AddNode(TransitionNode);
-		TransitionNode->TransitionTargetNode = Cast<UCreatureAnimStateNode>(B->GetOwningNode());
+		//Transition-->State
+		if (Cast<UCreatureAnimTransitionNode>(A->GetOwningNode())!=nullptr&&Cast<UCreatureAnimStateNode>(B->GetOwningNode()))
+		{
+			A->MakeLinkTo(B);
+		}
+		//State-->Transition
+		if (Cast<UCreatureAnimStateNode>(A->GetOwningNode()) != nullptr&&Cast<UCreatureAnimTransitionNode>(B->GetOwningNode()))
+		{
+			A->MakeLinkTo(B);
+		}
 	}
 	
 	return true;
@@ -65,11 +78,12 @@ void UCreatureAnimGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& 
 		//Action->NodeTemplate = NewObject<UCreatureAnimStateNode>(ContextMenuBuilder.OwnerOfTemporaries);
 	}
 
-	//// Add conduit node
-	//{
-	//	TSharedPtr<FEdGraphSchemaAction_NewStateNode> Action = AddNewStateNodeAction(ContextMenuBuilder, FText::GetEmpty(), LOCTEXT("AddConduit", "Add Conduit..."), TEXT("A new conduit state"));
-	//	Action->NodeTemplate = NewObject<UAnimStateConduitNode>(ContextMenuBuilder.OwnerOfTemporaries);
-	//}
+	// Add Animation End Transition Node
+	{
+		TSharedPtr<FEdGraphSchemaAction_NewCreatureAnimationEndTransition> NewAnimationEndNode(new FEdGraphSchemaAction_NewCreatureAnimationEndTransition(FText::GetEmpty(), LOCTEXT("AddAnimEndTransition", "Add Animation End Tran..."),TEXT("Add a Animation End Transition Node"),0));
+		ContextMenuBuilder.AddAction(NewAnimationEndNode);
+
+	}
 }
 
 EGraphType UCreatureAnimGraphSchema::GetGraphType(const UEdGraph* TestEdGraph) const
@@ -144,4 +158,18 @@ UEdGraphNode* FEdGraphSchemaAction_NewCreatureStateNode::PerformAction(class UEd
 	ParentGraph->AddNode(NewStateNode, true, false);
 
 	return NewStateNode;
+}
+
+UEdGraphNode* FEdGraphSchemaAction_NewCreatureAnimationEndTransition::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode /*= true*/)
+{
+	UCreatureAnimTransitionNode* NewAnimationEndTransitionNode = NewObject<UCreatureAnimTransitionNode>(ParentGraph);
+	NewAnimationEndTransitionNode->NodePosX		= Location.X;
+	NewAnimationEndTransitionNode->NodePosY		= Location.Y;
+	NewAnimationEndTransitionNode->InputPin		= NewAnimationEndTransitionNode->CreatePin(EEdGraphPinDirection::EGPD_Input, FEdGraphPinType(), TEXT("Input"));
+	NewAnimationEndTransitionNode->OutputPin	= NewAnimationEndTransitionNode->CreatePin(EEdGraphPinDirection::EGPD_Output, FEdGraphPinType(), TEXT("Output"));
+	NewAnimationEndTransitionNode->TransitionCondition = FString(TEXT("AnimationEnd"));
+	NewAnimationEndTransitionNode->TransitionFlag = true;
+	ParentGraph->AddNode(NewAnimationEndTransitionNode, true, false);
+
+	return NewAnimationEndTransitionNode;
 }

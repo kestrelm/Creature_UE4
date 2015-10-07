@@ -587,5 +587,7 @@ void UCreatureMeshComponent::LoadAnimationFromStore()
 	{
 		return;
 	}
+	collectionData.Empty();
+	collectionClips.Empty();
 	ClipStore->LoadAnimationDataToComponent(this);
 }
