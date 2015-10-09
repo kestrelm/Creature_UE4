@@ -7,6 +7,8 @@ For more information on how to use the runtimes, please head over to this [site]
 ### Trying out the new fancy Creature Editor & Runtimes:
 The directory containing this is called **CreatureEditorAndPlugin**. Most of the concepts from the old runtimes apply to the new ones so it should not be too big of a change. However, you will get access to some fancy new features, including the CreatureAsset, CreatureMeshComponent, new UI and a state machine.
 
+**Much of the new features and editor work for the new plugin are due to amazing work by [God of Pen](https://github.com/ldl19691031/CreatureUE4PluginWithEditor). Please have a look at his modified plugin here.** Thanks for all the hard work and contributions!
+
 ### What is the roadmap ahead for Creature Runtime development?
 Most of the new work will now be focused on the files in **CreatureEditorAndPlugin**. 
 
