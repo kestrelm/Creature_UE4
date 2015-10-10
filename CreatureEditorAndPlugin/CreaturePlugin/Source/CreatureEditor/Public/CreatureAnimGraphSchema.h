@@ -23,7 +23,19 @@ struct FEdGraphSchemaAction_NewCreatureStateNode : public FEdGraphSchemaAction
 	}
 	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
 };
-
+USTRUCT()
+struct FEdGraphSchemaAction_NewCreatureAnimationEndTransition : public FEdGraphSchemaAction
+{
+	GENERATED_USTRUCT_BODY()
+		FEdGraphSchemaAction_NewCreatureAnimationEndTransition()
+		: FEdGraphSchemaAction()
+	{}
+	FEdGraphSchemaAction_NewCreatureAnimationEndTransition(const FText& InNodeCategory, const FText& InMenuDesc, const FString& InToolTip, const int32 InGrouping)
+		:FEdGraphSchemaAction(InNodeCategory, InMenuDesc, InToolTip, InGrouping)
+	{
+	}
+	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
+};
 UCLASS()
 class UCreatureAnimGraphSchema :public UEdGraphSchema{
 	GENERATED_BODY()

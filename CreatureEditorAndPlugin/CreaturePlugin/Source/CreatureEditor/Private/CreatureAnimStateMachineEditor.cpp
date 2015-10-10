@@ -196,11 +196,14 @@ UEdGraphNode* FCreatureAnimStateMachineEditor::GetSelectNode()
 	if (EditGraph.IsValid() && EditGraph->GetSelectedNodes().Num()!=0)
 	{
 		auto Node = EditGraph->GetSelectedNodes().Array()[0];
-		return Cast<UEdGraphNode>(Node);
+		if (Node!=nullptr)
+		{
+			return Cast<UEdGraphNode>(Node);
+		}
+		
 		
 	}
-	else
-		return nullptr;
+	return nullptr;
 
 }
 

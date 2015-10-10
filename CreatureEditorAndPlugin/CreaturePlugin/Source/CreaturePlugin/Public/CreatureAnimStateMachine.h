@@ -33,5 +33,11 @@ public:
 		void SetCondition(FString ConditionName, bool Flag);
 	//初始化状态机，播放默认根节点动画
 	void InitStateMachine();
+
+	UFUNCTION()
+	void OnAnimStart(float frame);
+
+	UFUNCTION()
+	void OnAnimEnd(float frame);
 };
 

@@ -24,6 +24,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Creature")
 		UMaterialInterface * collection_material;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Creature")
+	//You can change an animation clip's scale to fix some problem
+		float Scale = 1.0f;
 	//从文件中读取到的JSon Data
 	UPROPERTY()
 		FString CreatureFileJSonData;

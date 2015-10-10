@@ -91,6 +91,7 @@ void FCreatureAnimStoreEditorViewportClient::ReConstructMesh()
 {
 	if (EditingCreatureMesh!=nullptr)
 	{
+		EditingCreatureMesh->DestroyComponent(true);
 		EditingCreatureMesh = NewObject<UCreatureMeshComponent>();
 		//ÉèÖÃCreatureMesh×é¼ş
 		SetUpEditingCreatureMesh();

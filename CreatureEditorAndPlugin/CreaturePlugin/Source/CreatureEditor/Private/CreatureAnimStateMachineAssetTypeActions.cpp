@@ -10,7 +10,7 @@ FCreatureAnimStateMachineAssetTypeActions ::FCreatureAnimStateMachineAssetTypeAc
 }
 FText FCreatureAnimStateMachineAssetTypeActions::GetName() const
 {
-	return LOCTEXT("FCreatureAnimStateMachineAssetTypeActionsName", "Creature Animation");
+	return LOCTEXT("FCreatureAnimStateMachineAssetTypeActionsName", "Creature State Machine");
 }
 UClass* FCreatureAnimStateMachineAssetTypeActions::GetSupportedClass() const
 {

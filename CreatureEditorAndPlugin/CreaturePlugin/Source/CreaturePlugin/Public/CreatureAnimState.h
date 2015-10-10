@@ -21,5 +21,6 @@ public:
 	void BeginState();
 	void EndState();
 	void CheckCondition();
-
+	//Check if there is a 'AnimationEnd' Transition
+	void AnimationEnd();
 };

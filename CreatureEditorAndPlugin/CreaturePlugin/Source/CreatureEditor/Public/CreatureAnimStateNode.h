@@ -25,6 +25,7 @@ public:
 	UCreatureAnimStateNode()
 		:UEdGraphNode()
 	{
+		
 		NodeHeight = 50;
 		AnimName = TEXT("DefaultAnimName");
 	
