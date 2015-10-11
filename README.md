@@ -12,8 +12,8 @@ The directory containing this is called **CreatureEditorAndPlugin**. Most of the
 ### What is the roadmap ahead for Creature Runtime development?
 Most of the new work will now be focused on the files in **CreatureEditorAndPlugin**. 
 
-### How about documentation?
-Documentation will be in soon. Although if in doubt, stick to the older runtimes first. They will always be there for backwards compatibility. Stay tuned for some exciting updates!
+### Reporting Bugs/Feature Requests
+Feature requests regarding the core Creature UE4 Runtime can be sent directly to: creature@kestrelmoon.com . For bugs/requests with regard to the Creature UE4 Runtime Editor, please send them to:  [God of Pen](https://github.com/ldl19691031/CreatureUE4PluginWithEditor)
 
 ## Dragon Demo
 [![Non](http://www.kestrelmoon.com/creaturedocs/img/ue4-dragon.png)](https://youtu.be/ymOOUtaEcsI)
