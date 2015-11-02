@@ -30,6 +30,17 @@ Move Right - d
 
 Breathe Fire - s
 
+##Creature British Library Art Project
+A demo scene consisting of multiple characters with artwork all sourced from the public domain [British Library Flickr Archive](https://www.flickr.com/photos/britishlibrary/albums) is presented here. This demo is constructed in UE4 so you will need UE4.9 and above to open to run the project.
+
+The scene demonstrates multiple advanced features of the Creature Animation Tool, including the usage of ***Force Field Motors for Cloth Dynamics, Custom Cycle Motors for walking and the Creature UE4 Runtime.***
+
+The actual animation logic for the walking pheasants and tapir is all authored using the UE4 Blueprints system.
+
+![img](https://raw.githubusercontent.com/kestrelm/CreatureDemos/master/BL.png)
+
+Please head over the [CreatureDemos](https://github.com/kestrelm/CreatureDemos) repository to download this demo.
+
 ## Prepackaged Plugin Code for Compilation
 
 If you want to compile the plugins for a C++ project, I have included a Prepackaged archive that you can use
