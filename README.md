@@ -39,6 +39,8 @@ The actual animation logic for the walking pheasants and tapir is all authored u
 
 ![img](https://raw.githubusercontent.com/kestrelm/CreatureDemos/master/BL.png)
 
+View the Demo Video [here](https://youtu.be/MQK1mVSXaAk).
+
 Please head over the [CreatureDemos](https://github.com/kestrelm/CreatureDemos) repository to download this demo.
 
 ## Prepackaged Plugin Code for Compilation
