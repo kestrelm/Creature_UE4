@@ -18,9 +18,11 @@ Feature requests regarding the core Creature UE4 Runtime can be sent directly to
 ## Dragon Demo
 [![Non](http://www.kestrelmoon.com/creaturedocs/img/ue4-dragon.png)](https://youtu.be/ymOOUtaEcsI)
 
-The DragonDemo is an archive under the directory **"DragonDemo"**, expand it to get the full project, runtimes etc. 
 The Demo character is authored in Creature and exported out into UE4 using Creature's UE4 runtimes.
 Actual character gameplay is done using BP.
+
+
+Please head over the [CreatureDemos](https://github.com/kestrelm/CreatureDemos) repository to download this demo.
 
 ###Controls:
 
