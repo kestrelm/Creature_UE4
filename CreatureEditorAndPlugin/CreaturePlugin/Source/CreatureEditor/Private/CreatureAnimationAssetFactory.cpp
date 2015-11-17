@@ -27,6 +27,10 @@ UObject* UCreatureAnimationAssetFactory::FactoryCreateNew(UClass* Class, UObject
 		FilterIndex))
 	{
 		FFileHelper::LoadFileToString(Asset->CreatureFileJSonData, *OpenFilenames[0], 0);
+
+		FString setFilename, setFileExtension, setFilePathPart;
+		FPaths::Split(FString(*OpenFilenames[0]), setFilePathPart, setFilename, setFileExtension);
+		Asset->creature_filename = setFilename + FString(".") + setFileExtension;
 	}
 	return Asset;
 }

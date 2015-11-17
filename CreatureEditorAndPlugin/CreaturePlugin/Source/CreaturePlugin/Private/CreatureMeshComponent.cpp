@@ -219,7 +219,7 @@ void UCreatureMeshComponent::InitStandardValues()
 	smooth_transitions = false;
 	bone_data_size = 0.01f;
 	bone_data_length_factor = 0.02f;
-	creature_bounds_scale = 15.0f;
+	creature_bounds_scale = 1.0f;
 	creature_debug_draw = false;
 	creature_bounds_offset = FVector(0, 0, 0);
 	region_overlap_z_delta = 0.01f;
@@ -227,6 +227,7 @@ void UCreatureMeshComponent::InitStandardValues()
 	active_collection_clip = nullptr;
 	active_collection_loop = true;
 	active_collection_play = true;
+	creature_animation_asset = nullptr;
 
 	// Generate a single dummy triangle
 	/*
@@ -239,6 +240,12 @@ void UCreatureMeshComponent::InitStandardValues()
 void UCreatureMeshComponent::UpdateCoreValues()
 {
 	creature_core.creature_filename = creature_filename;
+
+	if (creature_animation_asset) {
+		creature_core.pJsonData = &creature_animation_asset->CreatureFileJSonData;
+		creature_core.creature_asset_filename = creature_animation_asset->creature_filename;
+	}
+
 	creature_core.bone_data_size = bone_data_size;
 	creature_core.bone_data_length_factor = bone_data_length_factor;
 	creature_core.region_overlap_z_delta = region_overlap_z_delta;

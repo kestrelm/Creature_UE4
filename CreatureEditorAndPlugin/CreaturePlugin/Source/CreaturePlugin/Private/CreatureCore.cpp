@@ -42,6 +42,7 @@ static float StopProfileTimer()
 
 CreatureCore::CreatureCore()
 {
+	pJsonData = nullptr;
 	smooth_transitions = false;
 	bone_data_size = 0.01f;
 	bone_data_length_factor = 0.02f;
@@ -214,17 +215,55 @@ void CreatureCore::UpdateCreatureRender()
 bool CreatureCore::InitCreatureRender()
 {
 	FString cur_creature_filename = creature_filename;
+	bool init_success = false;
+	std::string load_filename;
+
 	//////////////////////////////////////////////////////////////////////////
 	//Changed by God of Pen
 	//////////////////////////////////////////////////////////////////////////
 	if (pJsonData != nullptr)
 	{
-		absolute_creature_filename = cur_creature_filename;
-		auto load_filename = ConvertToString(cur_creature_filename);
-		// try to load creature
+		if (cur_creature_filename.IsEmpty())
+		{
+			cur_creature_filename = creature_asset_filename;
+		}
 
-		//直接从字符串数据中读取
+		absolute_creature_filename = cur_creature_filename;
+		load_filename = ConvertToString(cur_creature_filename);
+
+		// try to load creature
 		CreatureCore::LoadDataPacket(load_filename, pJsonData);
+		init_success = true;
+	}
+	else{
+		bool does_exist = FPlatformFileManager::Get().GetPlatformFile().FileExists(*cur_creature_filename);
+		if (!does_exist)
+		{
+			// see if it is in the content directory
+			cur_creature_filename = FPaths::GameContentDir() + FString(TEXT("/")) + cur_creature_filename;
+			does_exist = FPlatformFileManager::Get().GetPlatformFile().FileExists(*cur_creature_filename);
+		}
+
+		if (does_exist)
+		{
+			absolute_creature_filename = cur_creature_filename;
+			load_filename = ConvertToString(cur_creature_filename);
+
+			// try to load creature
+			CreatureCore::LoadDataPacket(load_filename);
+			init_success = true;
+		}
+		else {
+
+			if (do_file_warning && (!load_filename.empty())) {
+				UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::BeginPlay() - ERROR! Could not load creature file: %s"), *creature_filename);
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("ACreatureActor::BeginPlay() - ERROR! Could not load creature file: %s"), *creature_filename));
+			}
+		}
+	}
+	
+	if (init_success)
+	{
 		LoadCreature(load_filename);
 
 		// try to load all animations
@@ -254,70 +293,10 @@ bool CreatureCore::InitCreatureRender()
 		}
 
 		FillBoneData();
-
-		return true;
-	
 	}
-	else{
-		bool does_exist = FPlatformFileManager::Get().GetPlatformFile().FileExists(*cur_creature_filename);
-		if (!does_exist)
-		{
-			// see if it is in the content directory
-			cur_creature_filename = FPaths::GameContentDir() + FString(TEXT("/")) + cur_creature_filename;
-			does_exist = FPlatformFileManager::Get().GetPlatformFile().FileExists(*cur_creature_filename);
-		}
-
-		if (does_exist)
-		{
-			absolute_creature_filename = cur_creature_filename;
-			auto load_filename = ConvertToString(cur_creature_filename);
-			// try to load creature
-
-			CreatureCore::LoadDataPacket(load_filename);
-			LoadCreature(load_filename);
-
-			// try to load all animations
-			auto all_animation_names = creature_manager->GetCreature()->GetAnimationNames();
-			auto first_animation_name = all_animation_names[0];
-			for (auto& cur_name : all_animation_names)
-			{
-				CreatureCore::LoadAnimation(load_filename, cur_name);
-				AddLoadedAnimation(load_filename, cur_name);
-			}
-
-			auto cur_str = ConvertToString(start_animation_name);
-			for (auto& cur_name : all_animation_names)
-			{
-				if (cur_name == cur_str)
-				{
-					first_animation_name = cur_name;
-					break;
-				}
-			}
-
-			SetActiveAnimation(first_animation_name);
-
-			if (smooth_transitions)
-			{
-				creature_manager->SetAutoBlending(true);
-			}
-
-			FillBoneData();
-
-			return true;
-		}
-		else {
-
-			if (do_file_warning) {
-				UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::BeginPlay() - ERROR! Could not load creature file: %s"), *creature_filename);
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("ACreatureActor::BeginPlay() - ERROR! Could not load creature file: %s"), *creature_filename));
-			}
-		}
-	}
-	
 
 
-	return false;
+	return init_success;
 }
 
 void CreatureCore::FillBoneData()

@@ -148,7 +148,7 @@ public:
 
 
 	// properties
-	FString creature_filename;
+	FString creature_filename, creature_asset_filename;
 
 	float bone_data_size;
 

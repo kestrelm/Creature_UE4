@@ -41,6 +41,7 @@
 #include <mutex>
 #include <vector>
 #include "CustomProceduralMeshComponent.h"
+#include "CreatureAnimationAsset.h"
 #include "CreatureCore.h"
 #include "CreatureMeshComponent.generated.h"
 
@@ -115,9 +116,13 @@ class CREATUREPLUGIN_API UCreatureMeshComponent : public UCustomProceduralMeshCo
 	GENERATED_UCLASS_BODY()
 
 public:
-	/** Path/Filename to the Creature JSON. Will accept .zip archives, make sure the file is with a .zip extension */
+	/** Deprecated: Path/Filename to the Creature JSON. Will accept .zip archives, make sure the file is with a .zip extension. Use creature_animation_asset if you can since this is not asset based and might cause extra complications during game packaging. Eventually this attribute will be phased out. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	FString creature_filename;
+
+	/** Points to a Creature Animation Asset containing the JSON filename of the character. Use this instead of creature_filename if you want to use an asset based system. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
+	UCreatureAnimationAsset * creature_animation_asset;
 
 	/** Playback speed of the animation, 2.0 is the default */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
