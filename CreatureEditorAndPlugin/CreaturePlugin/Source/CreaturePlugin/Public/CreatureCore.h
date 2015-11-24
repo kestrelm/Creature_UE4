@@ -79,13 +79,10 @@ public:
 	FProceduralMeshTriData GetProcMeshData();
 
 	// Loads a data packet from a file
-	static void LoadDataPacket(const std::string& filename_in);
+	static bool LoadDataPacket(const std::string& filename_in);
 
-	//////////////////////////////////////////////////////////////////////////
-	//ChangedBy God of Pen
-	//////////////////////////////////////////////////////////////////////////
-	// Loads a data packet from a file
-	static void LoadDataPacket(const std::string& filename_in,FString* pSourceData);
+	// Loads a data packet from a string in memory
+	static bool LoadDataPacket(const std::string& filename_in,FString* pSourceData);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Loads an animation from a file

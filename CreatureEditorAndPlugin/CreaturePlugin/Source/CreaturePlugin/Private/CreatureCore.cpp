@@ -232,8 +232,7 @@ bool CreatureCore::InitCreatureRender()
 		load_filename = ConvertToString(cur_creature_filename);
 
 		// try to load creature
-		CreatureCore::LoadDataPacket(load_filename, pJsonData);
-		init_success = true;
+		init_success = CreatureCore::LoadDataPacket(load_filename, pJsonData);;
 	}
 	else{
 		bool does_exist = FPlatformFileManager::Get().GetPlatformFile().FileExists(*cur_creature_filename);
@@ -492,13 +491,13 @@ void CreatureCore::ProcessRenderRegions()
 	*/
 }
 
-void 
+bool 
 CreatureCore::LoadDataPacket(const std::string& filename_in)
 {
 	if (global_load_data_packets.count(filename_in) > 0)
 	{
 		// file already loaded, just return
-		return;
+		return true;
 	}
 	//////////////////////////////////////////////////////////////////////////
 	//Changed!
@@ -524,30 +523,37 @@ CreatureCore::LoadDataPacket(const std::string& filename_in)
 	
 	
 
-	
+		return true;
 }
 
-void CreatureCore::LoadDataPacket(const std::string& filename_in, FString* pSourceData)
+bool CreatureCore::LoadDataPacket(const std::string& filename_in, FString* pSourceData)
 {
 	//////////////////////////////////////////////////////////////////////////
 	//直接从Data中载入
 	if (pSourceData == nullptr)
 	{
-		return;
+		return false;
 	}
 	if (global_load_data_packets.count(filename_in) > 0)
 	{
 		// file already loaded, just return
-		return;
+		return true;
 	}
 	else
 	{
+		if (pSourceData->Len() == 0)
+		{
+			return false;
+		}
+
 		std::shared_ptr<CreatureModule::CreatureLoadDataPacket> new_packet =
 			std::make_shared<CreatureModule::CreatureLoadDataPacket>();
 
 		CreatureModule::LoadCreatureJSONDataFromString(std::string(TCHAR_TO_UTF8(*(*pSourceData))), *new_packet);
 		global_load_data_packets[filename_in] = new_packet;
 	}
+
+	return true;
 }
 
 void 

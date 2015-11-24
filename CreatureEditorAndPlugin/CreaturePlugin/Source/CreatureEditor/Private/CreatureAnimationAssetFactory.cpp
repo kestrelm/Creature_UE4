@@ -3,7 +3,9 @@
 #include "CreatureAnimationAsset.h"
 #include "Developer/DesktopPlatform/Public/IDesktopPlatform.h"
 #include "Developer/DesktopPlatform/Public/DesktopPlatformModule.h"
+#include <string>
 #define LOCTEXT_NAMESPACE "CreatureAnimationAssetFactory"
+
 UCreatureAnimationAssetFactory::UCreatureAnimationAssetFactory(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -18,7 +20,7 @@ UObject* UCreatureAnimationAssetFactory::FactoryCreateNew(UClass* Class, UObject
 	int32 FilterIndex = -1;
 	if (FDesktopPlatformModule::Get()->OpenFileDialog(
 		nullptr,
-		FString(TEXT("Choose a JSon file")),
+		FString(TEXT("Choose a JSON or Zipped JSON file")),
 		FEditorDirectories::Get().GetLastDirectory(ELastDirectory::GENERIC_IMPORT),
 		TEXT(""),
 		FString(TEXT("*.json")),
@@ -26,12 +28,31 @@ UObject* UCreatureAnimationAssetFactory::FactoryCreateNew(UClass* Class, UObject
 		OpenFilenames,
 		FilterIndex))
 	{
-		FFileHelper::LoadFileToString(Asset->CreatureFileJSonData, *OpenFilenames[0], 0);
+		auto cur_filename = *OpenFilenames[0];
+		FString readString;
+		FFileHelper::LoadFileToString(readString, cur_filename, 0);
+
+		std::string saveString(TCHAR_TO_UTF8(*readString));
+
+		FArchiveSaveCompressedProxy Compressor =
+			FArchiveSaveCompressedProxy(Asset->CreatureZipBinary, ECompressionFlags::COMPRESS_ZLIB);
+		TArray<uint8> writeData;
+		writeData.Init(saveString.length() + 1);
+		for (size_t i = 0; i < saveString.length(); i++)
+		{
+			writeData[i] = saveString.c_str()[i];
+		}
+
+		writeData[writeData.Num() - 1] = '\0';
+
+		Compressor << writeData;
+		Compressor.Flush();
 
 		FString setFilename, setFileExtension, setFilePathPart;
 		FPaths::Split(FString(*OpenFilenames[0]), setFilePathPart, setFilename, setFileExtension);
 		Asset->creature_filename = setFilename + FString(".") + setFileExtension;
 	}
+
 	return Asset;
 }
 #undef LOCTEXT_NAMESPACE

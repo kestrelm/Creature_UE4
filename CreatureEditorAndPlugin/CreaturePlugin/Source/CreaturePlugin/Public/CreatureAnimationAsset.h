@@ -12,25 +12,31 @@ UCLASS()
 class CREATUREPLUGIN_API UCreatureAnimationAsset :public UObject{
 	GENERATED_BODY()
 public:
-		//ÎªÁËÏòÏÂ¼æÈÝ£¬ÇëÎðËæÒâÊ¹ÓÃ£¡
-		UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
-		FString creature_filename;
+	// Denoting creature filename¡
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
+	FString creature_filename;
 
-		UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
-		TArray<FString> AnimationClipList;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Creature")
-		float animation_speed=2.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
+	TArray<FString> AnimationClipList;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Creature")
-		UMaterialInterface * collection_material;
+	float animation_speed = 2.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Creature")
+	UMaterialInterface * collection_material;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Creature")
-	//You can change an animation clip's scale to fix some problem
-		float Scale = 1.0f;
-	//´ÓÎÄ¼þÖÐ¶ÁÈ¡µ½µÄJSon Data
-	UPROPERTY()
-		FString CreatureFileJSonData;
+		//You can change an animation clip's scale to fix some problem
+	float Scale = 1.0f;
 
+	// Zip Binary Data
+	UPROPERTY()
+	TArray<uint8> CreatureZipBinary;
+
+	FString& GetJsonString();
+
+protected:
+	// Uncompressed JSon Data
+	FString CreatureFileJSonData;
 
 };
