@@ -6,6 +6,15 @@ void UCreatureAnimState::BeginState()
 {
 	//AnimStateMachine->OwningComponent->SetBluePrintBlendActiveAnimation(AnimStateName, 0.1f);
 	AnimStateMachine->OwningComponent->SetBluePrintActiveCollectionClip(AnimStateName);
+	if (AnimStateMachine->OwningComponent->enable_collection_playback)
+	{
+		AnimStateMachine->OwningComponent->SetBluePrintActiveCollectionClip(AnimStateName);
+	}
+	else
+	{
+		static const float blendFactor = 0.1f;	// TODO: consider making a tunable UPROPERTY
+		AnimStateMachine->OwningComponent->SetBluePrintBlendActiveAnimation(AnimStateName, blendFactor);
+	}
 }
 
 void UCreatureAnimState::EndState()
@@ -31,7 +40,7 @@ void UCreatureAnimState::AnimationEnd()
 	{
 		if (Tran->TransitionConditions[0].TransitionName==FString(TEXT("AnimationEnd")))
 		{
-			//当前有一个转换的名称为AnimationEnd
+			//褰撳墠鏈変竴涓浆鎹㈢殑鍚嶇О涓篈nimationEnd
 			Tran->AnimationEndTranslate();
 		}
 	}
