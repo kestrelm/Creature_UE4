@@ -4,8 +4,15 @@
 #include "CreatureAnimTransition.h"
 void UCreatureAnimState::BeginState()
 {
-	//AnimStateMachine->OwningComponent->SetBluePrintBlendActiveAnimation(AnimStateName, 0.1f);
-	AnimStateMachine->OwningComponent->SetBluePrintActiveCollectionClip(AnimStateName);
+	if (AnimStateMachine->OwningComponent->enable_collection_playback)
+	{
+		AnimStateMachine->OwningComponent->SetBluePrintActiveCollectionClip(AnimStateName);
+	}
+	else
+	{
+		static const float blendFactor = 0.1f;	// TODO: consider making a tunable UPROPERTY
+		AnimStateMachine->OwningComponent->SetBluePrintBlendActiveAnimation(AnimStateName, blendFactor);
+	}
 }
 
 void UCreatureAnimState::EndState()
