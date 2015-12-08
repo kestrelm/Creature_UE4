@@ -243,7 +243,7 @@ void UCreatureMeshComponent::UpdateCoreValues()
 
 	if (creature_animation_asset) {
 		creature_core.pJsonData = &creature_animation_asset->GetJsonString();
-		creature_core.creature_asset_filename = creature_animation_asset->creature_filename;
+		creature_core.creature_asset_filename = creature_animation_asset->GetCreatureFilename();
 	}
 
 	creature_core.bone_data_size = bone_data_size;
