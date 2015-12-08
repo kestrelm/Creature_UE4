@@ -16,8 +16,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "CreatureAnimStateMachine")
 		FString Name;
 
+#if WITH_EDITORONLY_DATA
 	UPROPERTY()
 	UEdGraph* StateMachineGraph=nullptr;
+#endif /*WITH_EDITORONLY_DATA*/
+
 	UPROPERTY(VisibleAnyWhere, Category = "Creature")
 	TArray<FCreatureTransitionCondition> TransitionConditionList;
 
