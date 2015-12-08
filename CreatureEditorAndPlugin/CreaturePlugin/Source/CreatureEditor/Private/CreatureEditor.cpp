@@ -3,6 +3,7 @@
 #include "CreatureAnimStateMachineDetails.h"
 #include "CreatureAnimStoreAssetTypeActions.h"
 #include "CreatureAnimStateMachineAssetTypeActions.h"
+#include "CreatureAnimationAssetTypeActions.h"
 #define LOCTEXT_NAMESPACE "CreatureEditor"
 void CreatureEditor::StartupModule()
 {
@@ -10,15 +11,13 @@ void CreatureEditor::StartupModule()
 
 	//Custom detail views
 	PropertyModule.RegisterCustomClassLayout("CreatureAnimStateMachine", FOnGetDetailCustomizationInstance::CreateStatic(&FCreatureAnimStateMachineDetails::MakeInstance));
-	
+
 	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-	EAssetTypeCategories::Type CreatureAnimAssetCategoryBit = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("CreatureAnimStateMachine")), LOCTEXT("CreatureAnimStateMachineAssetCategory", "Creature"));
-	AssetTools.RegisterAssetTypeActions(MakeShareable(new FCreatureAnimStateMachineAssetTypeActions(CreatureAnimAssetCategoryBit)));
+	EAssetTypeCategories::Type CreatureAssetCategoryBit = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("CreatureAssetCategory")), LOCTEXT("CreatureAssetCategory", "Creature"));
 
-	EAssetTypeCategories::Type CreatureAnimStoreAssetCategoryBit = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("CreatureAnimStore")), LOCTEXT("CreatureAnimStoreAssetCategory", "Creature"));
-	AssetTools.RegisterAssetTypeActions(MakeShareable(new FCreatureAnimStoreAssetTypeActions(CreatureAnimAssetCategoryBit)));
-
-	AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("CreatureAnimStore")), LOCTEXT("CreatureAnimationAssetCategory", "Creature"));
+	AssetTools.RegisterAssetTypeActions(MakeShareable(new FCreatureAnimStateMachineAssetTypeActions(CreatureAssetCategoryBit)));
+	AssetTools.RegisterAssetTypeActions(MakeShareable(new FCreatureAnimStoreAssetTypeActions(CreatureAssetCategoryBit)));
+	AssetTools.RegisterAssetTypeActions(MakeShareable(new FCreatureAnimationAssetTypeActions(CreatureAssetCategoryBit)));
 }
 
 void CreatureEditor::ShutdownModule()

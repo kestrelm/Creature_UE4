@@ -12,9 +12,8 @@ UCLASS()
 class CREATUREPLUGIN_API UCreatureAnimationAsset :public UObject{
 	GENERATED_BODY()
 public:
-	// Denoting creature filename¡
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
-	FString creature_filename;
+
+	FString GetCreatureFilename() const;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
 	TArray<FString> AnimationClipList;
@@ -35,8 +34,28 @@ public:
 
 	FString& GetJsonString();
 
+
+#if WITH_EDITORONLY_DATA
+	void SetCreatureFilename(const FString &newFilename);
+	void GetAssetRegistryTags(TArray<FAssetRegistryTag>& OutTags) const override;
+	void PostLoad() override;
+	void PreSave() override;
+	void PostInitProperties() override;
+
+protected:
+	// Denoting creature filename using UE4's asset registry system
+	// kepy in sync with creature_filename
+	UPROPERTY(VisibleAnywhere, Instanced, Category = ImportSettings)
+	class UAssetImportData* AssetImportData;
+#endif
+
 protected:
 	// Uncompressed JSon Data
 	FString CreatureFileJSonData;
+	
+	// Denoting creature filename: stored as the creature runtime uses this in packaged builds
+	// kept in sync with AssetImportData
+	UPROPERTY()
+	FString creature_filename;
 
 };
