@@ -28,7 +28,7 @@ void UCreatureAnimationClipsStore::LoadAnimationDataToComponent(class UCreatureM
 			CollectionData.animation_speed = ShortClip.SourceAsset->animation_speed;
 			CollectionData.collection_material = ShortClip.SourceAsset->collection_material;
 			//如果当前Data已经存在于CollectionData中则直接返回
-			INT32 Index = MeshComponent->collectionData.AddUnique(CollectionData);
+			int32 Index = MeshComponent->collectionData.AddUnique(CollectionData);
 			MeshComponent->collectionData[Index].creature_core.pJsonData = CollectionData.creature_core.pJsonData;
 
 			FCreatureMeshCollectionToken Token = FCreatureMeshCollectionToken();
