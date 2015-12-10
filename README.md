@@ -9,28 +9,37 @@ The directory containing this is called **CreatureEditorAndPlugin**. Most of the
 
 **Much of the new features and editor work for the new plugin are due to amazing work by [God of Pen](https://github.com/ldl19691031/CreatureUE4PluginWithEditor). Please have a look at his modified plugin here.** Thanks for all the hard work and contributions!
 
+Thanks also to [Eyesiah](https://github.com/Eyesiah) for numerous code fixes and contributions to the plugin!
+
 ### What is the roadmap ahead for Creature Runtime development?
 Most of the new work will now be focused on the files in **CreatureEditorAndPlugin**. 
 
 ### Reporting Bugs/Feature Requests
 Feature requests regarding the core Creature UE4 Runtime can be sent directly to: creature@kestrelmoon.com . For bugs/requests with regard to the Creature UE4 Runtime Editor, please send them to:  [God of Pen](https://github.com/ldl19691031/CreatureUE4PluginWithEditor)
 
-## Dragon Demo
-[![Non](http://www.kestrelmoon.com/creaturedocs/img/ue4-dragon.png)](https://youtu.be/ymOOUtaEcsI)
+##Elephant Stomp! | Game Tech Demo
+Elephant Stomp! is a demo game showcasing the Creature Animation System and its UE4 Plugin. The entire game runs off the Creature UE4 Plugin and is written 100% in the BP system.
 
-The Demo character is authored in Creature and exported out into UE4 using Creature's UE4 runtimes.
-Actual character gameplay is done using BP.
+Control the Elephant and its Magic Rider battling waves of soldiers. As you take out the soldiers, you gain spell powers enabling you to either summon in a rain drop of fish from the heavens or call in a flock of deadly stampeding ostriches!
+
+The character art from the game is from the public domain [British Library Flickr Archive](https://www.flickr.com/photos/britishlibrary/albums).
+
+![img](https://raw.githubusercontent.com/kestrelm/CreatureDemos/master/stomp.png)
+
+View the **Demo Video** [here](https://youtu.be/KbKBJdJn7bA).
+
+###Controls:
+Movement - Click to the Left or Right of the Elephant to move
+
+Summon Fish Raindrop - 1
+
+Summon Ostrich Rush - 2
+
+Stomp - Space
 
 
 Please head over the [CreatureDemos](https://github.com/kestrelm/CreatureDemos) repository to download this demo.
 
-###Controls:
-
-Move Left - a
-
-Move Right - d
-
-Breathe Fire - s
 
 ##Creature British Library Art Project
 A demo scene consisting of multiple characters with artwork all sourced from the public domain [British Library Flickr Archive](https://www.flickr.com/photos/britishlibrary/albums) is presented here. This demo is constructed in UE4 so you will need UE4.9 and above to open to run the project.
