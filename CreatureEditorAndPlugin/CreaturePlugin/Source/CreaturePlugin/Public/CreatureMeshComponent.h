@@ -123,7 +123,7 @@ public:
 	/** Points to a Creature Animation Asset containing the JSON filename of the character. Use this instead of creature_filename if you want to use an asset based system. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
 	UCreatureAnimationAsset * creature_animation_asset;
-
+	
 	/** Playback speed of the animation, 2.0 is the default */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	float animation_speed;
@@ -264,18 +264,25 @@ public:
 	virtual void InitializeComponent() override;
 
 	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;
+	
 	//////////////////////////////////////////////////////////////////////////
 	///ChangedBy God Of Pen
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
-	class UCreatureAnimStateMachine* StateMachineAsset;
-
 	///存储一系列Clip的数据结构
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
 	class UCreatureAnimationClipsStore* ClipStore;
+
 	virtual void BeginPlay() override;
+	
+	UPROPERTY(EditAnywhere, Category = "Components|Creature")
+	class UCreatureAnimStateMachine* StateMachineAsset;
+
+	UPROPERTY(Transient, BlueprintReadOnly)
+	class UCreatureAnimStateMachineInstance* StateMachineInstance;
+
 	//////////////////////////////////////////////////////////////////////////
 
 protected:
+
 	CreatureCore creature_core;
 	FString active_collection_clip_name;
 	FCreatureMeshCollectionClip * active_collection_clip;

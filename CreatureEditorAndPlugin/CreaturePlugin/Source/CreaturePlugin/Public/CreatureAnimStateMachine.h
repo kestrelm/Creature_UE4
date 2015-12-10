@@ -19,28 +19,15 @@ public:
 #if WITH_EDITORONLY_DATA
 	UPROPERTY()
 	UEdGraph* StateMachineGraph=nullptr;
+
+	UPROPERTY(Transient)
+	class UCreatureAnimStateMachineInstance *InstanceBeingDebugged;
 #endif /*WITH_EDITORONLY_DATA*/
 
-	UPROPERTY(VisibleAnyWhere, Category = "Creature")
-	TArray<FCreatureTransitionCondition> TransitionConditionList;
-
-	UCreatureAnimState* CurrentState;
 	//根节点，用于从该State开始进行状态转换
 	UPROPERTY()
-		UCreatureAnimState* RootState;
+	UCreatureAnimState* RootState;
+	
 
-	UCreatureMeshComponent* OwningComponent;
-
-public:
-	UFUNCTION(BlueprintCallable, Category = "Creature")
-		void SetCondition(FString ConditionName, bool Flag);
-	//初始化状态机，播放默认根节点动画
-	void InitStateMachine();
-
-	UFUNCTION()
-	void OnAnimStart(float frame);
-
-	UFUNCTION()
-	void OnAnimEnd(float frame);
 };
 

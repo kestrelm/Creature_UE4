@@ -1,5 +1,5 @@
-#include "CustomProceduralMesh.h"
-#include "CreatureCore.h"
+
+#include "CreaturePluginPCH.h"
 
 static std::map<std::string, std::shared_ptr<CreatureModule::CreatureAnimation> > global_animations;
 static std::map<std::string, std::shared_ptr<CreatureModule::CreatureLoadDataPacket> > global_load_data_packets;

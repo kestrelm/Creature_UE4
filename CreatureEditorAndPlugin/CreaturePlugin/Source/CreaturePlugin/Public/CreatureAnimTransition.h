@@ -22,14 +22,14 @@ public:
 	UPROPERTY()
 	UCreatureAnimStateMachine* AnimStateMachine;
 
-		//转换条件列表
-		UPROPERTY()
-			TArray<FCreatureTransitionCondition> TransitionConditions;
+	//转换条件列表
+	UPROPERTY()
+	TArray<FCreatureTransitionCondition> TransitionConditions;
 
-		UPROPERTY()
-		UCreatureAnimState* TargetState;
+	UPROPERTY()
+	UCreatureAnimState* TargetState;
 
-		bool Translate();
-		//Special Translate, Using when animation end
-		void AnimationEndTranslate();
+	bool Translate(class UCreatureAnimStateMachineInstance *forInstance);
+	//Special Translate, Using when animation end
+	void AnimationEndTranslate(class UCreatureAnimStateMachineInstance *forInstance);
 };

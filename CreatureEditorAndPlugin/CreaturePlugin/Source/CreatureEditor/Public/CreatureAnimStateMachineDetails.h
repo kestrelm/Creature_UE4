@@ -16,4 +16,7 @@ public:
 
 	/** IDetailCustomization interface */
 	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
+
+protected:
+	TArray<TWeakObjectPtr<UObject>> ObjectsBeingCustomized;
 };
