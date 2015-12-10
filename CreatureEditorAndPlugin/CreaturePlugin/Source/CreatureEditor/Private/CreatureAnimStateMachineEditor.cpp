@@ -8,6 +8,8 @@
 #include "IToolkitHost.h"
 #include "GenericCommands.h"
 #include "CreatureAnimTransitionNode.h"
+#include "STextComboBox.h"
+#include "CreatureAnimStateMachineInstance.h"
 
 #define LOCTEXT_NAMESPACE "AnimAssetEditors"
 
@@ -124,6 +126,7 @@ FLinearColor FCreatureAnimStateMachineEditor::GetWorldCentricTabColorScale() con
 {
 	return FLinearColor::White;
 }
+
 void FCreatureAnimStateMachineEditor::InitAnimStateMachineEditor(const EToolkitMode::Type Mode, const TSharedPtr< class IToolkitHost >& InitToolkitHost, UCreatureAnimStateMachine* StateMachine){
 	
 	EditingStateMachine = StateMachine;
@@ -168,10 +171,149 @@ void FCreatureAnimStateMachineEditor::InitAnimStateMachineEditor(const EToolkitM
 
 		);
 
+	GenerateDebugObjectNames(false);
+
+	DebugObjectsComboBox = SNew(STextComboBox)
+		.ButtonStyle(FEditorStyle::Get(), "FlatButton.Light")
+		.OptionsSource(&DebugObjectNames)
+		.InitiallySelectedItem(GetDebugObjectName())
+		.OnComboBoxOpening(this, &FCreatureAnimStateMachineEditor::GenerateDebugObjectNames, true)
+		.OnSelectionChanged(this, &FCreatureAnimStateMachineEditor::DebugObjectSelectionChanged)
+		.AddMetaData<FTagMetaData>(TEXT("SelectDebugObjectCombo"));
+
+	TSharedRef<SWidget> DebugObjectSelectionWidget =
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		[
+			DebugObjectsComboBox.ToSharedRef()
+		];
+	AddToolbarWidget(DebugObjectSelectionWidget);
+
 	// Initialize the asset editor and spawn the layout above
 	InitAssetEditor(Mode, InitToolkitHost, FName(TEXT("StateMachineEditorApp")), StandaloneDefaultLayout, /*bCreateDefaultStandaloneMenu=*/ true, /*bCreateDefaultToolbar=*/ true, StateMachine);
-
 }
+
+TSharedPtr<FString> FCreatureAnimStateMachineEditor::GetDebugObjectName() const
+{
+	check(EditingStateMachine);
+	check(DebugObjects.Num() == DebugObjectNames.Num());
+	if (EditingStateMachine->InstanceBeingDebugged)
+	{
+		for (int32 ObjectIndex = 0; ObjectIndex < DebugObjects.Num(); ++ObjectIndex)
+		{
+			if (DebugObjects[ObjectIndex].IsValid() && (DebugObjects[ObjectIndex].Get() == EditingStateMachine->InstanceBeingDebugged))
+			{
+				return DebugObjectNames[ObjectIndex];
+			}
+		}
+	}
+
+	return DebugObjectNames[0];
+}
+
+void FCreatureAnimStateMachineEditor::GenerateDebugObjectNames(bool bRestoreSelection)
+{
+	TSharedPtr<FString> OldSelection;
+
+	// Store off the old selection
+	if (bRestoreSelection && DebugObjectsComboBox.IsValid())
+	{
+		OldSelection = DebugObjectsComboBox->GetSelectedItem();
+	}
+
+	DebugObjectNames.Reset();
+	DebugObjects.Reset();
+
+	DebugObjectNames.Add(MakeShareable(new FString(TEXT("No debug object selected"))));
+	DebugObjects.Add(nullptr);
+
+	for (TObjectIterator<UObject> It; It; ++It)
+	{
+		UObject *obj = *It;
+		if (UCreatureAnimStateMachineInstance* instance = Cast<UCreatureAnimStateMachineInstance>(obj))
+		{
+			if (instance->GetTargetStateMachine() == EditingStateMachine)
+			{
+				AddDebugObject(instance);
+			}
+		}
+	}
+
+	// Attempt to restore the old selection
+	if (bRestoreSelection && DebugObjectsComboBox.IsValid())
+	{
+		bool bMatchFound = false;
+		for (int32 ObjectIndex = 0; ObjectIndex < DebugObjectNames.Num(); ++ObjectIndex)
+		{
+			if (*DebugObjectNames[ObjectIndex] == *OldSelection)
+			{
+				DebugObjectsComboBox->SetSelectedItem(DebugObjectNames[ObjectIndex]);
+				bMatchFound = true;
+				break;
+			}
+		}
+
+		// No match found, use the default option
+		if (!bMatchFound)
+		{
+			DebugObjectsComboBox->SetSelectedItem(DebugObjectNames[0]);
+		}
+	}
+
+	// Finally ensure we have a valid selection
+	if (DebugObjectsComboBox.IsValid())
+	{
+		TSharedPtr<FString> CurrentSelection = DebugObjectsComboBox->GetSelectedItem();
+		if (DebugObjectNames.Find(CurrentSelection) == INDEX_NONE)
+		{
+			if (DebugObjectNames.Num() > 0)
+			{
+				DebugObjectsComboBox->SetSelectedItem(DebugObjectNames[0]);
+			}
+			else
+			{
+				DebugObjectsComboBox->ClearSelection();
+			}
+		}
+
+		DebugObjectsComboBox->RefreshOptions();
+	}
+}
+
+void FCreatureAnimStateMachineEditor::AddDebugObject(class UCreatureAnimStateMachineInstance* TestObject)
+{
+	FString Label;
+	if (AActor* ParentActor = TestObject->GetTypedOuter<AActor>())
+	{
+		// This gives the most precision, but is pretty long for the combo box
+		//const FString RelativePath = TestObject->GetPathName(/*StopOuter=*/ ParentActor);
+		const FString RelativePath = TestObject->GetName();
+		Label = FString::Printf(TEXT("%s in %s"), *RelativePath, *ParentActor->GetActorLabel());
+	}
+	else
+	{
+		Label = TestObject->GetName();
+	}
+
+	DebugObjects.Add(TestObject);
+	DebugObjectNames.Add(MakeShareable(new FString(Label)));
+}
+
+void FCreatureAnimStateMachineEditor::DebugObjectSelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo)
+{
+	check(DebugObjects.Num() == DebugObjectNames.Num());
+	for (int32 ObjectIndex = 0; ObjectIndex < DebugObjectNames.Num(); ++ObjectIndex)
+	{
+		if (*DebugObjectNames[ObjectIndex] == *NewSelection)
+		{
+			UCreatureAnimStateMachineInstance* DebugObj = DebugObjects[ObjectIndex].IsValid() ? DebugObjects[ObjectIndex].Get() : nullptr;
+			
+			EditingStateMachine->InstanceBeingDebugged = DebugObj;
+		}
+	}
+}
+
 UCreatureAnimStateMachine* FCreatureAnimStateMachineEditor::GetEditingStateMachine(){
 	return EditingStateMachine;
 

@@ -1,6 +1,5 @@
-//need Change!!!
-#include "CustomProceduralMesh.h"
-//#include "CreaturePluginPCH.h"
+
+#include "CreaturePluginPCH.h"
 #include "CreatureMeshComponent.h"
 #include "CreatureAnimationClip.h"
 #include "CreatureAnimationClipsStore.h"

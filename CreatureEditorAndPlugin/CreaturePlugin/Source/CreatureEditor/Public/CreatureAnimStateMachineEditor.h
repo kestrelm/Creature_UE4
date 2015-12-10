@@ -24,18 +24,32 @@ public:
 	virtual void OnToolkitHostingFinished(const TSharedRef< class IToolkit >& Toolkit) override;
 	// End of FAssetEditorToolkit
 	void InitAnimStateMachineEditor(const EToolkitMode::Type Mode, const TSharedPtr< class IToolkitHost >& InitToolkitHost, class UCreatureAnimStateMachine* StateMachine);
-	
+			
 	UCreatureAnimStateMachine* GetEditingStateMachine();
 	UEdGraphNode* GetSelectNode();
 	TSharedPtr<FUICommandList> GraphEditorCommands;
 
 	/** Called when "Save" is clicked for this asset */
 	virtual void SaveAsset_Execute() override;
+
 private:
 	UCreatureAnimStateMachine* EditingStateMachine;
 	TSharedPtr<class SGraphEditor> EditGraph;
 	SGraphEditor::FGraphEditorEvents NodeAction;
 	void OnDeleteNode();
+	
+	/** Lists of debuggable objects */
+	TArray< TWeakObjectPtr<class UCreatureAnimStateMachineInstance> > DebugObjects;
+	TArray< TSharedPtr<FString> > DebugObjectNames;
+
+	/** Widget containing the names of all possible debug actors */
+	TSharedPtr<STextComboBox> DebugObjectsComboBox;
+
+	TSharedPtr<FString> GetDebugObjectName() const;
+	void GenerateDebugObjectNames(bool bRestoreSelection);
+	void AddDebugObject(class UCreatureAnimStateMachineInstance* TestObject);
+	void DebugObjectSelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo);
+
 };
 //Detail±à¼­Æ÷
 class SCreatureAnimStateMachinePropertiesTabBody : public SSingleObjectDetailsPanel
@@ -47,6 +61,7 @@ public:
 private:
 	// Pointer back to owning TileMap editor instance (the keeper of state)
 	TWeakPtr<FCreatureAnimStateMachineEditor> EditorPtr;
+
 public:
 	void Construct(const FArguments& InArgs, TSharedPtr<FCreatureAnimStateMachineEditor> Editor)
 	{

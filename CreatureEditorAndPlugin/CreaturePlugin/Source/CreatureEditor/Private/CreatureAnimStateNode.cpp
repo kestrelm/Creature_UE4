@@ -3,6 +3,7 @@
 #include "SGraphNode.h"
 #include "CreatureAnimTransitionNode.h"
 #include "CreatureAnimStateMachine.h"
+#include "CreatureAnimStateMachineInstance.h"
 
 void UCreatureAnimStateNode::OnRenameNode(const FString& NewName)
 {
@@ -55,7 +56,6 @@ void UCreatureAnimStateNode::Compile()
 					Tran->AnimStateMachine = CompiledState->AnimStateMachine;
 
 					//向状态机注册当前状态转换信息
-					Tran->AnimStateMachine->TransitionConditionList.AddUnique(TranCondition);
 					CompiledState->TransitionList.Add(Tran);
 				}
 				
@@ -83,14 +83,23 @@ FLinearColor UCreatureAnimStateNode::GetNodeTitleColor() const
 	{
 		return FLinearColor::Gray;
 	}
-	if (CompiledState->bIsCurrentState)
+
+	if (CompiledState->AnimStateMachine && CompiledState->AnimStateMachine->InstanceBeingDebugged)
 	{
-		return FLinearColor::Yellow;
+		// debugging is occurring for this statemachine
+		bool isCurrentState = CompiledState->AnimStateMachine->InstanceBeingDebugged->GetCurrentState() == CompiledState;
+		if (isCurrentState)
+		{
+			return FLinearColor::Yellow;
+		}
+		else
+		{
+			return FLinearColor::Gray;
+		}
 	}
 	else
+	{
 		return FLinearColor::Gray;
+	}
 }
-
-
-
 

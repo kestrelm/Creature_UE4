@@ -1,10 +1,12 @@
-#include "CustomProceduralMesh.h"
+
+#include "CreaturePluginPCH.h"
 #include "CreatureMeshComponent.h"
 #include "CreatureAnimStateMachine.h"
 //////////////////////////////////////////////////////////////////////////
 //Changed by god of pen
 //////////////////////////////////////////////////////////////////////////
 #include "CreatureAnimationClipsStore.h"
+#include "CreatureAnimStateMachineInstance.h"
 
 static void GenerateTriangle(TArray<FProceduralMeshTriangle>& OutTriangles)
 {
@@ -471,11 +473,11 @@ void UCreatureMeshComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 	//////////////////////////////////////////////////////////////////////////
 	//ChangedByGod of Pen
 	//////////////////////////////////////////////////////////////////////////
-	if (StateMachineAsset!=nullptr)
+	if (StateMachineInstance !=nullptr)
 	{
-		StateMachineAsset->CurrentState->CheckCondition();
+		StateMachineInstance->GetCurrentState()->CheckCondition(StateMachineInstance);
 	}
-
+	
 	if (enable_collection_playback)
 	{
 		RunCollectionTick(DeltaTime);
@@ -585,8 +587,12 @@ void UCreatureMeshComponent::BeginPlay()
 	Super::BeginPlay();
 	if (StateMachineAsset != nullptr)
 	{
-		StateMachineAsset->OwningComponent = this;
-		StateMachineAsset->InitStateMachine();
+		// copy the state machine asset to an instance for exclusive use by this component
+		// necessary because multiple components may share the same asset, so we need our own data for this instance
+
+		StateMachineInstance = NewObject<UCreatureAnimStateMachineInstance>(this);
+
+		StateMachineInstance->InitInstance(StateMachineAsset);
 	}
 }
 
