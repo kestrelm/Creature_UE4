@@ -50,7 +50,7 @@ void UCreatureAnimStateNode::Compile()
 					UCreatureAnimTransition* Tran = NewObject<UCreatureAnimTransition>(CompiledState->GetOuter());
 					FCreatureTransitionCondition TranCondition = FCreatureTransitionCondition(TargetNode->TransitionCondition, TargetNode->TransitionFlag);
 					Tran->TargetState = TargetNode->TransitionTargetNode->CompiledState;
-					INT16 Index= Tran->TransitionConditions.AddUnique(TranCondition);
+					unsigned short Index= Tran->TransitionConditions.AddUnique(TranCondition);
 					//再次填充一遍变换Condition避免出现修改了TranCondition但是无效的情况
 					Tran->TransitionConditions[Index].TransitionFlag = TranCondition.TransitionFlag;
 					Tran->AnimStateMachine = CompiledState->AnimStateMachine;
