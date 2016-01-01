@@ -281,6 +281,7 @@ void ACreatureActor::Tick(float DeltaTime)
 		bool announce_end = creature_core.GetAndClearShouldAnimEnd();
 
 		float cur_runtime = (creature_core.GetCreatureManager()->getActualRunTime());
+		animation_frame = cur_runtime;
 
 		if (announce_start)
 		{
