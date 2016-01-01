@@ -200,6 +200,12 @@ ACreatureActor::SetBluePrintAnimationLoop(bool flag_in)
 	creature_core.SetBluePrintAnimationLoop(flag_in);
 }
 
+bool
+ACreatureActor::GetBluePrintAnimationLoop() const
+{
+	return creature_core.is_looping;
+}
+
 void 
 ACreatureActor::SetBluePrintAnimationPlay(bool flag_in)
 {

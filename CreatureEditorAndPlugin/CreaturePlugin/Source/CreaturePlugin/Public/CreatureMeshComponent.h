@@ -219,6 +219,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAnimationLoop(bool flag_in);
 
+	// Blueprint function that returns whether the animation is looping or not
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	bool GetBluePrintAnimationLoop() const;
+
 	// Blueprint function that decides whether to play the animation or not
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAnimationPlay(bool flag_in);

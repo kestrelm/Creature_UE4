@@ -82,6 +82,12 @@ void UCreatureMeshComponent::SetBluePrintAnimationLoop(bool flag_in)
 	}
 }
 
+bool 
+UCreatureMeshComponent::GetBluePrintAnimationLoop() const
+{
+	return creature_core.is_looping;
+}
+
 void 
 UCreatureMeshComponent::SetBluePrintAnimationPlay(bool flag_in)
 {
