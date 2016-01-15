@@ -58,5 +58,5 @@ Please head over the [CreatureDemos](https://github.com/kestrelm/CreatureDemos) 
 
 If you want to compile your game using the Creature Plugin for different platforms like the PS4, XBox One etc. you will need to build out the Creature Static Library located in the **ThirdParty** directory.
 
-**Video Tutorial** describing the process is: **[here](https://youtu.be/n4G9b9C5UsE).**
+**Video Tutorial** describing the process is: **[here](https://youtu.be/Ghe-yFsO0u0).**
 
