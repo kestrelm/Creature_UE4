@@ -153,7 +153,7 @@ namespace CreatureModule {
 		void RemoveActiveItemSwap(const std::string& region_name);
 
 		// Returns the Actiev UV Swap Items
-		std::map<std::string, int> GetActiveItemSwaps() const;
+		std::map<std::string, int>& GetActiveItemSwaps();
     
     protected:
         

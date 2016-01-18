@@ -798,8 +798,8 @@ namespace CreatureModule {
 		active_uv_swap_actions.erase(region_name);
 	}
 
-	std::map<std::string, int> 
-	Creature::GetActiveItemSwaps() const
+	std::map<std::string, int>&
+	Creature::GetActiveItemSwaps()
 	{
 		return active_uv_swap_actions;
 	}
