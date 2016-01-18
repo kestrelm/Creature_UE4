@@ -149,6 +149,16 @@ void UCreatureMeshComponent::SetIsDisabled(bool flag_in)
 	creature_core.SetIsDisabled(flag_in);
 }
 
+void UCreatureMeshComponent::SetBluePrintRegionItemSwap(FString region_name_in, int32 tag)
+{
+	creature_core.SetBluePrintRegionItemSwap(region_name_in, tag);
+}
+
+void UCreatureMeshComponent::RemoveBluePrintRegionItemSwap(FString region_name_in)
+{
+	creature_core.RemoveBluePrintRegionItemSwap(region_name_in);
+}
+
 CreatureCore& UCreatureMeshComponent::GetCore()
 {
 	return creature_core;

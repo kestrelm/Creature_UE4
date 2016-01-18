@@ -257,6 +257,14 @@ public:
 
 	// Blueprint function that sets the active collection clip
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintRegionItemSwap(FString region_name_in, int32 tag);
+
+	// Blueprint function that sets the active collection clip
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void RemoveBluePrintRegionItemSwap(FString region_name_in);
+
+	// Blueprint function that sets the active collection clip
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintActiveCollectionClip(FString name_in);
 
 	CreatureCore& GetCore();
