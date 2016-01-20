@@ -267,6 +267,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintActiveCollectionClip(FString name_in);
 
+	// Blueprint function that activates/deactivates the usage of anchor points exported into the asset. If active, the character will be translated relative to the anchor point defined for it.
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintUseAnchorPoints(bool flag_in);
+
+	// Blueprint function that returns whether anchor points are active for the character
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	bool GetBluePrintUseAnchorPoints() const;
+
+
 	CreatureCore& GetCore();
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;

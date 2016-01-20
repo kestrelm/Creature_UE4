@@ -596,7 +596,7 @@ static void FillOpacityCache(JsonNode& json_obj,
 
 }
 
-std::map<std::string, std::vector<CreatureModule::CreatureUVSwapPacket> >
+static std::map<std::string, std::vector<CreatureModule::CreatureUVSwapPacket> >
 FillSwapUVPacketMap(JsonNode& json_obj)
 {
 	std::map<std::string, std::vector<CreatureModule::CreatureUVSwapPacket> > ret_map;
@@ -623,6 +623,26 @@ FillSwapUVPacketMap(JsonNode& json_obj)
 
 		
 		ret_map[cur_name] = cur_packets;
+	}
+
+	return ret_map;
+}
+
+static std::map<std::string, glm::vec2>
+FillAnchorPointMap(JsonNode& json_obj)
+{
+	auto anchor_data_node = GetJSONNodeFromKey(json_obj, "AnchorPoints");
+
+	std::map<std::string, glm::vec2> ret_map;
+	for (JsonIterator it = JsonBegin(anchor_data_node->value);
+	it != JsonEnd(anchor_data_node->value);
+		++it)
+	{
+		JsonNode * cur_node = *it;
+		glm::vec2 cur_pt = ReadJSONVec2(*cur_node, "point");
+		std::string cur_name(GetJSONNodeFromKey(*cur_node, "anim_clip_name")->value.toString());
+
+		ret_map[cur_name] = cur_pt;
 	}
 
 	return ret_map;
@@ -700,6 +720,7 @@ namespace CreatureModule {
     // Creature class
     Creature::Creature(CreatureLoadDataPacket& load_data)
     {
+		anchor_points_active = false;
         LoadFromData(load_data);
     }
     
@@ -804,6 +825,26 @@ namespace CreatureModule {
 		return active_uv_swap_actions;
 	}
 
+	void Creature::SetAnchorPointsActive(bool flag_in)
+	{
+		anchor_points_active = flag_in;
+	}
+
+	bool Creature::GetAnchorPointsActive() const
+	{
+		return anchor_points_active;
+	}
+
+	glm::vec2 Creature::GetAnchorPoint(const std::string & anim_clip_name_in) const
+	{
+		if (anchor_point_map.count(anim_clip_name_in) > 0)
+		{
+			return anchor_point_map.at(anim_clip_name_in);
+		}
+
+		return glm::vec2(0, 0);
+	}
+
     void
     Creature::LoadFromData(CreatureLoadDataPacket& load_data)
     {
@@ -860,7 +901,13 @@ namespace CreatureModule {
 		{
 			uv_swap_packets = FillSwapUVPacketMap(*json_uv_swap_base);
 		}
-		
+
+		// Load Anchor Points
+		JsonNode * anchor_point_base = GetJSONLevelNodeFromKey(*json_root, "anchor_points_items");
+		if (anchor_point_base)
+		{
+			anchor_point_map = FillAnchorPointMap(*anchor_point_base);
+		}
     }
 
     
@@ -1383,6 +1430,8 @@ namespace CreatureModule {
         
 		bone_cache_manager.retrieveValuesAtTime(input_run_time,
                                                 bones_map);
+
+		AlterBonesByAnchor(bones_map, animation_name_in);
         
         if(bones_override_callback)
         {
@@ -1450,6 +1499,8 @@ namespace CreatureModule {
 
 		bone_cache_manager.retrieveValuesAtTime(input_run_time,
 			bones_map);
+
+		AlterBonesByAnchor(bones_map, animation_name_in);
 
 		if (bones_override_callback)
 		{
@@ -1522,6 +1573,28 @@ namespace CreatureModule {
 					}
 				}
 			}
+		}
+	}
+
+	void CreatureManager::AlterBonesByAnchor(std::unordered_map<std::string, meshBone*>& bones_map, const std::string & animation_name_in)
+	{
+		if (target_creature->GetAnchorPointsActive() == false)
+		{
+			return;
+		}
+
+		auto anchor_point = target_creature->GetAnchorPoint(animation_name_in);
+		for (auto& cur_data : bones_map)
+		{
+			auto cur_bone = cur_data.second;
+			auto start_pt = cur_bone->getWorldStartPt();
+			auto end_pt = cur_bone->getWorldEndPt();
+
+			start_pt -= glm::vec4(anchor_point.x, anchor_point.y, 0, 0);
+			end_pt -= glm::vec4(anchor_point.x, anchor_point.y, 0, 0);
+
+			cur_bone->setWorldStartPt(start_pt);
+			cur_bone->setWorldEndPt(end_pt);
 		}
 	}
 

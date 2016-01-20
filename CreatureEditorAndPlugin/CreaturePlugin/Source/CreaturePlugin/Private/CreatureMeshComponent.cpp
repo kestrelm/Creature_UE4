@@ -154,6 +154,16 @@ void UCreatureMeshComponent::SetBluePrintRegionItemSwap(FString region_name_in, 
 	creature_core.SetBluePrintRegionItemSwap(region_name_in, tag);
 }
 
+void UCreatureMeshComponent::SetBluePrintUseAnchorPoints(bool flag_in)
+{
+	creature_core.SetUseAnchorPoints(flag_in);
+}
+
+bool UCreatureMeshComponent::GetBluePrintUseAnchorPoints() const
+{
+	return creature_core.GetUseAnchorPoints();
+}
+
 void UCreatureMeshComponent::RemoveBluePrintRegionItemSwap(FString region_name_in)
 {
 	creature_core.RemoveBluePrintRegionItemSwap(region_name_in);

@@ -154,6 +154,15 @@ namespace CreatureModule {
 
 		// Returns the Actiev UV Swap Items
 		std::map<std::string, int>& GetActiveItemSwaps();
+
+		// Enables/Disables Anchor Points
+		void SetAnchorPointsActive(bool flag_in);
+
+		// Returns whether Anchor Points are active or not
+		bool GetAnchorPointsActive() const;
+
+		// Returns an Anchor Point based on an input animation clip name
+		glm::vec2 GetAnchorPoint(const std::string& anim_clip_name_in) const;
     
     protected:
         
@@ -169,6 +178,8 @@ namespace CreatureModule {
         std::vector<std::string> animation_names;
 		std::map<std::string, std::vector<CreatureUVSwapPacket> > uv_swap_packets;
 		std::map<std::string, int> active_uv_swap_actions;
+		std::map<std::string, glm::vec2> anchor_point_map;
+		bool anchor_points_active;
     };
     
     // Class for animating the creature character
@@ -357,6 +368,8 @@ namespace CreatureModule {
 		void JustRunUVWarps(const std::string& animation_name_in, float input_run_time);
 
 		void RunUVItemSwap();
+
+		void AlterBonesByAnchor(std::unordered_map<std::string, meshBone *>& bones_map, const std::string& animation_name_in);
         
         std::unordered_map<std::string, std::shared_ptr<CreatureModule::CreatureAnimation> > animations;
         std::shared_ptr<CreatureModule::Creature> target_creature;

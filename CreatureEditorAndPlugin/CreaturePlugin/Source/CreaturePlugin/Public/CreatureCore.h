@@ -131,6 +131,10 @@ public:
 
 	void RemoveBluePrintRegionItemSwap(FString region_name_in);
 
+	void SetUseAnchorPoints(bool flag_in);
+
+	bool GetUseAnchorPoints() const;
+
 	void RunBeginPlay();
 
 	bool RunTick(float delta_time);
