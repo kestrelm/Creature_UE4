@@ -127,6 +127,14 @@ public:
 
 	void ClearBluePrintRegionCustomOrder();
 
+	void SetBluePrintRegionItemSwap(FString region_name_in, int32 tag);
+
+	void RemoveBluePrintRegionItemSwap(FString region_name_in);
+
+	void SetUseAnchorPoints(bool flag_in);
+
+	bool GetUseAnchorPoints() const;
+
 	void RunBeginPlay();
 
 	bool RunTick(float delta_time);

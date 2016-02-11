@@ -18,6 +18,8 @@ UCreatureAnimationAssetFactory::UCreatureAnimationAssetFactory(const FObjectInit
 }
 UObject* UCreatureAnimationAssetFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn)
 {
+    const FString Filter(TEXT("JSON Files (*.json)|*.json"));
+    
 	UCreatureAnimationAsset* Asset = NewObject<UCreatureAnimationAsset>(InParent, Class, Name, Flags);
 	TArray<FString> OpenFilenames;
 	int32 FilterIndex = -1;
@@ -26,8 +28,8 @@ UObject* UCreatureAnimationAssetFactory::FactoryCreateNew(UClass* Class, UObject
 		FString(TEXT("Choose a JSON or Zipped JSON file")),
 		FEditorDirectories::Get().GetLastDirectory(ELastDirectory::GENERIC_IMPORT),
 		TEXT(""),
-		FString(TEXT("*.json")),
-		EFileDialogFlags::Multiple,
+		Filter,
+		EFileDialogFlags::None,
 		OpenFilenames,
 		FilterIndex))
 	{

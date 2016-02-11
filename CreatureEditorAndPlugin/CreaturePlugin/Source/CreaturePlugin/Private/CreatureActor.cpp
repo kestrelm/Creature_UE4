@@ -200,6 +200,12 @@ ACreatureActor::SetBluePrintAnimationLoop(bool flag_in)
 	creature_core.SetBluePrintAnimationLoop(flag_in);
 }
 
+bool
+ACreatureActor::GetBluePrintAnimationLoop() const
+{
+	return creature_core.is_looping;
+}
+
 void 
 ACreatureActor::SetBluePrintAnimationPlay(bool flag_in)
 {
@@ -281,6 +287,7 @@ void ACreatureActor::Tick(float DeltaTime)
 		bool announce_end = creature_core.GetAndClearShouldAnimEnd();
 
 		float cur_runtime = (creature_core.GetCreatureManager()->getActualRunTime());
+		animation_frame = cur_runtime;
 
 		if (announce_start)
 		{

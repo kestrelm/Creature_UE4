@@ -525,7 +525,7 @@ void UCustomProceduralMeshComponent::ProcessCalcBounds()
 {
 	FProceduralMeshRenderPacket * cur_packet = nullptr;
 	bool can_calc = false;
-	if (render_proxy_ready)
+	if (render_proxy_ready && localRenderProxy)
 	{
 		cur_packet = localRenderProxy->GetActiveRenderPacket();
 		if (cur_packet)
@@ -536,7 +536,7 @@ void UCustomProceduralMeshComponent::ProcessCalcBounds()
 
 	const float bounds_max_scalar = 100000.0f;
 	calc_local_vec_min = FVector(-bounds_max_scalar, -bounds_max_scalar, -bounds_max_scalar);
-	calc_local_vec_min = FVector(bounds_max_scalar, bounds_max_scalar, bounds_max_scalar);
+	calc_local_vec_max = FVector(bounds_max_scalar, bounds_max_scalar, bounds_max_scalar);
 
 	// Only if have enough triangles
 	if (can_calc)

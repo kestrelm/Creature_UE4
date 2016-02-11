@@ -219,6 +219,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAnimationLoop(bool flag_in);
 
+	// Blueprint function that returns whether the animation is looping or not
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	bool GetBluePrintAnimationLoop() const;
+
 	// Blueprint function that decides whether to play the animation or not
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAnimationPlay(bool flag_in);
@@ -253,7 +257,24 @@ public:
 
 	// Blueprint function that sets the active collection clip
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintRegionItemSwap(FString region_name_in, int32 tag);
+
+	// Blueprint function that sets the active collection clip
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void RemoveBluePrintRegionItemSwap(FString region_name_in);
+
+	// Blueprint function that sets the active collection clip
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintActiveCollectionClip(FString name_in);
+
+	// Blueprint function that activates/deactivates the usage of anchor points exported into the asset. If active, the character will be translated relative to the anchor point defined for it.
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintUseAnchorPoints(bool flag_in);
+
+	// Blueprint function that returns whether anchor points are active for the character
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	bool GetBluePrintUseAnchorPoints() const;
+
 
 	CreatureCore& GetCore();
 

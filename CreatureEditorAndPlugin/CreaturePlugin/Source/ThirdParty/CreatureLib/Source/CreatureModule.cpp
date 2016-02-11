@@ -596,6 +596,58 @@ static void FillOpacityCache(JsonNode& json_obj,
 
 }
 
+static std::map<std::string, std::vector<CreatureModule::CreatureUVSwapPacket> >
+FillSwapUVPacketMap(JsonNode& json_obj)
+{
+	std::map<std::string, std::vector<CreatureModule::CreatureUVSwapPacket> > ret_map;
+	for (JsonIterator it = JsonBegin(json_obj.value);
+		it != JsonEnd(json_obj.value);
+		++it)
+	{
+		JsonNode * cur_node = *it;
+		std::string cur_name(cur_node->key);
+		std::vector<CreatureModule::CreatureUVSwapPacket> cur_packets;
+
+		for (JsonIterator node_it = JsonBegin(cur_node->value); 
+			node_it != JsonEnd(cur_node->value);
+			++node_it)
+		{
+			JsonNode * packet_node = *node_it;
+			CreatureModule::CreatureUVSwapPacket new_packet(ReadJSONVec2(*packet_node, "local_offset"),
+				ReadJSONVec2(*packet_node, "global_offset"),
+				ReadJSONVec2(*packet_node, "scale"),
+				(int)GetJSONNodeFromKey(*packet_node, "tag")->value.toNumber());
+
+			cur_packets.push_back(new_packet);
+		}
+
+		
+		ret_map[cur_name] = cur_packets;
+	}
+
+	return ret_map;
+}
+
+static std::map<std::string, glm::vec2>
+FillAnchorPointMap(JsonNode& json_obj)
+{
+	auto anchor_data_node = GetJSONNodeFromKey(json_obj, "AnchorPoints");
+
+	std::map<std::string, glm::vec2> ret_map;
+	for (JsonIterator it = JsonBegin(anchor_data_node->value);
+	it != JsonEnd(anchor_data_node->value);
+		++it)
+	{
+		JsonNode * cur_node = *it;
+		glm::vec2 cur_pt = ReadJSONVec2(*cur_node, "point");
+		std::string cur_name(GetJSONNodeFromKey(*cur_node, "anim_clip_name")->value.toString());
+
+		ret_map[cur_name] = cur_pt;
+	}
+
+	return ret_map;
+}
+
 
 namespace CreatureModule {
     // Load the json structure
@@ -668,6 +720,7 @@ namespace CreatureModule {
     // Creature class
     Creature::Creature(CreatureLoadDataPacket& load_data)
     {
+		anchor_points_active = false;
         LoadFromData(load_data);
     }
     
@@ -747,7 +800,51 @@ namespace CreatureModule {
     {
         return animation_names;
     }
-    
+
+	const std::map<std::string, std::vector<CreatureUVSwapPacket> >& 
+	Creature::GetUvSwapPackets() const
+	{
+		return uv_swap_packets;
+	}
+
+	void 
+	Creature::SetActiveItemSwap(const std::string& region_name, int swap_idx)
+	{
+		active_uv_swap_actions[region_name] = swap_idx;
+	}
+
+	void 
+	Creature::RemoveActiveItemSwap(const std::string& region_name)
+	{
+		active_uv_swap_actions.erase(region_name);
+	}
+
+	std::map<std::string, int>&
+	Creature::GetActiveItemSwaps()
+	{
+		return active_uv_swap_actions;
+	}
+
+	void Creature::SetAnchorPointsActive(bool flag_in)
+	{
+		anchor_points_active = flag_in;
+	}
+
+	bool Creature::GetAnchorPointsActive() const
+	{
+		return anchor_points_active;
+	}
+
+	glm::vec2 Creature::GetAnchorPoint(const std::string & anim_clip_name_in) const
+	{
+		if (anchor_point_map.count(anim_clip_name_in) > 0)
+		{
+			return anchor_point_map.at(anim_clip_name_in);
+		}
+
+		return glm::vec2(0, 0);
+	}
+
     void
     Creature::LoadFromData(CreatureLoadDataPacket& load_data)
     {
@@ -796,6 +893,21 @@ namespace CreatureModule {
         // Fill up available animation names
         JsonNode * json_anim_base = GetJSONLevelNodeFromKey(*json_root, "animation");
         animation_names = GetJSONKeysFromNode(*json_anim_base);
+
+		// Fill up uv swap packets
+		
+		JsonNode * json_uv_swap_base = GetJSONLevelNodeFromKey(*json_root, "uv_swap_items");
+		if (json_uv_swap_base)
+		{
+			uv_swap_packets = FillSwapUVPacketMap(*json_uv_swap_base);
+		}
+
+		// Load Anchor Points
+		JsonNode * anchor_point_base = GetJSONLevelNodeFromKey(*json_root, "anchor_points_items");
+		if (anchor_point_base)
+		{
+			anchor_point_map = FillAnchorPointMap(*anchor_point_base);
+		}
     }
 
     
@@ -1318,6 +1430,8 @@ namespace CreatureModule {
         
 		bone_cache_manager.retrieveValuesAtTime(input_run_time,
                                                 bones_map);
+
+		AlterBonesByAnchor(bones_map, animation_name_in);
         
         if(bones_override_callback)
         {
@@ -1386,6 +1500,8 @@ namespace CreatureModule {
 		bone_cache_manager.retrieveValuesAtTime(input_run_time,
 			bones_map);
 
+		AlterBonesByAnchor(bones_map, animation_name_in);
+
 		if (bones_override_callback)
 		{
 			bones_override_callback(bones_map);
@@ -1417,6 +1533,68 @@ namespace CreatureModule {
 			{
 				cur_region->runUvWarp();
 			}
+		}
+	}
+
+	void 
+	CreatureManager::RunUVItemSwap()
+	{
+		meshRenderBoneComposition * render_composition =
+			target_creature->GetRenderComposition();
+		std::unordered_map<std::string, meshRenderRegion *>& regions_map =
+			render_composition->getRegionsMap();
+
+		auto& swap_packets = target_creature->GetUvSwapPackets();
+		auto& active_swap_actions = target_creature->GetActiveItemSwaps();
+
+		if (swap_packets.empty() || active_swap_actions.empty())
+		{
+			return;
+		}
+
+		for(auto& cur_action : active_swap_actions)
+		{
+			if (regions_map.count(cur_action.first) > 0)
+			{
+				auto swap_tag = cur_action.second;
+				auto& swap_list = swap_packets.at(cur_action.first);
+				for (auto& cur_item : swap_list)
+				{
+					if (cur_item.tag == swap_tag)
+					{
+						// Perfrom UV Item Swap
+						auto cur_region = regions_map[cur_action.first];
+						cur_region->setUvWarpLocalOffset(cur_item.local_offset);
+						cur_region->setUvWarpGlobalOffset(cur_item.global_offset);
+						cur_region->setUvWarpScale(cur_item.scale);
+						cur_region->runUvWarp();
+
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	void CreatureManager::AlterBonesByAnchor(std::unordered_map<std::string, meshBone*>& bones_map, const std::string & animation_name_in)
+	{
+		if (target_creature->GetAnchorPointsActive() == false)
+		{
+			return;
+		}
+
+		auto anchor_point = target_creature->GetAnchorPoint(animation_name_in);
+		for (auto& cur_data : bones_map)
+		{
+			auto cur_bone = cur_data.second;
+			auto start_pt = cur_bone->getWorldStartPt();
+			auto end_pt = cur_bone->getWorldEndPt();
+
+			start_pt -= glm::vec4(anchor_point.x, anchor_point.y, 0, 0);
+			end_pt -= glm::vec4(anchor_point.x, anchor_point.y, 0, 0);
+
+			cur_bone->setWorldStartPt(start_pt);
+			cur_bone->setWorldEndPt(end_pt);
 		}
 	}
 
@@ -1477,6 +1655,8 @@ namespace CreatureModule {
 				PoseCreature(active_animation_name, target_creature->GetRenderPts(), getRunTime());
             }
         }
+
+		RunUVItemSwap();
         
         if(mirror_y)
         {

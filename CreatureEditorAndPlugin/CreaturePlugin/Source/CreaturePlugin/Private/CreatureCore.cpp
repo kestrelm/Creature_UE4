@@ -863,6 +863,26 @@ CreatureCore::ClearBluePrintRegionCustomOrder()
 	region_custom_order.Empty();
 }
 
+void CreatureCore::SetBluePrintRegionItemSwap(FString region_name_in, int32 tag)
+{
+	creature_manager->GetCreature()->SetActiveItemSwap(ConvertToString(region_name_in), tag);
+}
+
+void CreatureCore::RemoveBluePrintRegionItemSwap(FString region_name_in)
+{
+	creature_manager->GetCreature()->RemoveActiveItemSwap(ConvertToString(region_name_in));
+}
+
+void CreatureCore::SetUseAnchorPoints(bool flag_in)
+{
+	creature_manager->GetCreature()->SetAnchorPointsActive(flag_in);
+}
+
+bool CreatureCore::GetUseAnchorPoints() const
+{
+	return creature_manager->GetCreature()->GetAnchorPointsActive();
+}
+
 void 
 CreatureCore::SetActiveAnimation(const std::string& name_in)
 {

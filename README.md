@@ -54,11 +54,9 @@ View the Demo Video [here](https://youtu.be/MQK1mVSXaAk).
 
 Please head over the [CreatureDemos](https://github.com/kestrelm/CreatureDemos) repository to download this demo.
 
-## Prepackaged Plugin Code for Compilation
+## Buliding the Creature Static Library for other Platforms (PS4, XBox One etc.)
 
-If you want to compile the plugins for a C++ project, I have included a Prepackaged archive that you can use
-to save you the steps in copying the files over and setting up the appropriate directory structures.
+If you want to compile your game using the Creature Plugin for different platforms like the PS4, XBox One etc. you will need to build out the Creature Static Library located in the **ThirdParty** directory.
 
-Look in the folder **PrePackagePluginSetup** for that archive.
+**Video Tutorial** describing the process is: **[here](https://youtu.be/Ghe-yFsO0u0).**
 
-***The above documentation pertains to the old set of Creature runtimes. they are still accessible under the CreaturePluginOld directory.*** 
