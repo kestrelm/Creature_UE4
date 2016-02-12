@@ -157,6 +157,8 @@ public:
 	virtual class UBodySetup* GetBodySetup() override;
 	// End UPrimitiveComponent interface.
 
+	virtual void InitializeComponent();
+
 	// Begin UMeshComponent interface.
 	virtual int32 GetNumMaterials() const override;
 	// End UMeshComponent interface.

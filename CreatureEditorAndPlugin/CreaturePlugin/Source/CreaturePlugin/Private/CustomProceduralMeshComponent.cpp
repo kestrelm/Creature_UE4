@@ -447,7 +447,8 @@ UCustomProceduralMeshComponent::UCustomProceduralMeshComponent(const FObjectInit
 	localRenderProxy = NULL;
 	render_proxy_ready = false;
 	calc_local_vec_min = FVector(FLT_MIN, FLT_MIN, FLT_MIN);
-	calc_local_vec_min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+	calc_local_vec_max = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+	bWantsInitializeComponent = true;
 
 //	SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
 	SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
@@ -701,4 +702,12 @@ UBodySetup* UCustomProceduralMeshComponent::GetBodySetup()
 {
 	UpdateBodySetup();
 	return ModelBodySetup;
+}
+
+void UCustomProceduralMeshComponent::InitializeComponent()
+{
+	UMeshComponent::InitializeComponent();
+	localRenderProxy = NULL;
+	render_proxy_ready = false;
+	MarkRenderStateDirty();
 }
