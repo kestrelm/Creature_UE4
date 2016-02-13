@@ -16,12 +16,18 @@ public:
 	class	UCreatureAnimStateMachine* ParentStateMachine;
 	UPROPERTY()
 	class	UCreatureAnimStateNode* DefaultRootNode;
-
+	
 	virtual void Serialize(FArchive& Ar) override;
 	//编译当前状态机图中的所有节点
 	void CompileNodes();
 	void CreateDefaultStateNode();
 private:
+
+	void OnBeginPIE(const bool bIsSimulating);
+	void OnGraphChanged(const FEdGraphEditAction& Action);
+
+	bool m_isDirty;
+
 	UPROPERTY()
 	TArray<UCreatureAnimStateNode*> StateNodeList;
 };
