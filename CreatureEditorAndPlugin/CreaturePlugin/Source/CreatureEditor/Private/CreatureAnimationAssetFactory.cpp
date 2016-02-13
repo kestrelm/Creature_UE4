@@ -106,7 +106,23 @@ void UCreatureAnimationAssetFactory::SetReimportPaths(UObject* Obj, const TArray
 
 EReimportResult::Type UCreatureAnimationAssetFactory::Reimport(UObject* Obj)
 {
-	return (ImportSourceFile(Cast<UCreatureAnimationAsset>(Obj))) ? EReimportResult::Succeeded : EReimportResult::Failed;
+	if (ImportSourceFile(Cast<UCreatureAnimationAsset>(Obj)))
+	{
+		// Try to find the outer package so we can dirty it up
+		if (Obj->GetOuter())
+		{
+			Obj->GetOuter()->MarkPackageDirty();
+		}
+		else
+		{
+			Obj->MarkPackageDirty();
+		}
+		return EReimportResult::Succeeded;
+	}
+	else
+	{
+		return EReimportResult::Failed;
+	}
 }
 
 int32 UCreatureAnimationAssetFactory::GetPriority() const
