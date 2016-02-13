@@ -8,6 +8,10 @@
 #include "CreatureAnimationClipsStore.h"
 #include "CreatureAnimStateMachineInstance.h"
 
+DECLARE_CYCLE_STAT(TEXT("CreatureMesh_Tick"), STAT_CreatureMesh_Tick, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("CreatureMesh_UpdateCoreValues"), STAT_CreatureMesh_UpdateCoreValues, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("CreatureMesh_MeshUpdate"), STAT_CreatureMesh_MeshUpdate, STATGROUP_Creature);
+
 static void GenerateTriangle(TArray<FProceduralMeshTriangle>& OutTriangles)
 {
 	FProceduralMeshTriangle triangle;
@@ -267,6 +271,8 @@ void UCreatureMeshComponent::InitStandardValues()
 
 void UCreatureMeshComponent::UpdateCoreValues()
 {
+	SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_UpdateCoreValues);
+
 	creature_core.creature_filename = creature_filename;
 
 	if (creature_animation_asset) {
@@ -299,6 +305,8 @@ void UCreatureMeshComponent::InitializeComponent()
 
 void UCreatureMeshComponent::RunTick(float DeltaTime)
 {
+	SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_Tick);
+
 	UpdateCoreValues();
 
 	if (bHiddenInGame)
@@ -437,6 +445,8 @@ UCreatureMeshComponent::RunCollectionTick(float DeltaTime)
 
 void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx)
 {
+	SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_MeshUpdate);
+
 	// Update Mesh
 	SetBoundsScale(creature_bounds_scale);
 	SetBoundsOffset(creature_bounds_offset);

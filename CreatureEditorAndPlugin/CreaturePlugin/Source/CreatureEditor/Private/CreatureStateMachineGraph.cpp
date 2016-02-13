@@ -3,16 +3,34 @@
 #include "EdGraph/EdGraphSchema.h"
 #include "CreatureAnimStateNode.h"
 #include "CreatureAnimGraphSchema.h"
+
 UCreatureStateMachineGraph::UCreatureStateMachineGraph(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	Schema = UCreatureAnimGraphSchema::StaticClass();
 
+	AddOnGraphChangedHandler(FOnGraphChanged::FDelegate::CreateUObject(this, &UCreatureStateMachineGraph::OnGraphChanged));
+
+	FEditorDelegates::BeginPIE.AddUObject(this, &UCreatureStateMachineGraph::OnBeginPIE);
+
+	m_isDirty = false;
+}
+
+void UCreatureStateMachineGraph::OnBeginPIE(const bool bIsSimulating)
+{
+	if (m_isDirty)
+	{
+		CompileNodes();
+	}
+}
+
+void UCreatureStateMachineGraph::OnGraphChanged(const FEdGraphEditAction& Action)
+{
+	m_isDirty = true;
 }
 
 void UCreatureStateMachineGraph::Serialize(FArchive& Ar)
 {
-
 	Super::Serialize(Ar);
 }
 
@@ -30,6 +48,7 @@ void UCreatureStateMachineGraph::CompileNodes()
 		Node->Compile();
 	}
 
+	m_isDirty = false;
 }
 
 void UCreatureStateMachineGraph::CreateDefaultStateNode()

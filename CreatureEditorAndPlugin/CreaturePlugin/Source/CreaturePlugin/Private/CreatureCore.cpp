@@ -1,6 +1,12 @@
 
 #include "CreaturePluginPCH.h"
 
+DECLARE_CYCLE_STAT(TEXT("CreatureCore_RunTick"), STAT_CreatureCore_RunTick, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("CreatureCore_UpdateCreatureRender"), STAT_CreatureCore_UpdateCreatureRender, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("CreatureCore_FillBoneData"), STAT_CreatureCore_FillBoneData, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("CreatureCore_ParseEvents"), STAT_CreatureCore_ParseEvents, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("CreatureCore_UpdateManager"), STAT_CreatureCore_UpdateManager, STATGROUP_Creature);
+
 static std::map<std::string, std::shared_ptr<CreatureModule::CreatureAnimation> > global_animations;
 static std::map<std::string, std::shared_ptr<CreatureModule::CreatureLoadDataPacket> > global_load_data_packets;
 
@@ -115,6 +121,7 @@ CreatureCore::GetProcMeshData()
 
 void CreatureCore::UpdateCreatureRender()
 {
+	SCOPE_CYCLE_COUNTER(STAT_CreatureCore_UpdateCreatureRender);
 
 	auto cur_creature = creature_manager->GetCreature();
 	int num_triangles = cur_creature->GetTotalNumIndices() / 3;
@@ -300,6 +307,8 @@ bool CreatureCore::InitCreatureRender()
 
 void CreatureCore::FillBoneData()
 {
+	SCOPE_CYCLE_COUNTER(STAT_CreatureCore_FillBoneData);
+
 	auto  render_composition = creature_manager->GetCreature()->GetRenderComposition();
 	auto& bones_map = render_composition->getBonesMap();
 
@@ -373,6 +382,8 @@ void CreatureCore::FillBoneData()
 
 void CreatureCore::ParseEvents(float deltaTime)
 {
+	SCOPE_CYCLE_COUNTER(STAT_CreatureCore_ParseEvents);
+
 	float cur_runtime = (creature_manager->getActualRunTime());
 	animation_frame = cur_runtime;
 
@@ -763,6 +774,8 @@ CreatureCore::IsBluePrintBonesCollide(FVector test_point, float bone_size, FTran
 bool 
 CreatureCore::RunTick(float delta_time)
 {
+	SCOPE_CYCLE_COUNTER(STAT_CreatureCore_RunTick);
+
 	std::lock_guard<std::mutex> scope_lock(*update_lock);
 
 	if (is_driven)
@@ -783,6 +796,7 @@ CreatureCore::RunTick(float delta_time)
 		ParseEvents(delta_time);
 
 		if (should_play) {
+			SCOPE_CYCLE_COUNTER(STAT_CreatureCore_UpdateManager);
 			creature_manager->Update(delta_time);
 		}
 
