@@ -138,6 +138,11 @@ void UCreatureMeshComponent::SetBluePrintRegionAlpha(FString region_name_in, uin
 	creature_core.SetBluePrintRegionAlpha(region_name_in, alpha_in);
 }
 
+void UCreatureMeshComponent::RemoveBluePrintRegionAlpha(FString region_name_in)
+{
+	creature_core.RemoveBluePrintRegionAlpha(region_name_in);
+}
+
 void UCreatureMeshComponent::SetBluePrintRegionCustomOrder(TArray<FString> order_in)
 {
 	creature_core.SetBluePrintRegionCustomOrder(order_in);

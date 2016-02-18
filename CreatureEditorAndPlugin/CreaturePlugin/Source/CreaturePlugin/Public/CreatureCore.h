@@ -123,6 +123,8 @@ public:
 
 	void SetBluePrintRegionAlpha(FString region_name_in, uint8 alpha_in);
 
+	void RemoveBluePrintRegionAlpha(FString region_name_in);
+
 	void SetBluePrintRegionCustomOrder(TArray<FString> order_in);
 
 	void ClearBluePrintRegionCustomOrder();

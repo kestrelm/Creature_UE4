@@ -865,6 +865,11 @@ CreatureCore::SetBluePrintRegionAlpha(FString region_name_in, uint8 alpha_in)
 	region_alpha_map.Add(region_name_in, alpha_in);
 }
 
+void CreatureCore::RemoveBluePrintRegionAlpha(FString region_name_in)
+{
+	region_alpha_map.Remove(region_name_in);
+}
+
 void 
 CreatureCore::SetBluePrintRegionCustomOrder(TArray<FString> order_in)
 {
