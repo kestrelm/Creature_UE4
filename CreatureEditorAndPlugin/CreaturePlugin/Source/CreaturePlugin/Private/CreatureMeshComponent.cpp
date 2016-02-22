@@ -216,7 +216,10 @@ void UCreatureMeshComponent::SetActiveCollectionAnimation(FCreatureMeshCollectio
 	}
 
 	SetMaterial(0, cur_data.collection_material);
-	localRenderProxy->SetNeedsMaterialUpdate(true);
+	if (localRenderProxy)
+	{
+		localRenderProxy->SetNeedsMaterialUpdate(true);
+	}
 
 	ForceAnUpdate(data_idx);
 }
@@ -551,6 +554,11 @@ void UCreatureMeshComponent::StandardInit()
 	{
 		PrepareRenderData();
 		RunTick(0.1f);
+		
+		if (!start_animation_name.IsEmpty())
+		{
+			SetBluePrintActiveAnimation(start_animation_name);
+		}
 	}
 }
 
@@ -581,7 +589,10 @@ void UCreatureMeshComponent::CollectionInit()
 		}
 	}
 
-
+	if (!start_animation_name.IsEmpty())
+	{
+		SetBluePrintActiveCollectionClip(start_animation_name);
+	}
 }
 
 FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
@@ -647,4 +658,5 @@ void UCreatureMeshComponent::LoadAnimationFromStore()
 	collectionData.Empty();
 	collectionClips.Empty();
 	ClipStore->LoadAnimationDataToComponent(this);
+	enable_collection_playback = true;
 }
