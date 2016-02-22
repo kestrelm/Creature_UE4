@@ -243,6 +243,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintRegionAlpha(FString region_name_in, uint8 alpha_in);
 
+	// Blueprint function that removes the custom override alpha(opacity value) of a region
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void RemoveBluePrintRegionAlpha(FString region_name_in);
+
 	// Blueprint function that sets up a custom z order for the various regions
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintRegionCustomOrder(TArray<FString> order_in);
