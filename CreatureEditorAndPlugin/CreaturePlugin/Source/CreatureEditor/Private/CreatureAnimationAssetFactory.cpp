@@ -71,6 +71,8 @@ bool UCreatureAnimationAssetFactory::ImportSourceFile(UCreatureAnimationAsset *f
 	Compressor << writeData;
 	Compressor.Flush();
 
+	forAsset->GatherAnimationData();
+
 	return true;
 }
 

@@ -189,7 +189,7 @@ FCProceduralMeshSceneProxy::~FCProceduralMeshSceneProxy()
 FProceduralMeshRenderPacket * 
 FCProceduralMeshSceneProxy::GetActiveRenderPacket()
 {
-	if (active_render_packet_idx < 0)
+	if (!renderPackets.IsValidIndex(active_render_packet_idx))
 	{
 		return nullptr;
 	}
@@ -444,7 +444,6 @@ UCustomProceduralMeshComponent::UCustomProceduralMeshComponent(const FObjectInit
 	PrimaryComponentTick.bCanEverTick = false;
 	bounds_scale = 15.0f;
 	bounds_offset = FVector(0, 0, 0);
-	localRenderProxy = NULL;
 	render_proxy_ready = false;
 	calc_local_vec_min = FVector(FLT_MIN, FLT_MIN, FLT_MIN);
 	calc_local_vec_max = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -482,6 +481,7 @@ void UCustomProceduralMeshComponent::ForceAnUpdate(int render_packet_idx)
 	}
 
 	std::lock_guard<std::mutex> cur_lock(local_lock);
+	FCProceduralMeshSceneProxy *localRenderProxy = GetLocalRenderProxy();
 	if (render_proxy_ready && localRenderProxy) {
 		if (render_packet_idx >= 0)
 		{
@@ -489,7 +489,7 @@ void UCustomProceduralMeshComponent::ForceAnUpdate(int render_packet_idx)
 		}
 
 		localRenderProxy->UpdateDynamicComponentData();
-		ProcessCalcBounds();
+		ProcessCalcBounds(localRenderProxy);
 		MarkRenderTransformDirty();
 	}
 }
@@ -504,14 +504,13 @@ FPrimitiveSceneProxy* UCustomProceduralMeshComponent::CreateSceneProxy()
 {
 	std::lock_guard<std::mutex> cur_lock(local_lock);
 
-	FPrimitiveSceneProxy* Proxy = NULL;
+	FCProceduralMeshSceneProxy* Proxy = NULL;
 	// Only if have enough triangles
 	if(defaultTriData.point_num > 0)
 	{
-		localRenderProxy = new FCProceduralMeshSceneProxy(this, &defaultTriData);
-		Proxy = localRenderProxy;
+		Proxy = new FCProceduralMeshSceneProxy(this, &defaultTriData);
 		render_proxy_ready = true;
-		ProcessCalcBounds();
+		ProcessCalcBounds(Proxy);
 	}
 
 	return Proxy;
@@ -522,7 +521,7 @@ int32 UCustomProceduralMeshComponent::GetNumMaterials() const
 	return 1;
 }
 
-void UCustomProceduralMeshComponent::ProcessCalcBounds()
+void UCustomProceduralMeshComponent::ProcessCalcBounds(FCProceduralMeshSceneProxy *localRenderProxy)
 {
 	FProceduralMeshRenderPacket * cur_packet = nullptr;
 	bool can_calc = false;
@@ -707,7 +706,6 @@ UBodySetup* UCustomProceduralMeshComponent::GetBodySetup()
 void UCustomProceduralMeshComponent::InitializeComponent()
 {
 	UMeshComponent::InitializeComponent();
-	localRenderProxy = NULL;
 	render_proxy_ready = false;
 	MarkRenderStateDirty();
 }

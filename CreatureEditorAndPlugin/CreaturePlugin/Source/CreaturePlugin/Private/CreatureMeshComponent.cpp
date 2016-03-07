@@ -202,12 +202,13 @@ void UCreatureMeshComponent::SetActiveCollectionAnimation(FCreatureMeshCollectio
 
 	auto& cur_data = collectionData[data_idx];
 	auto& cur_anim_name = cur_seq.animation_name;
-
+	
 	cur_data.creature_core.SetBluePrintActiveAnimation(cur_anim_name);
 	cur_data.creature_core.SetBluePrintAnimationResetToStart();
 	cur_data.creature_core.SetBluePrintAnimationLoop(false);
 	cur_data.creature_core.SetBluePrintAnimationPlay(true);
 
+	FCProceduralMeshSceneProxy *localRenderProxy = GetLocalRenderProxy();
 	if (localRenderProxy) {
 		localRenderProxy->SetActiveRenderPacketIdx(data_idx);
 	}
@@ -286,6 +287,8 @@ void UCreatureMeshComponent::UpdateCoreValues()
 	if (creature_animation_asset) {
 		creature_core.pJsonData = &creature_animation_asset->GetJsonString();
 		creature_core.creature_asset_filename = creature_animation_asset->GetCreatureFilename();
+
+		creature_animation_asset->LoadPointCacheForAllClips(&creature_core);
 	}
 
 	creature_core.bone_data_size = bone_data_size;
@@ -565,8 +568,9 @@ void UCreatureMeshComponent::StandardInit()
 void UCreatureMeshComponent::CollectionInit()
 {
 	RecreateRenderProxy(true);
-	for (auto& cur_data : collectionData)
+	for (int32 collectionDataIndex = 0; collectionDataIndex < collectionData.Num(); collectionDataIndex++)
 	{
+		FCreatureMeshCollection& cur_data = collectionData[collectionDataIndex];
 		auto& cur_core = cur_data.creature_core;
 
 		cur_core.creature_filename = cur_data.creature_filename;
@@ -586,6 +590,21 @@ void UCreatureMeshComponent::CollectionInit()
 		{
 			auto& load_triangles = cur_core.draw_triangles;
 			cur_data.ProceduralMeshTris = load_triangles;
+
+			if (cur_data.source_asset)
+			{
+				for (auto & clip : collectionClips)
+				{
+					for (auto &token : clip.sequence_clips)
+					{
+						if (token.collection_data_index == collectionDataIndex)
+						{
+							// load the point cache into the creature core, if available for this clip
+							cur_data.source_asset->LoadPointCacheForClip(token.animation_name, &cur_core);
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -617,24 +636,24 @@ FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
 
 	std::lock_guard<std::mutex> cur_lock(local_lock);
 
-	FPrimitiveSceneProxy* Proxy = NULL;
+	FCProceduralMeshSceneProxy* Proxy = NULL;
 	// Only if have enough triangles
-	localRenderProxy = new FCProceduralMeshSceneProxy(this, nullptr);
+	Proxy = new FCProceduralMeshSceneProxy(this, nullptr);
 
 	// Loop through and add in the collectionData
 	for (auto& cur_data : collectionData)
 	{
 		auto proc_mesh_data = cur_data.creature_core.GetProcMeshData();
 		if (proc_mesh_data.point_num > 0) {
-			localRenderProxy->AddRenderPacket(&proc_mesh_data);
+			Proxy->AddRenderPacket(&proc_mesh_data);
 		}
 	}
 
-	Proxy = localRenderProxy;
 	render_proxy_ready = true;
 
 	return Proxy;
 }
+
 void UCreatureMeshComponent::BeginPlay()
 {
 	Super::BeginPlay();

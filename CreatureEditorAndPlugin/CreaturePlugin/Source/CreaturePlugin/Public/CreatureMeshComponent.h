@@ -81,6 +81,14 @@ struct FCreatureMeshCollection
 {
 	GENERATED_USTRUCT_BODY()
 
+	FCreatureMeshCollection() :
+		animation_speed(1.0f),
+		collection_material(nullptr),
+		source_asset(nullptr)
+	{
+
+	}
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	FString creature_filename;
 
@@ -89,6 +97,9 @@ struct FCreatureMeshCollection
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	UMaterialInterface * collection_material;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
+	class UCreatureAnimationAsset *source_asset;
 
 	CreatureCore creature_core;
 	TArray<FProceduralMeshTriangle> ProceduralMeshTris;

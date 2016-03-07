@@ -186,7 +186,7 @@ protected:
 	FTransform extraXForm;
 	FString tagStr;
 
-	void ProcessCalcBounds();
+	void ProcessCalcBounds(FCProceduralMeshSceneProxy *localRenderProxy);
 
 	// Begin USceneComponent interface.
 	virtual FBoxSphereBounds CalcBounds(const FTransform & LocalToWorld) const override;
@@ -200,7 +200,10 @@ protected:
 	FVector bounds_offset;
 	mutable FSphere debugSphere;
 	FVector calc_local_vec_min, calc_local_vec_max;
-	FCProceduralMeshSceneProxy * localRenderProxy;
+	FCProceduralMeshSceneProxy * GetLocalRenderProxy()
+	{
+		return (FCProceduralMeshSceneProxy*)SceneProxy;
+	}
 	bool render_proxy_ready;
 	std::mutex local_lock;
 	bool recreate_render_proxy;
