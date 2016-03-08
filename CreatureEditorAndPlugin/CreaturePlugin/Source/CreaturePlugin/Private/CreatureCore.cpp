@@ -954,6 +954,18 @@ CreatureCore::GetIsReadyPlay() const
 	return is_ready_play;
 }
 
+void CreatureCore::SetGlobalEnablePointCache(bool flag_in)
+{
+	auto cur_creature_manager = GetCreatureManager();
+	cur_creature_manager->SetDoPointCache(flag_in);
+}
+
+bool CreatureCore::GetGlobalEnablePointCache()
+{
+	auto cur_creature_manager = GetCreatureManager();
+	return cur_creature_manager->GetDoPointCache();
+}
+
 void 
 CreatureCore::RunBeginPlay()
 {

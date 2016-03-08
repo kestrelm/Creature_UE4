@@ -1085,7 +1085,7 @@ namespace CreatureModule {
         do_blending(false),
         blending_factor(0), mirror_y(false), use_custom_time_range(false),
         custom_start_time(0), custom_end_time(0), should_loop(true),
-        do_auto_blending(false), auto_blend_delta(0.1f)
+        do_auto_blending(false), auto_blend_delta(0.1f), do_point_caching(false)
     {
         for(int i = 0; i < 2; i++) {
             blend_render_pts[i] = NULL;
@@ -1274,6 +1274,16 @@ namespace CreatureModule {
         
         SetBlendingAnimations(auto_blend_names[0], auto_blend_names[1]);
     }
+
+	void CreatureManager::SetDoPointCache(bool flag_in)
+	{
+		do_point_caching = flag_in;
+	}
+
+	bool CreatureManager::GetDoPointCache() const
+	{
+		return do_point_caching;
+	}
 
 	void 
 	CreatureManager::ResetBlendTime(const std::string& name_in)
@@ -1622,7 +1632,7 @@ namespace CreatureModule {
 				auto& cur_animation = animations[cur_animation_name];
 				auto& cur_animation_run_time = active_blend_run_times[cur_animation_name];
 
-                if(cur_animation->hasCachePts())
+                if(cur_animation->hasCachePts() && do_point_caching)
                 {
 					UpdateRegionSwitches(cur_animation_name);
 					cur_animation->poseFromCachePts(cur_animation_run_time, blend_render_pts[i], target_creature->GetTotalNumPoints());
@@ -1646,7 +1656,7 @@ namespace CreatureModule {
         }
         else {
             auto& cur_animation = animations[active_animation_name];
-            if(cur_animation->hasCachePts())
+            if(cur_animation->hasCachePts() && do_point_caching)
             {
 				cur_animation->poseFromCachePts(getRunTime(), target_creature->GetRenderPts(), target_creature->GetTotalNumPoints());
 				PoseJustBones(active_animation_name, target_creature->GetRenderPts(), getRunTime());
