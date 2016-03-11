@@ -337,6 +337,12 @@ namespace CreatureModule {
         
         // Uses auto blending to blend to the next animation
         void AutoBlendTo(const std::string& animation_name_in, float blend_delta);
+
+		// Global switch to enable/disable point caching
+		void SetDoPointCache(bool flag_in);
+
+		// Returns whether to globally enable or disable point caching
+		bool GetDoPointCache() const;
         
     protected:
 
@@ -389,6 +395,7 @@ namespace CreatureModule {
         bool do_auto_blending;
         std::string auto_blend_names[2];
         float auto_blend_delta;
+		bool do_point_caching;
         
         std::function<void (std::unordered_map<std::string, meshBone *>&) > bones_override_callback;
         

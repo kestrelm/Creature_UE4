@@ -153,6 +153,10 @@ public:
 
 	bool GetIsReadyPlay() const;
 
+	void SetGlobalEnablePointCache(bool flag_in);
+
+	bool GetGlobalEnablePointCache();
+
 
 	// properties
 	FString creature_filename, creature_asset_filename;

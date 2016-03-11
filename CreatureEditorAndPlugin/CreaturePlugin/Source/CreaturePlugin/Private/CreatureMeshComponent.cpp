@@ -70,6 +70,16 @@ void UCreatureMeshComponent::ClearBluePrintPointCache(FString name_in, int32 app
 	creature_core.ClearBluePrintPointCache(name_in, approximation_level);
 }
 
+void UCreatureMeshComponent::SetBluePrintUsePointCache(bool flag_in)
+{
+	creature_core.SetGlobalEnablePointCache(flag_in);
+}
+
+bool UCreatureMeshComponent::GetBluePrintUsePointCache()
+{
+	return creature_core.GetGlobalEnablePointCache();
+}
+
 FTransform 
 UCreatureMeshComponent::GetBluePrintBoneXform(FString name_in, bool world_transform, float position_slide_factor)
 {
@@ -269,6 +279,7 @@ void UCreatureMeshComponent::InitStandardValues()
 	active_collection_loop = true;
 	active_collection_play = true;
 	creature_animation_asset = nullptr;
+	can_use_point_cache = false;
 
 	// Generate a single dummy triangle
 	/*
@@ -665,6 +676,12 @@ void UCreatureMeshComponent::BeginPlay()
 		StateMachineInstance = NewObject<UCreatureAnimStateMachineInstance>(this);
 
 		StateMachineInstance->InitInstance(StateMachineAsset);
+	}
+
+	creature_core.SetGlobalEnablePointCache(can_use_point_cache);
+	for (auto& cur_data : collectionData)
+	{
+		cur_data.creature_core.SetGlobalEnablePointCache(can_use_point_cache);
 	}
 }
 

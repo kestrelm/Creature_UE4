@@ -174,6 +174,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
 	float animation_frame;
 
+	/** Decides whether this component can use point caching or not */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
+	bool can_use_point_cache;
+
 	/** A collection of Creature JSONs to load when the game starts, you should fill in this information if you want to playback a collection of Creature JSONs as a single animation clip */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	TArray<FCreatureMeshCollection> collectionData;
@@ -219,6 +223,14 @@ public:
 	// Blueprint function to clear the point cache of a given animation
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void ClearBluePrintPointCache(FString name_in, int32 approximation_level);
+
+	// Blueprint function to enable/disable the use of all point caching on this mesh
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintUsePointCache(bool flag_in);
+
+	// Blueprint function that returns whether this mesh can use point caching or not
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	bool GetBluePrintUsePointCache();
 
 	// Blueprint function that returns the transform given a bone name, position_slide_factor
 	// determines how far left or right the transform is placed. The default value of 0 places it
