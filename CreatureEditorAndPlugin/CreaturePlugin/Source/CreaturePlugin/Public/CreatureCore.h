@@ -39,6 +39,7 @@
 #include "CreatureModule.h"
 #include <map>
 #include <mutex>
+#include <memory>
 
 // Creature Core is a thin wrapper between the Creature Runtime and any UE4 Creature Object(s)
 // The variables of this class are all made public for easy access since it really just functions as a simple
@@ -157,6 +158,8 @@ public:
 
 	bool GetGlobalEnablePointCache();
 
+	glm::uint32 * GetIndicesCopy(int init_size);
+
 
 	// properties
 	FString creature_filename, creature_asset_filename;
@@ -201,6 +204,8 @@ public:
 
 	bool do_file_warning;
 
+	bool should_update_render_indices;
+
 	std::mutex * update_lock;
 
 	//////////////////////////////////////////////////////////////////////////
@@ -210,4 +215,5 @@ public:
 	bool bUsingCreatureAnimatinAsset=false;//如果使用CreatureAnimationAsset的话，设置为真，不再从硬盘读取，直接从Asset读取动画信息
 	//当从AnimationAsset读取的时候，直接从pJsonData中载入，不再从硬盘中载入
 	FString* pJsonData;
+	std::shared_ptr<glm::uint32> global_indices_copy;
 };

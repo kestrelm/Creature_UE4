@@ -65,6 +65,8 @@ public:
 
 	void SetNeedsMaterialUpdate(bool flag_in);
 
+	void SetNeedsIndexUpdate(bool flag_in);
+
 	void UpdateMaterial();
 
 	void DoneUpdating();

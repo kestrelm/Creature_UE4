@@ -39,7 +39,7 @@ public:
 	virtual void InitRHI() override
 	{
 		FRHIResourceCreateInfo CreateInfo;
-		IndexBufferRHI = RHICreateIndexBuffer(sizeof(int32), Indices.Num() * sizeof(int32), BUF_Static, CreateInfo);
+		IndexBufferRHI = RHICreateIndexBuffer(sizeof(int32), Indices.Num() * sizeof(int32), BUF_Dynamic, CreateInfo);
 		UpdateRenderData();
 	}
 
@@ -146,6 +146,16 @@ public:
 		}
 
 		RHIUnlockVertexBuffer(VertexBuffer.VertexBufferRHI);
+	}
+
+	void UpdateDirectIndexData() const
+	{
+		std::lock_guard<std::mutex> scope_lock(*update_lock);
+		void* Buffer = RHILockIndexBuffer(IndexBuffer.IndexBufferRHI, 0, indices_num * sizeof(int32), RLM_WriteOnly);
+
+		FMemory::Memcpy(Buffer, indices, indices_num * sizeof(int32));
+
+		RHIUnlockIndexBuffer(IndexBuffer.IndexBufferRHI);
 	}
 
 	FProceduralMeshVertexBuffer VertexBuffer;
@@ -334,6 +344,11 @@ void FCProceduralMeshSceneProxy::SetNeedsMaterialUpdate(bool flag_in)
 	needs_material_updating = flag_in;
 }
 
+void FCProceduralMeshSceneProxy::SetNeedsIndexUpdate(bool flag_in)
+{
+	needs_index_updating = flag_in;
+}
+
 void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FSceneView*>& Views,
 	const FSceneViewFamily& ViewFamily,
 	uint32 VisibilityMap,
@@ -355,8 +370,10 @@ void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScen
 	}
 
 	if (needs_updating) {
-		//VertexBuffer.UpdateRenderData();
 		cur_packet.UpdateDirectVertexData();
+		if (needs_index_updating) {
+			cur_packet.UpdateDirectIndexData();
+		}
 	}
 
 	(const_cast<FCProceduralMeshSceneProxy*>(this))->DoneUpdating();

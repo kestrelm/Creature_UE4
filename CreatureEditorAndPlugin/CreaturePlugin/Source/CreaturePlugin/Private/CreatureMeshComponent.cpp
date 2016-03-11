@@ -469,6 +469,12 @@ void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx)
 {
 	SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_MeshUpdate);
 
+	FCProceduralMeshSceneProxy *localRenderProxy = GetLocalRenderProxy();
+	if (localRenderProxy)
+	{
+		localRenderProxy->SetNeedsIndexUpdate(creature_core.should_update_render_indices);
+	}
+
 	// Update Mesh
 	SetBoundsScale(creature_bounds_scale);
 	SetBoundsOffset(creature_bounds_offset);
