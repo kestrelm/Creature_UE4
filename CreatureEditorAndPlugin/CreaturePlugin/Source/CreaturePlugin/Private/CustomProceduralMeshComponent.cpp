@@ -143,6 +143,8 @@ public:
 
 			int uv_idx = i * 2;
 			curVert->TextureCoordinate.Set(this->uvs[uv_idx], this->uvs[uv_idx + 1]);
+
+			curVert->SetTangents(FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
 		}
 
 		RHIUnlockVertexBuffer(VertexBuffer.VertexBufferRHI);
