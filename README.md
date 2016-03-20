@@ -4,7 +4,7 @@ This is the runtime for Creature, the advanced 2D Skeletal and Mesh Animation To
 
 ![img](https://raw.githubusercontent.com/kestrelm/Creature_UE4/master/plugin_banner.png)
 
-Trailer Video for the plugin is **here** [here](https://youtu.be/S01sZY8mTz4).
+Trailer Video for the plugin is [**here**](https://youtu.be/S01sZY8mTz4).
 
 For more information on how to use the runtimes, please head over to this [site](http://www.kestrelmoon.com/creaturedocs/Game_Engine_Runtimes_And_Integration/Runtimes_Introduction.html)
 
