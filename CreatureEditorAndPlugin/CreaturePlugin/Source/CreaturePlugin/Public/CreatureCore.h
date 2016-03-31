@@ -217,3 +217,5 @@ public:
 	FString* pJsonData;
 	std::shared_ptr<glm::uint32> global_indices_copy;
 };
+
+std::string ConvertToString(FString str);

@@ -77,7 +77,7 @@ public:
 		FMeshElementCollector& Collector) const override;
 
 
-	virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View);
+	virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View) const override;
 
 	virtual bool CanBeOccluded() const override;
 

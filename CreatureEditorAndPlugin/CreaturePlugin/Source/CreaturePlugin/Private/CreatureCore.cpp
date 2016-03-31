@@ -15,7 +15,7 @@ static std::string GetAnimationToken(const std::string& filename_in, const std::
 	return filename_in + std::string("_") + name_in;
 }
 
-static std::string ConvertToString(FString str)
+std::string ConvertToString(FString str)
 {
 	std::string t = TCHAR_TO_UTF8(*str);
 	return t;

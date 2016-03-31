@@ -428,7 +428,7 @@ void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScen
 	}
 }
 
-FPrimitiveViewRelevance FCProceduralMeshSceneProxy::GetViewRelevance(const FSceneView* View)
+FPrimitiveViewRelevance FCProceduralMeshSceneProxy::GetViewRelevance(const FSceneView* View) const
 {
 	FPrimitiveViewRelevance Result;
 	Result.bDrawRelevance = true; // IsShown(View);
@@ -635,7 +635,14 @@ void UCustomProceduralMeshComponent::ProcessCalcBounds(FCProceduralMeshSceneProx
 
 FBoxSphereBounds UCustomProceduralMeshComponent::CalcBounds(const FTransform & LocalToWorld) const
 {
-	return FBoxSphereBounds(FBox(calc_local_vec_min, calc_local_vec_max));
+	auto ret_bounds = FBoxSphereBounds(FBox(calc_local_vec_min, calc_local_vec_max));
+	if (ret_bounds.ContainsNaN())
+	{
+		ret_bounds = FBoxSphereBounds(FBox(FVector(-10000, -10000, -10000),
+			FVector(10000, 10000, 10000)));
+	}
+
+	return ret_bounds;
 }
 
 void UCustomProceduralMeshComponent::SetBoundsScale(float value_in)

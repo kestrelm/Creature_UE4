@@ -5,45 +5,6 @@
 #include "CreatureActor.h"
 #include <chrono>
 
-static std::map<std::string, std::shared_ptr<CreatureModule::CreatureAnimation> > global_animations;
-static std::map<std::string, std::shared_ptr<CreatureModule::CreatureLoadDataPacket> > global_load_data_packets;
-
-static std::string GetAnimationToken(const std::string& filename_in, const std::string& name_in)
-{
-	return filename_in + std::string("_") + name_in;
-}
-
-static std::string ConvertToString(FString str)
-{
-	std::string t = TCHAR_TO_UTF8(*str);
-	return t;
-}
-
-typedef std::chrono::high_resolution_clock Time;
-static auto profileTimeStart = Time::now();
-static auto profileTimeEnd = Time::now();
-
-static void StartProfileTimer()
-{
-	typedef std::chrono::milliseconds ms;
-	typedef std::chrono::duration<float> fsec;
-
-	profileTimeStart = Time::now();
-}
-
-static float StopProfileTimer()
-{
-	typedef std::chrono::milliseconds ms;
-	typedef std::chrono::duration<float> fsec;
-
-	profileTimeEnd = Time::now();
-
-	fsec fs = profileTimeEnd - profileTimeStart;
-	ms d = std::chrono::duration_cast<ms>(fs);
-	auto time_passed_fs = fs.count();
-	return time_passed_fs * 1000.0f;
-}
-
 ACreatureActor::ACreatureActor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
