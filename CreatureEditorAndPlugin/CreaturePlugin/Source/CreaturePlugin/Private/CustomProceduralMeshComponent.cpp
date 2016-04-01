@@ -39,7 +39,7 @@ public:
 	virtual void InitRHI() override
 	{
 		FRHIResourceCreateInfo CreateInfo;
-		IndexBufferRHI = RHICreateIndexBuffer(sizeof(int32), Indices.Num() * sizeof(int32), BUF_Static, CreateInfo);
+		IndexBufferRHI = RHICreateIndexBuffer(sizeof(int32), Indices.Num() * sizeof(int32), BUF_Dynamic, CreateInfo);
 		UpdateRenderData();
 	}
 
@@ -143,9 +143,21 @@ public:
 
 			int uv_idx = i * 2;
 			curVert->TextureCoordinate.Set(this->uvs[uv_idx], this->uvs[uv_idx + 1]);
+
+			curVert->SetTangents(FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
 		}
 
 		RHIUnlockVertexBuffer(VertexBuffer.VertexBufferRHI);
+	}
+
+	void UpdateDirectIndexData() const
+	{
+		std::lock_guard<std::mutex> scope_lock(*update_lock);
+		void* Buffer = RHILockIndexBuffer(IndexBuffer.IndexBufferRHI, 0, indices_num * sizeof(int32), RLM_WriteOnly);
+
+		FMemory::Memcpy(Buffer, indices, indices_num * sizeof(int32));
+
+		RHIUnlockIndexBuffer(IndexBuffer.IndexBufferRHI);
 	}
 
 	FProceduralMeshVertexBuffer VertexBuffer;
@@ -334,6 +346,11 @@ void FCProceduralMeshSceneProxy::SetNeedsMaterialUpdate(bool flag_in)
 	needs_material_updating = flag_in;
 }
 
+void FCProceduralMeshSceneProxy::SetNeedsIndexUpdate(bool flag_in)
+{
+	needs_index_updating = flag_in;
+}
+
 void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FSceneView*>& Views,
 	const FSceneViewFamily& ViewFamily,
 	uint32 VisibilityMap,
@@ -355,8 +372,10 @@ void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScen
 	}
 
 	if (needs_updating) {
-		//VertexBuffer.UpdateRenderData();
 		cur_packet.UpdateDirectVertexData();
+		if (needs_index_updating) {
+			cur_packet.UpdateDirectIndexData();
+		}
 	}
 
 	(const_cast<FCProceduralMeshSceneProxy*>(this))->DoneUpdating();
@@ -409,7 +428,7 @@ void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScen
 	}
 }
 
-FPrimitiveViewRelevance FCProceduralMeshSceneProxy::GetViewRelevance(const FSceneView* View)
+FPrimitiveViewRelevance FCProceduralMeshSceneProxy::GetViewRelevance(const FSceneView* View) const
 {
 	FPrimitiveViewRelevance Result;
 	Result.bDrawRelevance = true; // IsShown(View);
@@ -616,7 +635,14 @@ void UCustomProceduralMeshComponent::ProcessCalcBounds(FCProceduralMeshSceneProx
 
 FBoxSphereBounds UCustomProceduralMeshComponent::CalcBounds(const FTransform & LocalToWorld) const
 {
-	return FBoxSphereBounds(FBox(calc_local_vec_min, calc_local_vec_max));
+	auto ret_bounds = FBoxSphereBounds(FBox(calc_local_vec_min, calc_local_vec_max));
+	if (ret_bounds.ContainsNaN())
+	{
+		ret_bounds = FBoxSphereBounds(FBox(FVector(-10000, -10000, -10000),
+			FVector(10000, 10000, 10000)));
+	}
+
+	return ret_bounds;
 }
 
 void UCustomProceduralMeshComponent::SetBoundsScale(float value_in)

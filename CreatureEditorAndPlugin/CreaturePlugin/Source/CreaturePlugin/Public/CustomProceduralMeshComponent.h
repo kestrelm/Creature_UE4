@@ -65,6 +65,8 @@ public:
 
 	void SetNeedsMaterialUpdate(bool flag_in);
 
+	void SetNeedsIndexUpdate(bool flag_in);
+
 	void UpdateMaterial();
 
 	void DoneUpdating();
@@ -75,7 +77,7 @@ public:
 		FMeshElementCollector& Collector) const override;
 
 
-	virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View);
+	virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View) const override;
 
 	virtual bool CanBeOccluded() const override;
 

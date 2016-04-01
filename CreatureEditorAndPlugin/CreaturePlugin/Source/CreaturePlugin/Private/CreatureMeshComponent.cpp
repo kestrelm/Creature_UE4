@@ -12,31 +12,6 @@ DECLARE_CYCLE_STAT(TEXT("CreatureMesh_Tick"), STAT_CreatureMesh_Tick, STATGROUP_
 DECLARE_CYCLE_STAT(TEXT("CreatureMesh_UpdateCoreValues"), STAT_CreatureMesh_UpdateCoreValues, STATGROUP_Creature);
 DECLARE_CYCLE_STAT(TEXT("CreatureMesh_MeshUpdate"), STAT_CreatureMesh_MeshUpdate, STATGROUP_Creature);
 
-static void GenerateTriangle(TArray<FProceduralMeshTriangle>& OutTriangles)
-{
-	FProceduralMeshTriangle triangle;
-	triangle.Vertex0.Position.Set(0.f, -10.f, 0.f);
-	triangle.Vertex1.Position.Set(0.f, 10.f, 0.f);
-	triangle.Vertex2.Position.Set(10.f, 0.f, 0.f);
-	static const FColor Blue(51, 51, 255);
-	triangle.Vertex0.Color = Blue;
-	triangle.Vertex1.Color = Blue;
-	triangle.Vertex2.Color = Blue;
-	triangle.Vertex0.U = 0.0f;
-	triangle.Vertex0.V = 0.0f;
-	triangle.Vertex1.U = 1.0f;
-	triangle.Vertex1.V = 0.0f;
-	triangle.Vertex2.U = 0.5f;
-	triangle.Vertex2.V = 0.75f;
-	OutTriangles.Add(triangle);
-}
-
-static std::string ConvertToString(FString str)
-{
-	std::string t = TCHAR_TO_UTF8(*str);
-	return t;
-}
-
 // UCreatureMeshComponent
 UCreatureMeshComponent::UCreatureMeshComponent(const FObjectInitializer& ObjectInitializer)
 	: UCustomProceduralMeshComponent(ObjectInitializer)
@@ -473,6 +448,12 @@ UCreatureMeshComponent::RunCollectionTick(float DeltaTime)
 void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx)
 {
 	SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_MeshUpdate);
+
+	FCProceduralMeshSceneProxy *localRenderProxy = GetLocalRenderProxy();
+	if (localRenderProxy)
+	{
+		localRenderProxy->SetNeedsIndexUpdate(creature_core.should_update_render_indices);
+	}
 
 	// Update Mesh
 	SetBoundsScale(creature_bounds_scale);

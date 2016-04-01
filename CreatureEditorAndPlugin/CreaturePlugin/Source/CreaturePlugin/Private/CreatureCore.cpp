@@ -15,7 +15,7 @@ static std::string GetAnimationToken(const std::string& filename_in, const std::
 	return filename_in + std::string("_") + name_in;
 }
 
-static std::string ConvertToString(FString str)
+std::string ConvertToString(FString str)
 {
 	std::string t = TCHAR_TO_UTF8(*str);
 	return t;
@@ -63,6 +63,7 @@ CreatureCore::CreatureCore()
 	do_file_warning = true;
 	should_process_animation_start = false;
 	should_process_animation_end = false;
+	should_update_render_indices = false;
 	update_lock = new std::mutex();
 }
 
@@ -105,12 +106,15 @@ CreatureCore::GetProcMeshData()
 	glm::float32 * cur_pts = cur_creature->GetRenderPts();
 	glm::float32 * cur_uvs = cur_creature->GetGlobalUvs();
 
+	glm::uint32 * copy_indices = GetIndicesCopy(num_indices);
+	std::memcpy(copy_indices, cur_idx, sizeof(glm::uint32) * num_indices);
+
 	if (region_alphas.Num() != num_points)
 	{
 		region_alphas.SetNum(num_points);
 	}
 
-	FProceduralMeshTriData ret_data(cur_idx,
+	FProceduralMeshTriData ret_data(copy_indices,
 		cur_pts, cur_uvs,
 		num_points, num_indices,
 		&region_alphas,
@@ -126,8 +130,10 @@ void CreatureCore::UpdateCreatureRender()
 	auto cur_creature = creature_manager->GetCreature();
 	int num_triangles = cur_creature->GetTotalNumIndices() / 3;
 	glm::uint32 * cur_idx = cur_creature->GetGlobalIndices();
+	auto cur_num_indices = cur_creature->GetTotalNumIndices();
 	glm::float32 * cur_pts = cur_creature->GetRenderPts();
 	glm::float32 * cur_uvs = cur_creature->GetGlobalUvs();
+	should_update_render_indices = false;
 
 	// Update depth per region
 	std::vector<meshRenderRegion *>& cur_regions =
@@ -152,6 +158,9 @@ void CreatureCore::UpdateCreatureRender()
 	else {
 		// Custom order update
 		auto& regions_map = cur_creature->GetRenderComposition()->getRegionsMap();
+		int32 indice_idx = 0;
+		auto dst_indices = GetIndicesCopy(cur_num_indices);
+
 		for (auto& custom_region_name : region_custom_order)
 		{
 			auto real_name = ConvertToString(custom_region_name);
@@ -166,8 +175,21 @@ void CreatureCore::UpdateCreatureRender()
 				}
 
 				region_z += delta_z;
+
+				// Reorder indices
+				auto copy_start_idx = single_region->getStartIndex();
+				auto copy_end_idx = single_region->getEndIndex();
+				auto copy_num_indices = copy_end_idx - copy_start_idx + 1;
+
+				FMemory::Memcpy(dst_indices + indice_idx, 
+					cur_idx + copy_start_idx, 
+					sizeof(glm::uint32) * copy_num_indices);
+
+				indice_idx += copy_num_indices;
 			}
 		}
+
+		should_update_render_indices = true;
 	}
 
 	// Build render triangles
@@ -967,6 +989,17 @@ bool CreatureCore::GetGlobalEnablePointCache()
 {
 	auto cur_creature_manager = GetCreatureManager();
 	return cur_creature_manager->GetDoPointCache();
+}
+
+glm::uint32 * CreatureCore::GetIndicesCopy(int init_size)
+{
+	if (!global_indices_copy)
+	{
+		global_indices_copy = std::shared_ptr<glm::uint32>(new glm::uint32[init_size],
+			std::default_delete<glm::uint32[]>());
+	}
+
+	return global_indices_copy.get();
 }
 
 void 
