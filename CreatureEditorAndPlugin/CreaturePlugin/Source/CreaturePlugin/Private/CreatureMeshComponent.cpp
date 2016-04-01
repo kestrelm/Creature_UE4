@@ -187,6 +187,11 @@ void UCreatureMeshComponent::SetActiveCollectionAnimation(FCreatureMeshCollectio
 
 	auto& cur_data = collectionData[data_idx];
 	auto& cur_anim_name = cur_seq.animation_name;
+
+	if (cur_data.creature_core.GetCreatureManager() == nullptr)
+	{
+		return;
+	}
 	
 	cur_data.creature_core.SetBluePrintActiveAnimation(cur_anim_name);
 	cur_data.creature_core.SetBluePrintAnimationResetToStart();

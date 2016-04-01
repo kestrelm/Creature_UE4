@@ -979,7 +979,10 @@ CreatureCore::GetIsReadyPlay() const
 void CreatureCore::SetGlobalEnablePointCache(bool flag_in)
 {
 	auto cur_creature_manager = GetCreatureManager();
-	cur_creature_manager->SetDoPointCache(flag_in);
+	if (cur_creature_manager != nullptr)
+	{
+		cur_creature_manager->SetDoPointCache(flag_in);
+	}
 }
 
 bool CreatureCore::GetGlobalEnablePointCache()

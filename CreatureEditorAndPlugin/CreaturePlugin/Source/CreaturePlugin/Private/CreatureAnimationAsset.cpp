@@ -152,6 +152,7 @@ void UCreatureAnimationAsset::GatherAnimationData()
 	int32 arraySize = creature_core.GetCreatureManager()->GetCreature()->GetTotalNumPoints() * 3;
 
 	m_pointsCache.Reset(all_animation_names.size());
+	m_clipNames.Reset(all_animation_names.size());
 
 	for (auto& cur_name : all_animation_names)
 	{
