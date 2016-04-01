@@ -29,9 +29,6 @@ public:
 
 	FString GetCreatureFilename() const;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
-	TArray<FString> AnimationClipList;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Creature")
 	float animation_speed = 2.0f;
 
