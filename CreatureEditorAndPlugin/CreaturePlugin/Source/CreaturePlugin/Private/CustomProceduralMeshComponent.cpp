@@ -182,15 +182,16 @@ FCProceduralMeshSceneProxy::FCProceduralMeshSceneProxy(UCustomProceduralMeshComp
 	parentComponent = Component;
 	needs_updating = false;
 	needs_index_updating = false;
-	active_render_packet_idx = INDEX_NONE;
-
-	UpdateMaterial();
+	active_render_packet_idx = -1;
 
 	// Add each triangle to the vertex/index buffer
 	if (targetTrisIn)
 	{
 		AddRenderPacket(targetTrisIn);
+		active_render_packet_idx = 0;
 	}
+
+	UpdateMaterial();
 }
 
 FCProceduralMeshSceneProxy::~FCProceduralMeshSceneProxy()
@@ -263,17 +264,6 @@ void FCProceduralMeshSceneProxy::AddRenderPacket(FProceduralMeshTriData * target
 
 	// Enqueue initialization of render resource
 	cur_packet.InitForRender();
-
-	if (active_render_packet_idx == INDEX_NONE)
-	{
-		active_render_packet_idx = 0;
-	}
-}
-
-void FCProceduralMeshSceneProxy::ResetAllRenderPackets()
-{
-	renderPackets.Reset();
-	active_render_packet_idx = INDEX_NONE;
 }
 
 void FCProceduralMeshSceneProxy::SetActiveRenderPacketIdx(int idxIn)
@@ -441,11 +431,10 @@ void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScen
 FPrimitiveViewRelevance FCProceduralMeshSceneProxy::GetViewRelevance(const FSceneView* View) const
 {
 	FPrimitiveViewRelevance Result;
-	Result.bDrawRelevance = true;// IsShown(View);
+	Result.bDrawRelevance = true; // IsShown(View);
 	Result.bShadowRelevance = IsShadowCast(View);
 	Result.bDynamicRelevance = true;
 	MaterialRelevance.SetPrimitiveViewRelevance(Result);
-
 	return Result;
 }
 
@@ -472,7 +461,7 @@ UCustomProceduralMeshComponent::UCustomProceduralMeshComponent(const FObjectInit
 	: Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	bounds_scale = 1.0f;
+	bounds_scale = 15.0f;
 	bounds_offset = FVector(0, 0, 0);
 	render_proxy_ready = false;
 	calc_local_vec_min = FVector(FLT_MIN, FLT_MIN, FLT_MIN);
@@ -533,7 +522,7 @@ UCustomProceduralMeshComponent::SetTagString(FString tag_in)
 FPrimitiveSceneProxy* UCustomProceduralMeshComponent::CreateSceneProxy()
 {
 	std::lock_guard<std::mutex> cur_lock(local_lock);
-	
+
 	FCProceduralMeshSceneProxy* Proxy = NULL;
 	// Only if have enough triangles
 	if(defaultTriData.point_num > 0)
@@ -542,7 +531,7 @@ FPrimitiveSceneProxy* UCustomProceduralMeshComponent::CreateSceneProxy()
 		render_proxy_ready = true;
 		ProcessCalcBounds(Proxy);
 	}
-	
+
 	return Proxy;
 }
 
@@ -567,7 +556,7 @@ void UCustomProceduralMeshComponent::ProcessCalcBounds(FCProceduralMeshSceneProx
 	const float bounds_max_scalar = 100000.0f;
 	calc_local_vec_min = FVector(-bounds_max_scalar, -bounds_max_scalar, -bounds_max_scalar);
 	calc_local_vec_max = FVector(bounds_max_scalar, bounds_max_scalar, bounds_max_scalar);
-	
+
 	// Only if have enough triangles
 	if (can_calc)
 	{
@@ -631,25 +620,27 @@ void UCustomProceduralMeshComponent::ProcessCalcBounds(FCProceduralMeshSceneProx
 			vecMax.Set(bounds_max_scalar, bounds_max_scalar, bounds_max_scalar);
 		}
 
+		FTransform curXForm = extraXForm;
+
+		vecMin = curXForm.TransformPosition(vecMin);
+		vecMax = curXForm.TransformPosition(vecMax);
+
 		calc_local_vec_min = vecMin;
 		calc_local_vec_max = vecMax;
 
 		debugSphere = FBoxSphereBounds(FBox(calc_local_vec_min, calc_local_vec_max)).GetSphere();
 	}
+
 }
 
 FBoxSphereBounds UCustomProceduralMeshComponent::CalcBounds(const FTransform & LocalToWorld) const
 {
-	FBoxSphereBounds ret_bounds = FBoxSphereBounds(FBox(calc_local_vec_min, calc_local_vec_max));
-
+	auto ret_bounds = FBoxSphereBounds(FBox(calc_local_vec_min, calc_local_vec_max));
 	if (ret_bounds.ContainsNaN())
 	{
 		ret_bounds = FBoxSphereBounds(FBox(FVector(-10000, -10000, -10000),
 			FVector(10000, 10000, 10000)));
 	}
-
-	// transform the bounds by the given transform
-	ret_bounds = ret_bounds.TransformBy(LocalToWorld);
 
 	return ret_bounds;
 }
@@ -664,10 +655,16 @@ void UCustomProceduralMeshComponent::SetBoundsOffset(const FVector& offset_in)
 	bounds_offset = offset_in;
 }
 
+void 
+UCustomProceduralMeshComponent::SetExtraXForm(const FTransform& xformIn)
+{
+	extraXForm = xformIn;
+}
+
 FSphere 
 UCustomProceduralMeshComponent::GetDebugBoundsSphere() const
 {
-	return debugSphere.TransformBy(GetComponentTransform());
+	return debugSphere;
 }
 
 /*

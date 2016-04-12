@@ -16,10 +16,10 @@ public:
 	TArray<UCreatureAnimTransition*> TransitionList;
 
 	UPROPERTY()
-	FName AnimStateName;
+	FString AnimStateName;
 
 public:
-	virtual void BeginState(class UCreatureAnimStateMachineInstance *forInstance);
+	void BeginState(class UCreatureAnimStateMachineInstance *forInstance);
 	void EndState(class UCreatureAnimStateMachineInstance *forInstance);
 	void CheckCondition(class UCreatureAnimStateMachineInstance *forInstance);
 	//Check if there is a 'AnimationEnd' Transition

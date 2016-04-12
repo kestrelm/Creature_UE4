@@ -7,9 +7,8 @@
 #include "Engine.h"
 #include "CreatureAnimationAsset.generated.h"
 
-/** Container used to cache useful data about an animation, including it's point cache */
 USTRUCT()
-struct FCreatureAnimationDataCache
+struct FCreatureAnimationPointsCache
 {
 	GENERATED_BODY()
 
@@ -18,12 +17,9 @@ struct FCreatureAnimationDataCache
 
 	UPROPERTY()
 	int32 m_numArrays;
-
-	UPROPERTY(VisibleAnywhere, Category = Creature)
-	float m_length;
-
-	UPROPERTY(VisibleAnywhere, Category = Creature)
-	FName m_animationName;
+	
+	UPROPERTY()
+	FString m_animationName;
 };
 
 UCLASS()
@@ -34,10 +30,14 @@ public:
 	FString GetCreatureFilename() const;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Creature")
-	float animation_speed = 1.0f;
+	float animation_speed = 2.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Creature")
 	UMaterialInterface * collection_material;
+
+	//You can change an animation clip's scale to fix some problem
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Creature")
+	float Scale = 1.0f;
 
 	// Zip Binary Data
 	UPROPERTY()
@@ -49,13 +49,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Creature)
 	int32 m_pointsCacheApproximationLevel;
 
-	const FCreatureAnimationDataCache *GetDataCacheForClip(const FName & clipName) const;
-
-	float GetClipLength(const FName & clipName) const;
+	const FCreatureAnimationPointsCache *GetPointsCacheForClip(const FString & clipName) const;
 	void LoadPointCacheForAllClips(class CreatureCore *forCore) const;
-	void LoadPointCacheForClip(const FName &animName, class CreatureCore *forCore) const;
-
-	virtual void Serialize(FArchive& Ar) override;
+	void LoadPointCacheForClip(const FString &animName, class CreatureCore *forCore) const;
 
 #if WITH_EDITORONLY_DATA
 	void SetCreatureFilename(const FString &newFilename);
@@ -63,7 +59,11 @@ public:
 	void PostLoad() override;
 	void PreSave() override;
 	void PostInitProperties() override;
-	
+
+	/** The names of all clips held in this asset, for reference (editor only) */
+	UPROPERTY(VisibleAnywhere, Category=Creature)
+	TArray<FString> m_clipNames;
+
 	void GatherAnimationData();
 	
 protected:
@@ -82,7 +82,7 @@ protected:
 	UPROPERTY()
 	FString creature_filename;
 	
-	/** Cache of useful data, including point cache, for the animation clips, to improve runtime performance */
-	UPROPERTY(VisibleAnywhere, Category = Creature)
-	TArray<FCreatureAnimationDataCache> m_dataCache;
+	/** Cache of points for the animation clips, to improve runtime performance */
+	UPROPERTY()
+	TArray<FCreatureAnimationPointsCache> m_pointsCache;
 };

@@ -56,10 +56,10 @@ struct FCreatureBoneData
 	FTransform xform;
 	FTransform startXform;
 	FTransform endXform;
-	FName name;
+	FString name;
 };
 
-class CREATUREPLUGIN_API CreatureCore {
+class CreatureCore {
 public:
 	CreatureCore();
 
@@ -98,17 +98,17 @@ public:
 	// Returns the CreatureManager associated with this actor
 	CreatureModule::CreatureManager * GetCreatureManager();
 
-	void SetBluePrintActiveAnimation(FName name_in);
+	void SetBluePrintActiveAnimation(FString name_in);
 
-	void SetBluePrintBlendActiveAnimation(FName name_in, float factor);
+	void SetBluePrintBlendActiveAnimation(FString name_in, float factor);
 
-	void SetBluePrintAnimationCustomTimeRange(FName name_in, int32 start_time, int32 end_time);
+	void SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time);
 
-	void MakeBluePrintPointCache(FName name_in, int32 approximation_level);
+	void MakeBluePrintPointCache(FString name_in, int32 approximation_level);
 
-	void ClearBluePrintPointCache(FName name_in, int32 approximation_level);
+	void ClearBluePrintPointCache(FString name_in, int32 approximation_level);
 
-	FTransform GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, FTransform base_transform);
+	FTransform GetBluePrintBoneXform(FString name_in, bool world_transform, float position_slide_factor, FTransform base_transform);
 
 	bool IsBluePrintBonesCollide(FVector test_point, float bone_size, FTransform base_transform);
 
@@ -119,26 +119,25 @@ public:
 	void SetBluePrintAnimationPlayFromStart();
 
 	void SetBluePrintAnimationResetToStart();
-	void SetBluePrintAnimationResetToEnd();
 
 	float GetBluePrintAnimationFrame();
 
-	void SetBluePrintRegionAlpha(FName region_name_in, uint8 alpha_in);
+	void SetBluePrintRegionAlpha(FString region_name_in, uint8 alpha_in);
 
-	void RemoveBluePrintRegionAlpha(FName region_name_in);
+	void RemoveBluePrintRegionAlpha(FString region_name_in);
 
-	void SetBluePrintRegionCustomOrder(TArray<FName> order_in);
+	void SetBluePrintRegionCustomOrder(TArray<FString> order_in);
 
 	void ClearBluePrintRegionCustomOrder();
 
-	void SetBluePrintRegionItemSwap(FName region_name_in, int32 tag);
+	void SetBluePrintRegionItemSwap(FString region_name_in, int32 tag);
 
-	void RemoveBluePrintRegionItemSwap(FName region_name_in);
+	void RemoveBluePrintRegionItemSwap(FString region_name_in);
 
 	void SetUseAnchorPoints(bool flag_in);
 
 	bool GetUseAnchorPoints() const;
-	
+
 	void RunBeginPlay();
 
 	bool RunTick(float delta_time);
@@ -185,9 +184,9 @@ public:
 
 	TArray<uint8> region_alphas;
 
-	TMap<FName, uint8> region_alpha_map;
+	TMap<FString, uint8> region_alpha_map;
 
-	TArray<FName> region_custom_order;
+	TArray<FString> region_custom_order;
 
 	FString absolute_creature_filename;
 
@@ -219,5 +218,4 @@ public:
 	std::shared_ptr<glm::uint32> global_indices_copy;
 };
 
-std::string ConvertToString(const FString &str);
-std::string ConvertToString(FName name);
+std::string ConvertToString(FString str);

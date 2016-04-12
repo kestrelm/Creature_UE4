@@ -56,8 +56,7 @@ public:
 
 	void AddRenderPacket(FProceduralMeshTriData * targetTrisIn);
 
-	void ResetAllRenderPackets();
-	
+
 	void SetActiveRenderPacketIdx(int idxIn);
 
 	void UpdateDynamicIndexData();
@@ -135,7 +134,7 @@ struct FProceduralMeshTriangle
 
 /** Component that allows you to specify custom triangle mesh geometry */
 UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup=Rendering)
-class CREATUREPLUGIN_API UCustomProceduralMeshComponent : public UMeshComponent //, public IInterface_CollisionDataProvider
+class UCustomProceduralMeshComponent : public UMeshComponent //, public IInterface_CollisionDataProvider
 {
 	GENERATED_UCLASS_BODY()
 
@@ -171,6 +170,8 @@ public:
 
 	FSphere GetDebugBoundsSphere() const;
 
+	void SetExtraXForm(const FTransform& xformIn);
+
 	void SetBoundsScale(float value_in);
 
 	void SetBoundsOffset(const FVector& offset_in);
@@ -184,6 +185,7 @@ public:
 
 protected:
 	FProceduralMeshTriData defaultTriData;
+	FTransform extraXForm;
 	FString tagStr;
 
 	void ProcessCalcBounds(FCProceduralMeshSceneProxy *localRenderProxy);

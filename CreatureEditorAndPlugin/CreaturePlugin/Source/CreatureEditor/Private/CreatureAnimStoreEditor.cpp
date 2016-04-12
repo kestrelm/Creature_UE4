@@ -215,7 +215,7 @@ void SStoreDetailPanel::ConstructPreviewAnimationList()
 		PreviewAnimationNameList.Empty();
 		for (auto clip : EditorPtr.Pin()->GetEditingClipsStore()->ClipList)
 		{
-			TSharedPtr<FString> AnimName = MakeShareable(new FString(clip.ClipName.ToString()));
+			TSharedPtr<FString> AnimName = MakeShareable(new FString(clip.ClipName));
 			PreviewAnimationNameList.AddUnique(AnimName);
 		}
 	}

@@ -15,14 +15,9 @@ static std::string GetAnimationToken(const std::string& filename_in, const std::
 	return filename_in + std::string("_") + name_in;
 }
 
-std::string ConvertToString(const FString &str)
+std::string ConvertToString(FString str)
 {
 	std::string t = TCHAR_TO_UTF8(*str);
-	return t;
-}
-std::string ConvertToString(FName name)
-{
-	std::string t = TCHAR_TO_UTF8(*name.ToString());
 	return t;
 }
 
@@ -347,7 +342,7 @@ void CreatureCore::FillBoneData()
 	int i = 0;
 	for (auto& cur_data : bones_map)
 	{
-		bone_data[i].name = FName(cur_data.first.c_str());
+		bone_data[i].name = FString(cur_data.first.c_str());
 
 		auto pt1 = cur_data.second->getWorldStartPt();
 		auto pt2 = cur_data.second->getWorldEndPt();
@@ -653,21 +648,21 @@ CreatureCore::GetCreatureManager()
 }
 
 void 
-CreatureCore::SetBluePrintActiveAnimation(FName name_in)
+CreatureCore::SetBluePrintActiveAnimation(FString name_in)
 {
 	auto cur_str = ConvertToString(name_in);
 	SetActiveAnimation(cur_str);
 }
 
 void 
-CreatureCore::SetBluePrintBlendActiveAnimation(FName name_in, float factor)
+CreatureCore::SetBluePrintBlendActiveAnimation(FString name_in, float factor)
 {
 	auto cur_str = ConvertToString(name_in);
 	SetAutoBlendActiveAnimation(cur_str, factor);
 }
 
 void 
-CreatureCore::SetBluePrintAnimationCustomTimeRange(FName name_in, int32 start_time, int32 end_time)
+CreatureCore::SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time)
 {
 	auto cur_str = ConvertToString(name_in);
 	auto all_animations = creature_manager->GetAllAnimations();
@@ -679,12 +674,12 @@ CreatureCore::SetBluePrintAnimationCustomTimeRange(FName name_in, int32 start_ti
 }
 
 void 
-CreatureCore::MakeBluePrintPointCache(FName name_in, int32 approximation_level)
+CreatureCore::MakeBluePrintPointCache(FString name_in, int32 approximation_level)
 {
 	auto cur_creature_manager = GetCreatureManager();
 	if (!cur_creature_manager)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::MakeBluePrintPointCache() - ERROR! Could not generate point cache for %s"), *name_in.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::MakeBluePrintPointCache() - ERROR! Could not generate point cache for %s"), *name_in);
 		return;
 	}
 
@@ -702,12 +697,12 @@ CreatureCore::MakeBluePrintPointCache(FName name_in, int32 approximation_level)
 }
 
 void 
-CreatureCore::ClearBluePrintPointCache(FName name_in, int32 approximation_level)
+CreatureCore::ClearBluePrintPointCache(FString name_in, int32 approximation_level)
 {
 	auto cur_creature_manager = GetCreatureManager();
 	if (!cur_creature_manager)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::MakeBluePrintPointCache() - ERROR! Could not generate point cache for %s"), *name_in.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::MakeBluePrintPointCache() - ERROR! Could not generate point cache for %s"), *name_in);
 		return;
 	}
 
@@ -715,7 +710,7 @@ CreatureCore::ClearBluePrintPointCache(FName name_in, int32 approximation_level)
 }
 
 FTransform 
-CreatureCore::GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, FTransform base_transform)
+CreatureCore::GetBluePrintBoneXform(FString name_in, bool world_transform, float position_slide_factor, FTransform base_transform)
 {
 	FTransform ret_xform;
 	for (size_t i = 0; i < bone_data.Num(); i++)
@@ -875,32 +870,16 @@ CreatureCore::SetBluePrintAnimationResetToStart()
 	play_end_done = false;
 }
 
-void CreatureCore::SetBluePrintAnimationResetToEnd()
-{
-	if (creature_manager) {
-		auto *anim = creature_manager->GetAnimation(creature_manager->GetActiveAnimationName());
-
-		float cur_runtime = anim->getEndTime();
-		creature_manager->setRunTime(cur_runtime);
-		animation_frame = cur_runtime;
-
-		creature_manager->Update(0.001f);
-	}
-
-	play_start_done = false;
-	play_end_done = false;
-}
-
-float
+float 
 CreatureCore::GetBluePrintAnimationFrame()
 {
 	return animation_frame;
 }
 
 void 
-CreatureCore::SetBluePrintRegionAlpha(FName region_name_in, uint8 alpha_in)
+CreatureCore::SetBluePrintRegionAlpha(FString region_name_in, uint8 alpha_in)
 {
-	if (region_name_in.IsNone())
+	if (region_name_in.IsEmpty())
 	{
 		return;
 	}
@@ -908,13 +887,13 @@ CreatureCore::SetBluePrintRegionAlpha(FName region_name_in, uint8 alpha_in)
 	region_alpha_map.Add(region_name_in, alpha_in);
 }
 
-void CreatureCore::RemoveBluePrintRegionAlpha(FName region_name_in)
+void CreatureCore::RemoveBluePrintRegionAlpha(FString region_name_in)
 {
 	region_alpha_map.Remove(region_name_in);
 }
 
 void 
-CreatureCore::SetBluePrintRegionCustomOrder(TArray<FName> order_in)
+CreatureCore::SetBluePrintRegionCustomOrder(TArray<FString> order_in)
 {
 	region_custom_order = order_in;
 }
@@ -925,12 +904,12 @@ CreatureCore::ClearBluePrintRegionCustomOrder()
 	region_custom_order.Empty();
 }
 
-void CreatureCore::SetBluePrintRegionItemSwap(FName region_name_in, int32 tag)
+void CreatureCore::SetBluePrintRegionItemSwap(FString region_name_in, int32 tag)
 {
 	creature_manager->GetCreature()->SetActiveItemSwap(ConvertToString(region_name_in), tag);
 }
 
-void CreatureCore::RemoveBluePrintRegionItemSwap(FName region_name_in)
+void CreatureCore::RemoveBluePrintRegionItemSwap(FString region_name_in)
 {
 	creature_manager->GetCreature()->RemoveActiveItemSwap(ConvertToString(region_name_in));
 }
@@ -944,7 +923,8 @@ bool CreatureCore::GetUseAnchorPoints() const
 {
 	return creature_manager->GetCreature()->GetAnchorPointsActive();
 }
-void
+
+void 
 CreatureCore::SetActiveAnimation(const std::string& name_in)
 {
 	creature_manager->SetActiveAnimationName(name_in);

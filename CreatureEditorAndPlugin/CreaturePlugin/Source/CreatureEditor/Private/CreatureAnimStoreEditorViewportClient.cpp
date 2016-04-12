@@ -84,7 +84,7 @@ void FCreatureAnimStoreEditorViewportClient::SetUpCamera()
 
 void FCreatureAnimStoreEditorViewportClient::ChangePreviewAnimation(FString AnimationName)
 {
-	EditingCreatureMesh->SetBluePrintActiveCollectionClip(FName(*AnimationName));
+	EditingCreatureMesh->SetBluePrintActiveCollectionClip(AnimationName);
 }
 
 void FCreatureAnimStoreEditorViewportClient::ReConstructMesh()
