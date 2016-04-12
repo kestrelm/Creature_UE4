@@ -129,13 +129,13 @@ ACreatureActor::GetCreatureManager()
 }
 
 void 
-ACreatureActor::MakeBluePrintPointCache(FString name_in, int32 approximation_level)
+ACreatureActor::MakeBluePrintPointCache(FName name_in, int32 approximation_level)
 {
 	creature_core.MakeBluePrintPointCache(name_in, approximation_level);
 }
 
 void 
-ACreatureActor::ClearBluePrintPointCache(FString name_in, int32 approximation_level)
+ACreatureActor::ClearBluePrintPointCache(FName name_in, int32 approximation_level)
 {
 	creature_core.ClearBluePrintPointCache(name_in, approximation_level);
 }
@@ -150,7 +150,7 @@ void ACreatureActor::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ACreatureActor::SetBluePrintActiveAnimation(FString name_in)
+void ACreatureActor::SetBluePrintActiveAnimation(FName name_in)
 {
 	creature_core.SetBluePrintActiveAnimation(name_in);
 }
@@ -186,24 +186,24 @@ ACreatureActor::SetBluePrintAnimationPlayFromStart()
 }
 
 void 
-ACreatureActor::SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time)
+ACreatureActor::SetBluePrintAnimationCustomTimeRange(FName name_in, int32 start_time, int32 end_time)
 {
 	creature_core.SetBluePrintAnimationCustomTimeRange(name_in, start_time, end_time);
 }
 
-void ACreatureActor::SetBluePrintBlendActiveAnimation(FString name_in, float factor)
+void ACreatureActor::SetBluePrintBlendActiveAnimation(FName name_in, float factor)
 {
 	creature_core.SetBluePrintBlendActiveAnimation(name_in, factor);
 }
 
 void 
-ACreatureActor::SetBluePrintRegionAlpha(FString region_name_in, uint8 alpha_in)
+ACreatureActor::SetBluePrintRegionAlpha(FName region_name_in, uint8 alpha_in)
 {
 	creature_core.SetBluePrintRegionAlpha(region_name_in, alpha_in);
 }
 
 FTransform
-ACreatureActor::GetBluePrintBoneXform(FString name_in, bool world_transform, float position_slide_factor)
+ACreatureActor::GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor)
 {
 	return creature_core.GetBluePrintBoneXform(name_in, world_transform, position_slide_factor, GetTransform());
 }
@@ -263,7 +263,6 @@ void ACreatureActor::Tick(float DeltaTime)
 		// Update Mesh
 		creature_mesh->SetBoundsScale(creature_bounds_scale);
 		creature_mesh->SetBoundsOffset(creature_bounds_offset);
-		creature_mesh->SetExtraXForm(GetTransform());
 
 		creature_mesh->SetTagString(GetName());
 		creature_mesh->ForceAnUpdate();
@@ -295,7 +294,7 @@ ACreatureActor::GetBluePrintAnimationFrame()
 	return creature_core.GetBluePrintAnimationFrame();
 }
 
-void ACreatureActor::SetBluePrintRegionCustomOrder(TArray<FString> order_in)
+void ACreatureActor::SetBluePrintRegionCustomOrder(TArray<FName> order_in)
 {
 	creature_core.SetBluePrintRegionCustomOrder(order_in);
 }

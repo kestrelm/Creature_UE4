@@ -7,7 +7,10 @@ FString UCreatureAnimationAsset::GetCreatureFilename() const
 {
 #if WITH_EDITORONLY_DATA
 	TArray<FString> filenames;
-	AssetImportData->ExtractFilenames(filenames);
+	if (AssetImportData)
+	{
+		AssetImportData->ExtractFilenames(filenames);
+	}
 	if (filenames.Num() > 0)
 	{
 		return filenames[0];
@@ -43,9 +46,9 @@ FString& UCreatureAnimationAsset::GetJsonString()
 	return CreatureFileJSonData;
 }
 
-const FCreatureAnimationPointsCache * UCreatureAnimationAsset::GetPointsCacheForClip(const FString & clipName) const
+const FCreatureAnimationDataCache * UCreatureAnimationAsset::GetDataCacheForClip(const FName & clipName) const
 {
-	for (const FCreatureAnimationPointsCache & cache : m_pointsCache)
+	for (const FCreatureAnimationDataCache & cache : m_dataCache)
 	{
 		if (cache.m_animationName == clipName)
 		{
@@ -56,21 +59,34 @@ const FCreatureAnimationPointsCache * UCreatureAnimationAsset::GetPointsCacheFor
 	return nullptr;
 }
 
+float UCreatureAnimationAsset::GetClipLength(const FName & clipName) const
+{
+	const FCreatureAnimationDataCache *cacheForAnim = GetDataCacheForClip(clipName);
+	if (cacheForAnim)
+	{
+		return cacheForAnim->m_length / animation_speed;
+	}
+	else
+	{
+		return 0.0f;
+	}
+}
+
 void UCreatureAnimationAsset::LoadPointCacheForAllClips(class CreatureCore *forCore) const
 {
-	for (const FCreatureAnimationPointsCache & cache : m_pointsCache)
+	for (const FCreatureAnimationDataCache & cache : m_dataCache)
 	{
 		LoadPointCacheForClip(cache.m_animationName, forCore);
 	}
 }
 
-void UCreatureAnimationAsset::LoadPointCacheForClip(const FString &animName, class CreatureCore *forCore) const
+void UCreatureAnimationAsset::LoadPointCacheForClip(const FName &animName, class CreatureCore *forCore) const
 {
 	check(forCore);
-	const FCreatureAnimationPointsCache *cacheForAnim = GetPointsCacheForClip(animName);
+	const FCreatureAnimationDataCache *cacheForAnim = GetDataCacheForClip(animName);
 	if (cacheForAnim && forCore->GetCreatureManager())
 	{
-		CreatureModule::CreatureAnimation *anim = forCore->GetCreatureManager()->GetAnimation(TCHAR_TO_UTF8(*animName));
+		CreatureModule::CreatureAnimation *anim = forCore->GetCreatureManager()->GetAnimation(ConvertToString(animName));
 		if (anim == nullptr || anim->hasCachePts())
 		{
 			return;
@@ -90,6 +106,24 @@ void UCreatureAnimationAsset::LoadPointCacheForClip(const FString &animName, cla
 			}
 			pts.push_back(new_pts);
 		}
+	}
+}
+
+void UCreatureAnimationAsset::Serialize(FArchive& Ar)
+{
+	if (Ar.IsSaving() && !Ar.IsCooking())
+	{
+		// when saving non-cooked asset, don't include the datacache as it's huge
+		TArray<FCreatureAnimationDataCache> cacheCopy = m_dataCache;
+		m_dataCache.Reset();
+
+		Super::Serialize(Ar);
+
+		m_dataCache = cacheCopy;
+	}
+	else
+	{
+		Super::Serialize(Ar);
 	}
 }
 
@@ -151,33 +185,39 @@ void UCreatureAnimationAsset::GatherAnimationData()
 
 	int32 arraySize = creature_core.GetCreatureManager()->GetCreature()->GetTotalNumPoints() * 3;
 
-	m_pointsCache.Reset(all_animation_names.size());
-	m_clipNames.Reset(all_animation_names.size());
+	m_dataCache.Reset(all_animation_names.size());
 
 	for (auto& cur_name : all_animation_names)
 	{
-		FString animName(cur_name.c_str());
-		m_clipNames.Add(animName);
+		FName animName(cur_name.c_str());
 
-		if (m_pointsCacheApproximationLevel >= 0)
+		CreatureModule::CreatureAnimation *anim = creature_core.GetCreatureManager()->GetAnimation(cur_name);
+		if (ensure(anim))
 		{
-			creature_core.GetCreatureManager()->ClearPointCache(cur_name);
-			creature_core.GetCreatureManager()->MakePointCache(cur_name, m_pointsCacheApproximationLevel);
-			CreatureModule::CreatureAnimation *anim = creature_core.GetCreatureManager()->GetAnimation(cur_name);
-			if (ensure(anim) && anim->hasCachePts())
+			FCreatureAnimationDataCache &animDataCache = m_dataCache[m_dataCache.AddZeroed(1)];
+			animDataCache.m_animationName = animName;
+			animDataCache.m_length = anim->getEndTime() - anim->getStartTime();
+
+			if (m_pointsCacheApproximationLevel >= 0)
 			{
-				auto &pts = anim->getCachePts();
-
-				FCreatureAnimationPointsCache &animPtsCache = m_pointsCache[m_pointsCache.AddZeroed(1)];
-				animPtsCache.m_animationName = animName;
-				animPtsCache.m_numArrays = pts.size();
-				animPtsCache.m_points.Reserve(animPtsCache.m_numArrays * arraySize);
-
-				for (float *pt : pts)
+				creature_core.GetCreatureManager()->ClearPointCache(cur_name);
+				creature_core.GetCreatureManager()->MakePointCache(cur_name, m_pointsCacheApproximationLevel);
+				if (anim->hasCachePts())
 				{
-					for (int32 i = 0; i < arraySize; i++)
+					auto &pts = anim->getCachePts();
+
+					float startTime = anim->getStartTime();
+					float endTime = anim->getEndTime();
+
+					animDataCache.m_numArrays = pts.size();
+					animDataCache.m_points.Reserve(animDataCache.m_numArrays * arraySize);
+
+					for (float *pt : pts)
 					{
-						animPtsCache.m_points.Add(pt[i]);
+						for (int32 i = 0; i < arraySize; i++)
+						{
+							animDataCache.m_points.Add(pt[i]);
+						}
 					}
 				}
 			}

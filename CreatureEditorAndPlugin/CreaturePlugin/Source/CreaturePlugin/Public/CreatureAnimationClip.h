@@ -14,12 +14,12 @@ USTRUCT()
 struct FCreatureAnimationShortClip
 {
 	GENERATED_USTRUCT_BODY()
-		//指向源AnimationAsset的指针
-		UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Creature")
-		UCreatureAnimationAsset* SourceAsset;
+	//指向源AnimationAsset的指针
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Creature")
+	UCreatureAnimationAsset* SourceAsset;
 		
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Creature")
-		FString ClipNameInAsset;
+	FName ClipNameInAsset;
 };
 //////////////////////////////////////////////////////////////////////////
 //真正的Clip片段
@@ -28,12 +28,12 @@ USTRUCT()
 struct FCreatureAnimationClip
 {
 	GENERATED_USTRUCT_BODY()
-		//指向源AnimationAsset的指针
-		UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Creature")
-		FString ClipName;
+	//指向源AnimationAsset的指针
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Creature")
+	FName ClipName;
 
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Creature")
-		TArray<FCreatureAnimationShortClip> ShortClipList;
+	TArray<FCreatureAnimationShortClip> ShortClipList;
 
 
 };
