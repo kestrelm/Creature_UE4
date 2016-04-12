@@ -10,17 +10,24 @@
 #include "CreatureAnimStateNode.generated.h"
 #pragma  once
 UCLASS()
-class UCreatureAnimStateNode :public UEdGraphNode{
+class CREATUREEDITOR_API UCreatureAnimStateNode :public UEdGraphNode
+{
 	GENERATED_BODY()
+
 public:
+
 	UPROPERTY()
 	TArray<UEdGraphPin*> InputPins;
+
 	UPROPERTY()
 	TArray<UEdGraphPin*> OutputPins;
+
 	UPROPERTY(EditAnyWhere, Category = "CreaturePlugin")
 	FString AnimName;
+
 	UPROPERTY()
-		UCreatureAnimState* CompiledState;
+	UCreatureAnimState* CompiledState;
+
 public:
 	UCreatureAnimStateNode()
 		:UEdGraphNode()
@@ -30,6 +37,7 @@ public:
 		AnimName = TEXT("DefaultAnimName");
 	
 	}
+
 	virtual void OnRenameNode(const FString& NewName)override;
 	virtual bool CanUserDeleteNode() const override;
 #ifdef WITH_EDITOR
@@ -37,10 +45,10 @@ public:
 #endif
 	
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
-	//初始化当前节点，产生一个临时（未连接）的CompiledState
+
 	void InitNode(class UCreatureAnimStateMachine*);
-	//编译当前状态节点
-	void Compile();
+
+	virtual void Compile();
 
 	virtual FLinearColor GetNodeTitleColor() const override;
 };

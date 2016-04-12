@@ -106,7 +106,7 @@ void ACreatureCollectionActor::SetBluePrintActiveClip(FString clipName)
 }
 
 FTransform 
-ACreatureCollectionActor::GetBluePrintBoneXform(FString name_in, bool world_transform, float position_slide_factor)
+ACreatureCollectionActor::GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor)
 {
 	if (collection_clips.count(active_clip_name))
 	{
@@ -128,7 +128,7 @@ void ACreatureCollectionActor::UpdateActorAnimationToStart(ACreatureCollectionCl
 	auto cur_actor = cur_data.first;
 
 	cur_actor = cur_data.first;
-	cur_actor->SetBluePrintActiveAnimation(FString(cur_data.second.c_str()));
+	cur_actor->SetBluePrintActiveAnimation(FName(cur_data.second.c_str()));
 	cur_actor->SetBluePrintAnimationResetToStart();
 }
 

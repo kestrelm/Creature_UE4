@@ -51,7 +51,7 @@ struct FCreatureMeshCollectionToken
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	FString animation_name;
+	FName animation_name;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	int32 collection_data_index;
@@ -63,7 +63,7 @@ struct FCreatureMeshCollectionClip
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	FString collection_name;
+	FName collection_name;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	TArray<FCreatureMeshCollectionToken> sequence_clips;
@@ -168,7 +168,7 @@ public:
 
 	/** Starting animation clip */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	FString start_animation_name;
+	FName start_animation_name;
 
 	/** Current frame of the animation during playback */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
@@ -203,26 +203,26 @@ public:
 
 	// Blueprint version of setting the active animation name
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void SetBluePrintActiveAnimation(FString name_in);
+	void SetBluePrintActiveAnimation(FName name_in);
 
 	// Blueprint version of setting the blended active animation name
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void SetBluePrintBlendActiveAnimation(FString name_in, float factor);
+	void SetBluePrintBlendActiveAnimation(FName name_in, float factor);
 
 	// Blueprint version of setting a custom time range for a given animation
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time);
+	void SetBluePrintAnimationCustomTimeRange(FName name_in, int32 start_time, int32 end_time);
 
 	// Blueprint function to create a point cache for the creature character. This speeds up the playback performance.
 	// A small amount of time will be spent precomputing the point cache. You can reduce this time by increasing the approximation level.
 	// name_in is the name of the animation to cache, approximation_level is the approximation level. The higher the approximation level
 	// the faster the cache generation but lower the quality. 1 means no approximation, with 10 being the maximum value allowed.
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void MakeBluePrintPointCache(FString name_in, int32 approximation_level);
+	void MakeBluePrintPointCache(FName name_in, int32 approximation_level);
 
 	// Blueprint function to clear the point cache of a given animation
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void ClearBluePrintPointCache(FString name_in, int32 approximation_level);
+	void ClearBluePrintPointCache(FName name_in, int32 approximation_level);
 
 	// Blueprint function to enable/disable the use of all point caching on this mesh
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
@@ -236,7 +236,7 @@ public:
 	// determines how far left or right the transform is placed. The default value of 0 places it
 	// in the center of the bone, positve values places it to the right, negative to the left
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	FTransform GetBluePrintBoneXform(FString name_in, bool world_transform, float position_slide_factor);
+	FTransform GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor);
 
 	// Blueprint function that decides whether the animation will loop or not
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
@@ -264,15 +264,15 @@ public:
 
 	// Blueprint function that sets the alpha(opacity value) of a region
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void SetBluePrintRegionAlpha(FString region_name_in, uint8 alpha_in);
+	void SetBluePrintRegionAlpha(FName region_name_in, uint8 alpha_in);
 
 	// Blueprint function that removes the custom override alpha(opacity value) of a region
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void RemoveBluePrintRegionAlpha(FString region_name_in);
+	void RemoveBluePrintRegionAlpha(FName region_name_in);
 
 	// Blueprint function that sets up a custom z order for the various regions
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void SetBluePrintRegionCustomOrder(TArray<FString> order_in);
+	void SetBluePrintRegionCustomOrder(TArray<FName> order_in);
 
 	// Blueprint function that clears the custom z order for the various regions
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
@@ -284,15 +284,15 @@ public:
 
 	// Blueprint function that sets the active collection clip
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void SetBluePrintRegionItemSwap(FString region_name_in, int32 tag);
+	void SetBluePrintRegionItemSwap(FName region_name_in, int32 tag);
 
 	// Blueprint function that sets the active collection clip
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void RemoveBluePrintRegionItemSwap(FString region_name_in);
+	void RemoveBluePrintRegionItemSwap(FName region_name_in);
 
 	// Blueprint function that sets the active collection clip
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void SetBluePrintActiveCollectionClip(FString name_in);
+	void SetBluePrintActiveCollectionClip(FName name_in);
 
 	// Blueprint function that activates/deactivates the usage of anchor points exported into the asset. If active, the character will be translated relative to the anchor point defined for it.
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
@@ -301,8 +301,7 @@ public:
 	// Blueprint function that returns whether anchor points are active for the character
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	bool GetBluePrintUseAnchorPoints() const;
-
-
+	
 	CreatureCore& GetCore();
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
@@ -332,7 +331,7 @@ public:
 protected:
 
 	CreatureCore creature_core;
-	FString active_collection_clip_name;
+	FName active_collection_clip_name;
 	FCreatureMeshCollectionClip * active_collection_clip;
 	bool active_collection_loop;
 	bool active_collection_play;
@@ -341,7 +340,7 @@ protected:
 
 	void UpdateCoreValues();
 
-	void PrepareRenderData();
+	void PrepareRenderData(CreatureCore &forCore);
 
 	void RunTick(float DeltaTime);
 
@@ -353,7 +352,7 @@ protected:
 
 	void SwitchToCollectionClip(FCreatureMeshCollectionClip * clip_in);
 
-	void SetActiveCollectionAnimation(FCreatureMeshCollectionClip * clip_in);
+	virtual void SetActiveCollectionAnimation(FCreatureMeshCollectionClip * clip_in);
 
 	FCreatureMeshCollection *
 	GetCollectionDataFromClip(FCreatureMeshCollectionClip * clip_in);

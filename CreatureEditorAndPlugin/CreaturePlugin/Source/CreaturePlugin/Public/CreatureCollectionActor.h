@@ -82,7 +82,7 @@ public:
 	// determines how far left or right the transform is placed. The default value of 0 places it
 	// in the center of the bone, positve values places it to the right, negative to the left
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	FTransform GetBluePrintBoneXform(FString name_in, bool world_transform, float position_slide_factor);
+	FTransform GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor);
 
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
 	FCreatureAnimationCollectionEndEvent CreatureAnimationEndEvent;
