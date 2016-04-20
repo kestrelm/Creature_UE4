@@ -6,7 +6,15 @@ namespace UnrealBuildTool.Rules
     {
         private string ModulePath
         {
-            get { return Path.GetDirectoryName(RulesCompiler.GetModuleFilename(this.GetType().Name)); }
+            //get { return Path.GetDirectoryName(RulesCompiler.GetModuleFilename(this.GetType().Name)); }
+            get { 
+
+                
+                string ModuleCSFilename = RulesCompiler.GetFileNameFromType(GetType());
+                string ModuleBaseDirectory = Path.GetDirectoryName(ModuleCSFilename);
+
+                return ModuleBaseDirectory;
+            }
         }
 
         private string ThirdPartyPath
@@ -32,6 +40,8 @@ namespace UnrealBuildTool.Rules
                 isLibrarySupported = true;
                 string LibrariesPath = Path.Combine(ThirdPartyPath, "CreatureLib", "Libraries");
                 PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "libCreatureUE4Core.a"));
+
+                Definitions.Add(" GLM_FORCE_RADIANS");
             }
             else if (Target.Platform == UnrealTargetPlatform.HTML5)
             {

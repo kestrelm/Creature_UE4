@@ -29,6 +29,10 @@
 /// @date 2008-08-17 / 2011-06-15
 /// @author Christophe Riccio
 ///////////////////////////////////////////////////////////////////////////////////
+#if __APPLE__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshadow"
+#endif
 
 namespace glm{
 namespace detail
@@ -272,3 +276,7 @@ namespace detail
 
 }//namespace detail
 }//namespace glm
+
+#if __APPLE__
+#pragma clang diagnostic pop
+#endif

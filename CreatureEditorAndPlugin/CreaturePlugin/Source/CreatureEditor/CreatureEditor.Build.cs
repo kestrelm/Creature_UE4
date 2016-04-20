@@ -6,7 +6,15 @@ namespace UnrealBuildTool.Rules
     {
         private string ModulePath
         {
-            get { return Path.GetDirectoryName(RulesCompiler.GetModuleFilename(this.GetType().Name)); }
+            //get { return Path.GetDirectoryName(RulesCompiler.GetModuleFilename(this.GetType().Name)); }
+            get { 
+
+                
+                string ModuleCSFilename = RulesCompiler.GetFileNameFromType(GetType());
+                string ModuleBaseDirectory = Path.GetDirectoryName(ModuleCSFilename);
+
+                return ModuleBaseDirectory;
+            }
         }
 
         private string ThirdPartyPath

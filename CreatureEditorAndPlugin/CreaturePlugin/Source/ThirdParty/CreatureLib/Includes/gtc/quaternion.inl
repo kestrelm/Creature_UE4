@@ -31,6 +31,11 @@
 #include "../exponential.hpp"
 #include <limits>
 
+#if __APPLE__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshadow"
+#endif
+
 namespace glm{
 namespace detail
 {
@@ -928,3 +933,7 @@ namespace detail
 		return Result;
 	}
 }//namespace glm
+
+#if __APPLE__
+#pragma clang diagnostic pop
+#endif

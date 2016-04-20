@@ -14,6 +14,11 @@
 #include "DetailCategoryBuilder.h"
 #define LOCTEXT_NAMESPACE "AssetTypeEditors"
 
+#if __APPLE__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshadow"
+#endif
+
 void FCreatureAnimStoreEditor::RegisterTabSpawners(const TSharedRef<class FTabManager>& TabManager)
 {
 	FAssetEditorToolkit::RegisterTabSpawners(TabManager);
@@ -223,5 +228,9 @@ void SStoreDetailPanel::ConstructPreviewAnimationList()
 
 
 #undef LOCTEXT_NAMESPACE  
+
+#if __APPLE__
+#pragma clang diagnostic pop
+#endif
 
 
