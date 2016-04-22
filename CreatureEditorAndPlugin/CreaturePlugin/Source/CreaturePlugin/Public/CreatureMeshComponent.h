@@ -324,7 +324,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Components|Creature")
 	class UCreatureAnimStateMachine* StateMachineAsset;
 
-	UPROPERTY(Transient, BlueprintReadOnly)
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "Components|Creature")
 	class UCreatureAnimStateMachineInstance* StateMachineInstance;
 
 	//////////////////////////////////////////////////////////////////////////
