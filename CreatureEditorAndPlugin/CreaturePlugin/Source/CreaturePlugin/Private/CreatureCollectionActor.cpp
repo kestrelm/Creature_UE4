@@ -115,7 +115,7 @@ ACreatureCollectionActor::GetBluePrintBoneXform(FString name_in, bool world_tran
 		auto& cur_data = cur_collection.actor_sequence[ref_index];
 
 		auto cur_actor = cur_data.first;
-		return cur_actor->GetBluePrintBoneXform(name_in, world_transform, position_slide_factor);
+		return cur_actor->GetBluePrintBoneXform_Name(FName(*name_in), world_transform, position_slide_factor);
 	}
 
 	return FTransform();
@@ -128,7 +128,7 @@ void ACreatureCollectionActor::UpdateActorAnimationToStart(ACreatureCollectionCl
 	auto cur_actor = cur_data.first;
 
 	cur_actor = cur_data.first;
-	cur_actor->SetBluePrintActiveAnimation(FString(cur_data.second.c_str()));
+	cur_actor->SetBluePrintActiveAnimation_Name(FName(cur_data.second.c_str()));
 	cur_actor->SetBluePrintAnimationResetToStart();
 }
 

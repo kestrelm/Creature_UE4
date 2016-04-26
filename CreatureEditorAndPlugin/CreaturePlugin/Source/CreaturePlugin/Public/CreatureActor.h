@@ -94,33 +94,62 @@ public:
 	CreatureModule::CreatureManager * GetCreatureManager();
 
 	// Blueprint version of setting the active animation name
-	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature", meta = (DeprecatedFunction, DeprecationMessage = "Please replace with _Name version of this function to improve performance"))
 	void SetBluePrintActiveAnimation(FString name_in);
+	
+	// Blueprint version of setting the active animation name
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintActiveAnimation_Name(FName name_in);
+
+	// Blueprint version of setting the blended active animation name
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature", meta = (DeprecatedFunction, DeprecationMessage = "Please replace with _Name version of this function to improve performance"))
+	void SetBluePrintBlendActiveAnimation(FString name_in, float factor);
 
 	// Blueprint version of setting the blended active animation name
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void SetBluePrintBlendActiveAnimation(FString name_in, float factor);
+	void SetBluePrintBlendActiveAnimation_Name(FName name_in, float factor);
+
+	// Blueprint version of setting a custom time range for a given animation
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature", meta = (DeprecatedFunction, DeprecationMessage = "Please replace with _Name version of this function to improve performance"))
+	void SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time);
 
 	// Blueprint version of setting a custom time range for a given animation
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time);
+	void SetBluePrintAnimationCustomTimeRange_Name(FName name_in, int32 start_time, int32 end_time);
+
+	// Blueprint function to create a point cache for the creature character. This speeds up the playback performance.
+	// A small amount of time will be spent precomputing the point cache. You can reduce this time by increasing the approximation level.
+	// name_in is the name of the animation to cache, approximation_level is the approximation level. The higher the approximation level
+	// the faster the cache generation but lower the quality. 1 means no approximation, with 10 being the maximum value allowed.
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature", meta = (DeprecatedFunction, DeprecationMessage = "Please replace with _Name version of this function to improve performance"))
+	void MakeBluePrintPointCache(FString name_in, int32 approximation_level);
 
 	// Blueprint function to create a point cache for the creature character. This speeds up the playback performance.
 	// A small amount of time will be spent precomputing the point cache. You can reduce this time by increasing the approximation level.
 	// name_in is the name of the animation to cache, approximation_level is the approximation level. The higher the approximation level
 	// the faster the cache generation but lower the quality. 1 means no approximation, with 10 being the maximum value allowed.
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void MakeBluePrintPointCache(FString name_in, int32 approximation_level);
+	void MakeBluePrintPointCache_Name(FName name_in, int32 approximation_level);
+
+	// Blueprint function to clear the point cache of a given animation
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature", meta = (DeprecatedFunction, DeprecationMessage = "Please replace with _Name version of this function to improve performance"))
+	void ClearBluePrintPointCache(FString name_in, int32 approximation_level);
 
 	// Blueprint function to clear the point cache of a given animation
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void ClearBluePrintPointCache(FString name_in, int32 approximation_level);
+	void ClearBluePrintPointCache_Name(FName name_in, int32 approximation_level);
 
 	// Blueprint function that returns the transform given a bone name, position_slide_factor
 	// determines how far left or right the transform is placed. The default value of 0 places it
 	// in the center of the bone, positve values places it to the right, negative to the left
-	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature", meta = (DeprecatedFunction, DeprecationMessage = "Please replace with _Name version of this function to improve performance"))
 	FTransform GetBluePrintBoneXform(FString name_in, bool world_transform, float position_slide_factor);
+	
+	// Blueprint function that returns the transform given a bone name, position_slide_factor
+	// determines how far left or right the transform is placed. The default value of 0 places it
+	// in the center of the bone, positve values places it to the right, negative to the left
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	FTransform GetBluePrintBoneXform_Name(FName name_in, bool world_transform, float position_slide_factor);
 
 	// BLueprint function that returns whether a given input point is colliding with any of the bones
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
@@ -151,12 +180,20 @@ public:
 	float GetBluePrintAnimationFrame();
 
 	// Blueprint function that sets the alpha(opacity value) of a region
-	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature", meta = (DeprecatedFunction, DeprecationMessage = "Please replace with _Name version of this function to improve performance"))
 	void SetBluePrintRegionAlpha(FString region_name_in, uint8 alpha_in);
+
+	// Blueprint function that sets the alpha(opacity value) of a region
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintRegionAlpha_Name(FName region_name_in, uint8 alpha_in);
+
+	// Blueprint function that sets up a custom z order for the various regions
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature", meta = (DeprecatedFunction, DeprecationMessage = "Please replace with _Name version of this function to improve performance"))
+	void SetBluePrintRegionCustomOrder(TArray<FString> order_in);
 
 	// Blueprint function that sets up a custom z order for the various regions
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void SetBluePrintRegionCustomOrder(TArray<FString> order_in);
+	void SetBluePrintRegionCustomOrder_Name(TArray<FName> order_in);
 
 	// Blueprint function that clears the custom z order for the various regions
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")

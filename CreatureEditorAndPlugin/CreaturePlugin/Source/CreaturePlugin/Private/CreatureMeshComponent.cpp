@@ -22,25 +22,50 @@ UCreatureMeshComponent::UCreatureMeshComponent(const FObjectInitializer& ObjectI
 
 void UCreatureMeshComponent::SetBluePrintActiveAnimation(FString name_in)
 {
+	creature_core.SetBluePrintActiveAnimation(FName(*name_in));
+}
+
+void UCreatureMeshComponent::SetBluePrintActiveAnimation_Name(FName name_in)
+{
 	creature_core.SetBluePrintActiveAnimation(name_in);
 }
 
 void UCreatureMeshComponent::SetBluePrintBlendActiveAnimation(FString name_in, float factor)
+{
+	creature_core.SetBluePrintBlendActiveAnimation(FName(*name_in), factor);
+}
+
+void UCreatureMeshComponent::SetBluePrintBlendActiveAnimation_Name(FName name_in, float factor)
 {
 	creature_core.SetBluePrintBlendActiveAnimation(name_in, factor);
 }
 
 void UCreatureMeshComponent::SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time)
 {
+	creature_core.SetBluePrintAnimationCustomTimeRange(FName(*name_in), start_time, end_time);
+}
+
+void UCreatureMeshComponent::SetBluePrintAnimationCustomTimeRange_Name(FName name_in, int32 start_time, int32 end_time)
+{
 	creature_core.SetBluePrintAnimationCustomTimeRange(name_in, start_time, end_time);
 }
 
 void UCreatureMeshComponent::MakeBluePrintPointCache(FString name_in, int32 approximation_level)
 {
+	creature_core.MakeBluePrintPointCache(FName(*name_in), approximation_level);
+}
+
+void UCreatureMeshComponent::MakeBluePrintPointCache_Name(FName name_in, int32 approximation_level)
+{
 	creature_core.MakeBluePrintPointCache(name_in, approximation_level);
 }
 
 void UCreatureMeshComponent::ClearBluePrintPointCache(FString name_in, int32 approximation_level)
+{
+	creature_core.ClearBluePrintPointCache(FName(*name_in), approximation_level);
+}
+
+void UCreatureMeshComponent::ClearBluePrintPointCache_Name(FName name_in, int32 approximation_level)
 {
 	creature_core.ClearBluePrintPointCache(name_in, approximation_level);
 }
@@ -55,8 +80,12 @@ bool UCreatureMeshComponent::GetBluePrintUsePointCache()
 	return creature_core.GetGlobalEnablePointCache();
 }
 
-FTransform 
-UCreatureMeshComponent::GetBluePrintBoneXform(FString name_in, bool world_transform, float position_slide_factor)
+FTransform UCreatureMeshComponent::GetBluePrintBoneXform(FString name_in, bool world_transform, float position_slide_factor)
+{
+	return creature_core.GetBluePrintBoneXform(FName(*name_in), world_transform, position_slide_factor, GetComponentToWorld());
+}
+
+FTransform UCreatureMeshComponent::GetBluePrintBoneXform_Name(FName name_in, bool world_transform, float position_slide_factor)
 {
 	return creature_core.GetBluePrintBoneXform(name_in, world_transform, position_slide_factor, GetComponentToWorld());
 }
@@ -120,15 +149,35 @@ UCreatureMeshComponent::GetBluePrintAnimationFrame()
 
 void UCreatureMeshComponent::SetBluePrintRegionAlpha(FString region_name_in, uint8 alpha_in)
 {
+	creature_core.SetBluePrintRegionAlpha(FName(*region_name_in), alpha_in);
+}
+
+void UCreatureMeshComponent::SetBluePrintRegionAlpha_Name(FName region_name_in, uint8 alpha_in)
+{
 	creature_core.SetBluePrintRegionAlpha(region_name_in, alpha_in);
 }
 
 void UCreatureMeshComponent::RemoveBluePrintRegionAlpha(FString region_name_in)
 {
+	creature_core.RemoveBluePrintRegionAlpha(FName(*region_name_in));
+}
+
+void UCreatureMeshComponent::RemoveBluePrintRegionAlpha_Name(FName region_name_in)
+{
 	creature_core.RemoveBluePrintRegionAlpha(region_name_in);
 }
 
 void UCreatureMeshComponent::SetBluePrintRegionCustomOrder(TArray<FString> order_in)
+{
+	TArray<FName> order_name;
+	for (const FString &str : order_in)
+	{
+		order_name.Add(FName(*str));
+	}
+	creature_core.SetBluePrintRegionCustomOrder(order_name);
+}
+
+void UCreatureMeshComponent::SetBluePrintRegionCustomOrder_Name(TArray<FName> order_in)
 {
 	creature_core.SetBluePrintRegionCustomOrder(order_in);
 }
@@ -145,6 +194,11 @@ void UCreatureMeshComponent::SetIsDisabled(bool flag_in)
 
 void UCreatureMeshComponent::SetBluePrintRegionItemSwap(FString region_name_in, int32 tag)
 {
+	creature_core.SetBluePrintRegionItemSwap(FName(*region_name_in), tag);
+}
+
+void UCreatureMeshComponent::SetBluePrintRegionItemSwap_Name(FName region_name_in, int32 tag)
+{
 	creature_core.SetBluePrintRegionItemSwap(region_name_in, tag);
 }
 
@@ -159,6 +213,11 @@ bool UCreatureMeshComponent::GetBluePrintUseAnchorPoints() const
 }
 
 void UCreatureMeshComponent::RemoveBluePrintRegionItemSwap(FString region_name_in)
+{
+	creature_core.RemoveBluePrintRegionItemSwap(FName(*region_name_in));
+}
+
+void UCreatureMeshComponent::RemoveBluePrintRegionItemSwap_Name(FName region_name_in)
 {
 	creature_core.RemoveBluePrintRegionItemSwap(region_name_in);
 }
@@ -206,16 +265,24 @@ void UCreatureMeshComponent::SetActiveCollectionAnimation(FCreatureMeshCollectio
 		RecreateRenderProxy(true);
 	}
 
-	SetMaterial(0, cur_data.collection_material);
-	if (localRenderProxy)
+	if (GetMaterial(0) != cur_data.collection_material)
 	{
-		localRenderProxy->SetNeedsMaterialUpdate(true);
+		SetMaterial(0, cur_data.collection_material);
+		if (localRenderProxy)
+		{
+			localRenderProxy->SetNeedsMaterialUpdate(true);
+		}
 	}
 
 	ForceAnUpdate(data_idx);
 }
 
 void UCreatureMeshComponent::SetBluePrintActiveCollectionClip(FString name_in)
+{
+	SetBluePrintActiveCollectionClip_Name(FName(*name_in));
+}
+
+void UCreatureMeshComponent::SetBluePrintActiveCollectionClip_Name(FName name_in)
 {
 	if (!enable_collection_playback)
 	{
@@ -259,7 +326,7 @@ void UCreatureMeshComponent::InitStandardValues()
 	active_collection_loop = true;
 	active_collection_play = true;
 	creature_animation_asset = nullptr;
-	can_use_point_cache = false;
+	can_use_point_cache = true;
 
 	// Generate a single dummy triangle
 	/*
@@ -287,10 +354,10 @@ void UCreatureMeshComponent::UpdateCoreValues()
 	creature_core.region_overlap_z_delta = region_overlap_z_delta;
 }
 
-void UCreatureMeshComponent::PrepareRenderData()
+void UCreatureMeshComponent::PrepareRenderData(CreatureCore &forCore)
 {
 	RecreateRenderProxy(true);
-	SetProceduralMeshTriData(creature_core.GetProcMeshData());
+	SetProceduralMeshTriData(forCore.GetProcMeshData());
 }
 
 void UCreatureMeshComponent::InitializeComponent()
@@ -363,10 +430,7 @@ UCreatureMeshComponent::RunCollectionTick(float DeltaTime)
 		return;
 	}
 
-	if (cur_data->animation_speed > 0)
-	{
-		true_delta_time = DeltaTime * cur_data->animation_speed;
-	}
+	true_delta_time *= cur_data->animation_speed;
 
 	if (active_collection_play == false)
 	{
@@ -389,7 +453,7 @@ UCreatureMeshComponent::RunCollectionTick(float DeltaTime)
 		bool announce_end = cur_core.GetAndClearShouldAnimEnd();
 
 		float cur_runtime = (cur_core.GetCreatureManager()->getActualRunTime());
-
+		
 		bool is_collection_start = (active_collection_clip->active_index == 0) && announce_start;
 		bool is_collection_end = (active_collection_clip->active_index == active_collection_clip->sequence_clips.Num() - 1) && announce_end;
 
@@ -440,6 +504,36 @@ UCreatureMeshComponent::RunCollectionTick(float DeltaTime)
 				SetActiveCollectionAnimation(active_collection_clip);
 			}
 		}
+		else if (next_time <= clip_animation->getStartTime())
+		{
+			// if we're going backwards, see if we should switch to the previous clip
+			// At the end of current clip, see if we should switch to the next clip
+			int next_active_index = active_collection_clip->active_index - 1;
+			int seq_num = active_collection_clip->sequence_clips.Num();
+			bool do_switch = false;
+			if (next_active_index < 0)
+			{
+				if (active_collection_loop)
+				{
+					active_collection_clip->active_index = seq_num - 1;
+					do_switch = true;
+				}
+			}
+			else {
+				active_collection_clip->active_index--;
+				do_switch = true;
+			}
+
+			if (do_switch)
+			{
+				SetActiveCollectionAnimation(active_collection_clip);
+
+				auto& cur_seq = active_collection_clip->sequence_clips[active_collection_clip->active_index];
+				auto data_idx = cur_seq.collection_data_index;
+				auto& cur_data = collectionData[data_idx];
+				cur_data.creature_core.SetBluePrintAnimationResetToEnd();
+			}
+		}
 
 		DoCreatureMeshUpdate(GetCollectionDataIndexFromClip(active_collection_clip));
 	}
@@ -458,7 +552,6 @@ void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx)
 	// Update Mesh
 	SetBoundsScale(creature_bounds_scale);
 	SetBoundsOffset(creature_bounds_offset);
-	SetExtraXForm(GetComponentToWorld());
 
 	ForceAnUpdate(render_packet_idx);
 
@@ -515,6 +608,12 @@ UCreatureMeshComponent::GetCollectionDataFromClip(FCreatureMeshCollectionClip * 
 void UCreatureMeshComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if ((GetOwner() && GetOwner()->bHidden) || bHiddenInGame)
+	{
+		return;
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 	//ChangedByGod of Pen
 	//////////////////////////////////////////////////////////////////////////
@@ -538,27 +637,32 @@ void UCreatureMeshComponent::OnRegister()
 {
 	Super::OnRegister();
 
-	StandardInit();
+	LoadAnimationFromStore();
+	if (enable_collection_playback)
+	{
+		CollectionInit();
+	}
+	else {
+		StandardInit();
+	}
 }
 
 void UCreatureMeshComponent::StandardInit()
 {
-	LoadAnimationFromStore();
 	UpdateCoreValues();
-
 	creature_core.do_file_warning = !enable_collection_playback;
 	bool retval = creature_core.InitCreatureRender();
 	creature_core.region_alpha_map.Empty();
 
 	if (retval)
 	{
-		PrepareRenderData();
-		RunTick(0.1f);
-		
-		if (!start_animation_name.IsEmpty())
+		if (!start_animation_name.IsNone())
 		{
-			SetBluePrintActiveAnimation(start_animation_name);
+			SetBluePrintActiveAnimation_Name(start_animation_name);
 		}
+
+		creature_core.SetBluePrintAnimationResetToStart();
+		PrepareRenderData(creature_core);
 	}
 }
 
@@ -602,12 +706,31 @@ void UCreatureMeshComponent::CollectionInit()
 					}
 				}
 			}
+
+			// needed to ensure point arrays have proper data
+			cur_core.SetBluePrintAnimationResetToStart();
 		}
 	}
 
-	if (!start_animation_name.IsEmpty())
+	if (!start_animation_name.IsNone())
 	{
-		SetBluePrintActiveCollectionClip(start_animation_name);
+		active_collection_clip = nullptr;
+		active_collection_clip_name = NAME_None;
+		SetBluePrintActiveCollectionClip_Name(start_animation_name);
+
+		if (active_collection_clip)
+		{
+			auto& cur_seq = active_collection_clip->sequence_clips[active_collection_clip->active_index];
+			auto data_idx = cur_seq.collection_data_index;
+
+			if (collectionData.IsValidIndex(data_idx))
+			{
+				auto& cur_data = collectionData[data_idx];
+
+				// prepare default render data to match code path of StandardInit
+				PrepareRenderData(collectionData[data_idx].creature_core);
+			}
+		}
 	}
 }
 
@@ -647,6 +770,7 @@ FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
 	}
 
 	render_proxy_ready = true;
+	ProcessCalcBounds(Proxy);
 
 	return Proxy;
 }
@@ -677,8 +801,32 @@ void UCreatureMeshComponent::LoadAnimationFromStore()
 	{
 		return;
 	}
+
 	collectionData.Empty();
 	collectionClips.Empty();
 	ClipStore->LoadAnimationDataToComponent(this);
+	
 	enable_collection_playback = true;
+
+	// previous pointers are now invalid
+	active_collection_clip = nullptr;
+	active_collection_clip_name = NAME_None;
+	FCProceduralMeshSceneProxy *localRenderProxy = GetLocalRenderProxy();
+	if (localRenderProxy)
+	{
+		localRenderProxy->ResetAllRenderPackets();
+
+		// Loop through and add in the collectionData
+		for (auto& cur_data : collectionData)
+		{
+			auto proc_mesh_data = cur_data.creature_core.GetProcMeshData();
+			if (proc_mesh_data.point_num > 0)
+			{
+				localRenderProxy->AddRenderPacket(&proc_mesh_data);
+			}
+		}
+
+		render_proxy_ready = true;
+		ProcessCalcBounds(localRenderProxy);
+	}
 }

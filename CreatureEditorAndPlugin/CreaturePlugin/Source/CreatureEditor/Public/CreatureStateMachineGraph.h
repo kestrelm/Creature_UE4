@@ -9,7 +9,7 @@
 #include "CreatureStateMachineGraph.generated.h"
 #pragma once
 UCLASS()
-class  UCreatureStateMachineGraph :public UEdGraph{
+class CREATUREEDITOR_API UCreatureStateMachineGraph :public UEdGraph{
 	GENERATED_UCLASS_BODY()
 public:
 	UPROPERTY()

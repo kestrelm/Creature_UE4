@@ -11,10 +11,12 @@ class CREATUREPLUGIN_API UCreatureAnimStateMachine :
 	public UObject
 {
 	GENERATED_BODY()
-		UCreatureAnimStateMachine();
 public:
+
+	UCreatureAnimStateMachine();
+
 	UPROPERTY(EditAnywhere, Category = "CreatureAnimStateMachine")
-		FString Name;
+	FString Name;
 
 #if WITH_EDITORONLY_DATA
 	UPROPERTY()
