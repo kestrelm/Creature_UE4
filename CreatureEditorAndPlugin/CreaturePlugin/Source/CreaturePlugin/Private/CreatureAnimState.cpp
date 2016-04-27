@@ -12,12 +12,12 @@ void UCreatureAnimState::BeginState(UCreatureAnimStateMachineInstance *forInstan
 	check(targetMeshComp);
 	if (targetMeshComp->enable_collection_playback)
 	{
-		targetMeshComp->SetBluePrintActiveCollectionClip(AnimStateName);
+		targetMeshComp->SetBluePrintActiveCollectionClip_Name(AnimStateName);
 	}
 	else
 	{
 		static const float blendFactor = 0.1f;	// TODO: consider making a tunable UPROPERTY
-		targetMeshComp->SetBluePrintBlendActiveAnimation(AnimStateName, blendFactor);
+		targetMeshComp->SetBluePrintBlendActiveAnimation_Name(AnimStateName, blendFactor);
 	}
 }
 

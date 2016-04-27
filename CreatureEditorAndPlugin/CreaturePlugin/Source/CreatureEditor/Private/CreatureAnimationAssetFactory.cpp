@@ -57,6 +57,7 @@ bool UCreatureAnimationAssetFactory::ImportSourceFile(UCreatureAnimationAsset *f
 
 	std::string saveString(TCHAR_TO_UTF8(*readString));
 
+	forAsset->CreatureZipBinary.Reset();
 	FArchiveSaveCompressedProxy Compressor =
 		FArchiveSaveCompressedProxy(forAsset->CreatureZipBinary, ECompressionFlags::COMPRESS_ZLIB);
 	TArray<uint8> writeData;

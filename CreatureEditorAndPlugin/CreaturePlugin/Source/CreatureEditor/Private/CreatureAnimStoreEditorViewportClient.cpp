@@ -33,7 +33,7 @@ FCreatureAnimStoreEditorViewportClient::FCreatureAnimStoreEditorViewportClient(c
 	if (EditingStore->ClipList.Num()!=0)
 	{
 		//默认播放第一个Clip
-		EditingCreatureMesh->SetBluePrintActiveCollectionClip(EditingStore->ClipList[0].ClipName);
+		EditingCreatureMesh->SetBluePrintActiveCollectionClip_Name(EditingStore->ClipList[0].ClipName);
 	}
 
 }
@@ -84,7 +84,7 @@ void FCreatureAnimStoreEditorViewportClient::SetUpCamera()
 
 void FCreatureAnimStoreEditorViewportClient::ChangePreviewAnimation(FString AnimationName)
 {
-	EditingCreatureMesh->SetBluePrintActiveCollectionClip(AnimationName);
+	EditingCreatureMesh->SetBluePrintActiveCollectionClip_Name(FName(*AnimationName));
 }
 
 void FCreatureAnimStoreEditorViewportClient::ReConstructMesh()
@@ -104,7 +104,7 @@ void FCreatureAnimStoreEditorViewportClient::ReConstructMesh()
 		if (EditingStore->ClipList.Num() != 0)
 		{
 			//默认播放第一个Clip
-			EditingCreatureMesh->SetBluePrintActiveCollectionClip(EditingStore->ClipList[0].ClipName);
+			EditingCreatureMesh->SetBluePrintActiveCollectionClip_Name(EditingStore->ClipList[0].ClipName);
 		}
 	}
 }

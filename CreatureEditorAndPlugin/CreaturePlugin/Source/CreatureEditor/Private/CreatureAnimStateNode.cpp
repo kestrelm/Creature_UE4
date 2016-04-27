@@ -35,7 +35,7 @@ void UCreatureAnimStateNode::PostEditChangeProperty(FPropertyChangedEvent& Prope
 
 void UCreatureAnimStateNode::Compile()
 {
-	CompiledState->AnimStateName = AnimName;
+	CompiledState->AnimStateName = FName(*AnimName);
 
 	CompiledState->TransitionList.Empty();
 	for (UEdGraphPin* Pin : Pins)
@@ -58,14 +58,12 @@ void UCreatureAnimStateNode::Compile()
 					//向状态机注册当前状态转换信息
 					CompiledState->TransitionList.Add(Tran);
 				}
-				
-
 			}
 		}
-
 	}
+
 	//如果是根节点,通知状态机
-	if (AnimName==FString(TEXT("Default")))
+	if (AnimName== TEXT("Default"))
 	{
 		CompiledState->AnimStateMachine->RootState = CompiledState;
 	}
