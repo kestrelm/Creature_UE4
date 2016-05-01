@@ -147,6 +147,12 @@ UCreatureMeshComponent::GetBluePrintAnimationFrame()
 	return creature_core.GetBluePrintAnimationFrame();
 }
 
+void 
+UCreatureMeshComponent::SetBluePrintAnimationFrame(float time_in)
+{
+	creature_core.SetBluePrintAnimationFrame(time_in);
+}
+
 void UCreatureMeshComponent::SetBluePrintRegionAlpha(FString region_name_in, uint8 alpha_in)
 {
 	creature_core.SetBluePrintRegionAlpha(FName(*region_name_in), alpha_in);

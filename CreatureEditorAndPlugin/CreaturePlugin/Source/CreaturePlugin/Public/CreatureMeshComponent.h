@@ -291,6 +291,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	float GetBluePrintAnimationFrame();
 
+	// Blueprint function that set the current animation frame
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintAnimationFrame(float time_in);
+
 	// Blueprint function that sets the alpha(opacity value) of a region
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature", meta=(DeprecatedFunction, DeprecationMessage = "Please replace with _Name version of this function to improve performance"))
 	void SetBluePrintRegionAlpha(FString region_name_in, uint8 alpha_in);
