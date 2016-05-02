@@ -22,7 +22,7 @@ Most of the new work will now be focused on the files in **CreatureEditorAndPlug
 Feature requests regarding the core Creature UE4 Runtime can be sent directly to: creature@kestrelmoon.com . For bugs/requests with regard to the Creature UE4 Runtime Editor, please send them to:  [God of Pen](https://github.com/ldl19691031/CreatureUE4PluginWithEditor)
 
 ##Dinosaur Parade
-A scene in the age of dinosaurs, with animation authored and exported from Creature into UE4. This demonstrates of 200 Creature Characters in realtime running with the Creature UE4 Plugin.
+A scene in the age of dinosaurs, with animation authored and exported from Creature into UE4. This show 200+ Creature Characters in realtime running with the Creature UE4 Plugin.
 
 ![img](https://raw.githubusercontent.com/kestrelm/Creature_UE4/master/plugin_banner2.png)
 
