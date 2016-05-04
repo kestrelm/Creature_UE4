@@ -26,7 +26,7 @@ A scene in the age of dinosaurs, with animation authored and exported from Creat
 
 ![img](https://raw.githubusercontent.com/kestrelm/Creature_UE4/master/plugin_banner2.png)
 
-Video demo is [here](https://youtu.be/jzm4D1iTFO0).
+Video demo is [here](https://youtu.be/HWdnUODioko).
 
 ##Elephant Stomp! | Game Tech Demo
 Elephant Stomp! is a demo game showcasing the Creature Animation System and its UE4 Plugin. The entire game runs off the Creature UE4 Plugin and is written 100% in the BP system.
