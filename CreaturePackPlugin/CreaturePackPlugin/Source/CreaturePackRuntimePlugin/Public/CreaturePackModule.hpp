@@ -581,10 +581,14 @@ public:
 	// Smoothly blends to a target animation
 	void blendToAnimation(const std::string& nameIn, float blendDelta)
 	{
-		prevAnimationName = activeAnimationName;
-		activeAnimationName = nameIn;
-		animBlendFactor = 0;
-		animBlendDelta = blendDelta;
+		if (runTimeMap.count(nameIn) > 0) {
+			prevAnimationName = activeAnimationName;
+			activeAnimationName = nameIn;
+			animBlendFactor = 0;
+			animBlendDelta = blendDelta;
+
+			runTimeMap[activeAnimationName] = data.animClipMap[activeAnimationName].startTime;
+		}
 	}
 
 	void setRunTime(float timeIn)
