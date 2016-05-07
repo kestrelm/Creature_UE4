@@ -71,6 +71,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	int32 attach_vertex_id;
 
+	/** The z value offset of each mesh region */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	float region_offset_z;
+
 	// Blueprint version of setting the active animation name
 	UFUNCTION(BlueprintCallable, Category = "Components|CreaturePack")
 	void SetActiveAnimation(FString name_in);
@@ -122,6 +126,8 @@ protected:
 	FProceduralPackMeshTriData GetProcMeshData();
 
 	void doCreatureMeshUpdate(int render_packet_idx = -1);
+	
+	void runRegionOffsetZs();
 
 	CreaturePackLoader * packData;
 	std::mutex updateLock, tickLock;

@@ -51,6 +51,7 @@ UCreaturePackMeshComponent::UCreaturePackMeshComponent(const FObjectInitializer&
 	animation_frame = 0.0f;
 	creature_debug_draw = false;
 	attach_vertex_id = -1;
+	region_offset_z = 0.01f;
 }
 
 void UCreaturePackMeshComponent::SetActiveAnimation(FString name_in)
@@ -265,6 +266,7 @@ UCreaturePackMeshComponent::runTick(float deltaTime)
 
 	playerObj->stepTime(deltaTime * animation_speed);
 	playerObj->syncRenderData();
+	runRegionOffsetZs();
 
 	animation_frame = playerObj->getRunTime();
 
@@ -294,6 +296,31 @@ UCreaturePackMeshComponent::doCreatureMeshUpdate(int render_packet_idx)
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Walk pos is: (%f, %f, %f)"), wTransform.GetLocation().X,
 			wTransform.GetLocation().Y,
 			wTransform.GetLocation().Z));
+	}
+}
+
+void 
+UCreaturePackMeshComponent::runRegionOffsetZs()
+{
+	if (!packData)
+	{
+		return;
+	}
+
+	auto& mesh_regions_list = packData->meshRegionsList;
+	float set_region_z = 0.0f;
+	for (auto cur_region : mesh_regions_list)
+	{
+		auto start_idx = cur_region.first;
+		auto end_idx = cur_region.second;
+
+		float * cur_pts = playerObj->render_points.get();
+		for (auto i = start_idx; i <= end_idx; i++)
+		{
+			cur_pts[i * 3 + 2] = set_region_z;
+		}
+
+		set_region_z += region_offset_z;
 	}
 }
 

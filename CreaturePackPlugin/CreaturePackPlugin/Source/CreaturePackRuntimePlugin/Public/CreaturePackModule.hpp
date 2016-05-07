@@ -40,6 +40,8 @@
 #include <unordered_map>
 #include <vector>
 #include <memory>
+#include <array>
+#include <stack>
 
 class CreatureTimeSample
 {
@@ -245,6 +247,7 @@ public:
     CreaturePackLoader(const std::vector<uint8_t>& byteArray)
     {
 		runDecoder(byteArray);
+		meshRegionsList = findConnectedRegions();
     }
 
     virtual ~CreaturePackLoader() {}
@@ -343,6 +346,7 @@ public:
     std::vector<mpMini::msg_mini_generic_data> fileData;
     std::vector<std::string> headerList;
     std::vector<int32> animPairsOffsetList;
+	std::vector<std::pair<uint32_t, uint32_t>> meshRegionsList;
     
 protected:
     void runDecoder(const std::vector<uint8_t>& byteArray)
@@ -385,6 +389,116 @@ protected:
 		}
 
     }
+
+	class graphNode {
+	public:
+		graphNode()
+			: graphNode(-1)
+		{
+
+		}
+
+		graphNode(int idxIn)
+		{
+			idx = idxIn;
+			visited = false;
+		}
+
+		int idx;
+		std::vector<int> neighbours;
+		bool visited;
+	};
+
+	std::unordered_map<uint32_t, graphNode> formUndirectedGraph() const
+	{
+		std::unordered_map<uint32_t, graphNode> retGraph;
+		auto numTriangles = getNumIndices() / 3;
+		for (auto i = 0; i < numTriangles; i++)
+		{
+			std::array<uint32_t, 3> triIndices;
+			triIndices[0] = indices.get()[i * 3];
+			triIndices[1] = indices.get()[i * 3 + 1];
+			triIndices[2] = indices.get()[i * 3 + 2];
+
+			for (auto triIndex : triIndices)
+			{
+				if (retGraph.count(triIndex) == 0)
+				{
+					retGraph[triIndex] = graphNode(triIndex);
+				}
+
+				auto& curGraphNode = retGraph[triIndex];
+				for (auto j = 0; j < triIndices.size(); j++)
+				{
+					auto cmpIndex = triIndices[j];
+					if (cmpIndex != triIndex)
+					{
+						curGraphNode.neighbours.push_back(cmpIndex);
+					}
+				}
+			}
+		}
+
+		return retGraph;
+	}
+
+	std::vector<uint32_t>
+	regionsDFS(std::unordered_map<uint32_t, graphNode>& graph, int32 idx) const
+	{
+		std::vector<uint32_t> retData;
+		if (graph[idx].visited)
+		{
+			return retData;
+		}
+
+		std::stack<uint32_t> gstack;
+		gstack.push(idx);
+
+		while (gstack.empty() == false)
+		{
+			auto curIdx = gstack.top();
+			gstack.pop();
+
+			auto& curNode = graph[curIdx];
+			if (curNode.visited == false)
+			{
+				curNode.visited = true;
+				retData.push_back(curNode.idx);
+				// search all connected for curNode
+				for (auto neighbourIdx : curNode.neighbours)
+				{
+					gstack.push(neighbourIdx);
+				}
+			}
+		}
+
+		return retData;
+	}
+
+	std::vector<std::pair<uint32_t, uint32_t>>
+	findConnectedRegions() const
+	{
+		std::vector<std::pair<uint32_t, uint32_t>> regionsList;
+		std::unordered_map<uint32_t, graphNode> graph = formUndirectedGraph();
+
+		// Run depth first search
+		uint32_t regionIdx = 0;
+		for (auto i = 0; i < getNumIndices(); i++)
+		{
+			auto curIdx = indices.get()[i];
+			if (graph[curIdx].visited == false)
+			{
+				std::vector<uint32_t> indicesList = regionsDFS(graph, curIdx);
+				std::sort(indicesList.begin(), indicesList.end());
+
+				regionsList.push_back(std::pair<uint32_t, uint32_t>(indicesList[0], indicesList[indicesList.size() - 1]));
+
+				regionIdx++;
+			}
+		}
+
+		return regionsList;
+	}
 };
 
 // Base Player class that target renderers use
