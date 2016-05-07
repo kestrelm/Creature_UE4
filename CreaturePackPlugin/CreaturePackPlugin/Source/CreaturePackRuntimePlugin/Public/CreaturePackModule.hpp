@@ -132,6 +132,12 @@ public:
 	CreaturePackSampleData sampleTime(float timeIn) const
 	{
 		int32 lookupTime = (int32)(roundf(timeIn));
+		if (timeSamplesMap.count(lookupTime) == 0)
+		{
+			float curTime = timeSamplesMap.begin()->second.beginTime;
+			return CreaturePackSampleData((int32)curTime, (int32)curTime, 0.0f);
+		}
+
 		float lowTime = (float)timeSamplesMap.at(lookupTime).beginTime;
 		float highTime = (float)timeSamplesMap.at(lookupTime).endTime;
 		

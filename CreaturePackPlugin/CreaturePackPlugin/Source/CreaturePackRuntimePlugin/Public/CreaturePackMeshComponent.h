@@ -41,8 +41,10 @@
 #include "CustomPackProceduralMeshComponent.h"
 #include "CreaturePackModule.hpp"
 #include "CreaturePackAnimationAsset.h"
+#include "UnrealEd.h"
 #include "CreaturePackMeshComponent.generated.h"
 
+// UCreaturePackMeshComponent
 UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup=Rendering)
 class CREATUREPACKRUNTIMEPLUGIN_API UCreaturePackMeshComponent : public UCustomPackProceduralMeshComponent //, public IInterface_CollisionDataProvider
 {
@@ -84,7 +86,7 @@ public:
 	// Blueprint function that returns the world space position of a vertex by id. A value of -1 will result in the use of
 	// the attach_vertex_id property value.
 	UFUNCTION(BlueprintCallable, Category = "Components|CreaturePack")
-	FVector GetAttachmentPosition(int32 vertex_id);
+	FVector GetAttachmentPosition(int32 vertex_id = -1) const;
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 
@@ -101,6 +103,8 @@ public:
 
 	static CreaturePackLoader * getPackData(const FString& filenameIn);
 
+	bool isPlayerValid() const;
+
 protected:
 
 	static std::string ConvertToString(const FString &str)
@@ -108,8 +112,6 @@ protected:
 		std::string t = TCHAR_TO_UTF8(*str);
 		return t;
 	}
-
-	bool isPlayerValid() const;
 
 	bool initCreatureRender();
 
@@ -122,7 +124,7 @@ protected:
 	void doCreatureMeshUpdate(int render_packet_idx = -1);
 
 	CreaturePackLoader * packData;
-	std::mutex updateLock;
+	std::mutex updateLock, tickLock;
 	TArray<uint8> regionAlphas;
 	std::shared_ptr<CreaturePackPlayer> playerObj;
 };

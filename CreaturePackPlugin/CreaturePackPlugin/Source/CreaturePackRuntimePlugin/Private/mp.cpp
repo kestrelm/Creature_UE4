@@ -713,15 +713,15 @@ namespace mpMini {
 		if (!msg_mini_read_str_size(&str_size))
 			return false;
 
-		char * raw_data = new char[str_size];
+		std::shared_ptr<char> raw_data = std::shared_ptr<char>(new char[str_size + 1], std::default_delete<char[]>());
 
-		if (!read(raw_data, str_size)) {
+		if (!read(raw_data.get(), str_size)) {
 			error = DATA_READING_ERROR;
 			return false;
 		}
 
-		raw_data[str_size] = 0;
-		data = std::string(raw_data);
+		raw_data.get()[str_size] = 0;
+		data = std::string(raw_data.get());
 
 		return true;
 	}

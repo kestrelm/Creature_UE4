@@ -18,6 +18,7 @@ FString UCreaturePackAnimationAsset::GetCreatureFilename() const
 	{
 		return creature_filename;
 	}
+
 #else
 	return creature_filename;
 #endif

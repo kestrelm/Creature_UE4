@@ -36,7 +36,8 @@
 #include "CreaturePackRuntimePluginPCH.h"
 #include "CreaturePackMeshComponent.h"
 
-static TMap<FString, CreaturePackLoader> globalCreaturePackLoaders;
+static TMap<FString, CreaturePackLoader *> globalCreaturePackLoaders;
+static std::mutex loadLock;
 
 // UCreaturePackMeshComponent
 UCreaturePackMeshComponent::UCreaturePackMeshComponent(const FObjectInitializer& ObjectInitializer)
@@ -84,7 +85,7 @@ UCreaturePackMeshComponent::SetShouldLoop(bool flagIn)
 }
 
 FVector 
-UCreaturePackMeshComponent::GetAttachmentPosition(int32 vertex_id)
+UCreaturePackMeshComponent::GetAttachmentPosition(int32 vertex_id) const
 {
 	if (!isPlayerValid())
 	{
@@ -103,10 +104,14 @@ UCreaturePackMeshComponent::GetAttachmentPosition(int32 vertex_id)
 	}
 
 	auto pts_array = playerObj->render_points.get();
-	return FVector(pts_array[vertex_id * 3],
-		pts_array[vertex_id * 3 + 1],
-		pts_array[vertex_id * 3 + 2]
+	auto cur_point = FVector(pts_array[vertex_id * 3],
+		pts_array[vertex_id * 3 + 2],
+		pts_array[vertex_id * 3 + 1]
 		);
+
+	FVector ret_point = GetComponentToWorld().TransformPosition(cur_point);
+
+	return ret_point;
 }
 
 void UCreaturePackMeshComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction * ThisTickFunction)
@@ -156,7 +161,7 @@ UCreaturePackMeshComponent::loadPackData(const FString& filenameIn,
 		raw_data[i] = fileData[i];
 	}
 
-	globalCreaturePackLoaders.Add(filenameIn, CreaturePackLoader(raw_data));
+	globalCreaturePackLoaders.Add(filenameIn, new CreaturePackLoader(raw_data));
 
 	return true;
 }
@@ -166,7 +171,7 @@ UCreaturePackMeshComponent::getPackData(const FString& filenameIn)
 {
 	if (globalCreaturePackLoaders.Contains(filenameIn))
 	{
-		return &globalCreaturePackLoaders[filenameIn];
+		return globalCreaturePackLoaders[filenameIn];
 	}
 
 	return nullptr;
@@ -180,13 +185,15 @@ UCreaturePackMeshComponent::isPlayerValid() const
 
 bool UCreaturePackMeshComponent::initCreatureRender()
 {
-	if (creature_animation_asset == false)
+	std::lock_guard<std::mutex> scope_lock(loadLock);
+
+	if (creature_animation_asset == nullptr)
 	{
 		return false;
 	}
 
 	auto realFilename = creature_animation_asset->GetCreatureFilename();
-	auto& binaryBytes = creature_animation_asset->GetFileData();
+	auto binaryBytes = creature_animation_asset->GetFileData();
 	loadPackData(realFilename, binaryBytes);
 	packData = getPackData(realFilename);
 
@@ -249,6 +256,8 @@ UCreaturePackMeshComponent::GetProcMeshData()
 void 
 UCreaturePackMeshComponent::runTick(float deltaTime)
 {
+	std::lock_guard<std::mutex> lock(tickLock);
+
 	if (!isPlayerValid())
 	{
 		return;

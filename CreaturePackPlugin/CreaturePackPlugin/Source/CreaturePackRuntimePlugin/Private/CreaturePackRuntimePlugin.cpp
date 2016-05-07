@@ -1,6 +1,7 @@
 
 #include "CreaturePackRuntimePluginPCH.h"
 #include "CreaturePackRuntimePlugin.h"
+#include "CreaturePackMeshComponent.h"
 
 void CreaturePackPlugin::StartupModule()
 {

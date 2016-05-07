@@ -478,6 +478,7 @@ UCustomPackProceduralMeshComponent::UCustomPackProceduralMeshComponent(const FOb
 	calc_local_vec_min = FVector(FLT_MIN, FLT_MIN, FLT_MIN);
 	calc_local_vec_max = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
 	bWantsInitializeComponent = true;
+	recreate_render_proxy = false;
 
 //	SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
 	SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
