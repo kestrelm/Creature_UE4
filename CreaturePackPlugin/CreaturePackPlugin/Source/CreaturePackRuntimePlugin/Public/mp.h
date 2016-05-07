@@ -63,9 +63,9 @@ namespace mpMini {
 		uint32_t read_idx, store_read_idx;
 		std::vector<msg_mini_generic_data> generic_data;
 
-		bool read_byte(uint8_t *x);
+		bool read_one_byte(uint8_t *x);
 
-		bool read_type_marker(uint8_t *marker);
+		bool read_marker_type(uint8_t *marker);
 
 		void store_read_pos()
 		{

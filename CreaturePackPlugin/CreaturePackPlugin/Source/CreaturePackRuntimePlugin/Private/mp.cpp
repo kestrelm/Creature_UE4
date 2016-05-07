@@ -236,13 +236,13 @@ namespace mpMini {
 	}
 
 	bool 
-	msg_mini::read_byte(uint8_t *x) {
+	msg_mini::read_one_byte(uint8_t *x) {
 		return read(x, sizeof(uint8_t));
 	}
 
 	bool 
-	msg_mini::read_type_marker(uint8_t *marker) {
-		if (read_byte(marker))
+	msg_mini::read_marker_type(uint8_t *marker) {
+		if (read_one_byte(marker))
 			return true;
 
 		error = TYPE_MARKER_READING_ERROR;
@@ -751,7 +751,7 @@ namespace mpMini {
 	{
 		uint8_t type_marker = 0;
 
-		if (!read_type_marker(&type_marker))
+		if (!read_marker_type(&type_marker))
 			return false;
 
 		if (type_marker <= 0x7F) {
