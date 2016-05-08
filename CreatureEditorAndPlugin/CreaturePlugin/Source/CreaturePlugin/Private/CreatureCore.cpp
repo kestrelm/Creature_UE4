@@ -897,6 +897,12 @@ CreatureCore::GetBluePrintAnimationFrame()
 	return animation_frame;
 }
 
+void CreatureCore::SetBluePrintAnimationFrame(float time_in)
+{
+	auto cur_delta = (time_in - creature_manager->getActualRunTime()) / 30.0f;
+	creature_manager->Update(cur_delta);
+}
+
 void 
 CreatureCore::SetBluePrintRegionAlpha(FName region_name_in, uint8 alpha_in)
 {

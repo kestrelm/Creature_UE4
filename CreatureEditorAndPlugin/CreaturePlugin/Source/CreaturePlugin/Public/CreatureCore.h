@@ -123,6 +123,8 @@ public:
 
 	float GetBluePrintAnimationFrame();
 
+	void SetBluePrintAnimationFrame(float time_in);
+
 	void SetBluePrintRegionAlpha(FName region_name_in, uint8 alpha_in);
 
 	void RemoveBluePrintRegionAlpha(FName region_name_in);

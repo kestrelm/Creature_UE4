@@ -16,7 +16,8 @@
         {
             "Name": "CreaturePlugin",
             "Type": "Runtime",
-            "LoadingPhase": "PreDefault"
+            "LoadingPhase": "PreDefault",
+			"WhitelistPlatforms" : [ "Mac", "Win64" ]
         },
         {
 			"Name" : "CreatureEditor",
