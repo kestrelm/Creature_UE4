@@ -23,6 +23,9 @@ This plugin **does not have bone/skeletal information** encoded in it. This resu
 
 ##Using the Plugin
 
+###Installation
+You need a **C++ UE4 Project** so set this up first. Make a **Plugins** folder in your project directory. Drop the **CreaturePackPlugin** folder into the **Plugins** folder. Now **Generate Project Files** to generate the appropriate project files to compile your project. Double click and open up your project to build and install the plugin.
+
 ###Export Animation from Creature
 
 With your character's project open, go into the **Animation Mode** in **Creature**. Click on **Export Animation -> Game Engines**:
@@ -40,7 +43,7 @@ The options you care about are contained in the **CreaturePack Web Format** pane
 
 - **Pack Uv Swaps:** Check this box if you are using Sprite Swapping Animations. Leave unchecked to reduce the file size.
 
-- **Pack Uv Colors:** Check this box if you are animating opacity of your meshes over time. Leave unchecked to reduce the file size.
+- **Pack Colors:** Check this box if you are animating opacity of your meshes over time. Leave unchecked to reduce the file size.
 
 Click **Export** to export your project into a folder of your choice. The **exported folder** will contain 2 files of interest:
 
