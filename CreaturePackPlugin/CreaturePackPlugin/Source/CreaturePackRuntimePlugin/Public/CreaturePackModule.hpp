@@ -413,7 +413,7 @@ protected:
 	{
 		std::unordered_map<uint32_t, graphNode> retGraph;
 		auto numTriangles = getNumIndices() / 3;
-		for (auto i = 0; i < numTriangles; i++)
+		for (size_t i = 0; i < (size_t)numTriangles; i++)
 		{
 			std::array<uint32_t, 3> triIndices;
 			triIndices[0] = indices.get()[i * 3];
@@ -428,7 +428,7 @@ protected:
 				}
 
 				auto& curGraphNode = retGraph[triIndex];
-				for (auto j = 0; j < triIndices.size(); j++)
+				for (size_t j = 0; j < (size_t)triIndices.size(); j++)
 				{
 					auto cmpIndex = triIndices[j];
 					if (cmpIndex != triIndex)
@@ -483,7 +483,7 @@ protected:
 
 		// Run depth first search
 		uint32_t regionIdx = 0;
-		for (auto i = 0; i < getNumIndices(); i++)
+		for (size_t i = 0; i < (size_t)getNumIndices(); i++)
 		{
 			auto curIdx = indices.get()[i];
 			if (graph[curIdx].visited == false)
@@ -519,12 +519,12 @@ public:
 		render_uvs = std::shared_ptr<float>(new float[getRenderUVsLength()], std::default_delete<float[]>());
 		render_colors = std::shared_ptr<uint8_t>(new uint8_t[getRenderColorsLength()], std::default_delete<uint8_t[]>());
 		
-		for (auto i = 0; i < getRenderColorsLength(); i++)
+		for (size_t i = 0; i < (size_t)getRenderColorsLength(); i++)
 		{
 			render_colors.get()[i] = 255;
 		}
 		
-		for (auto i = 0; i < getRenderUVsLength(); i++)
+		for (size_t i = 0; i < (size_t)getRenderUVsLength(); i++)
 		{
 			render_uvs.get()[i] = data.uvs.get()[i];
 		}       
@@ -701,7 +701,7 @@ public:
 			
 			if((anim_low_colors.size() == getRenderColorsLength())
 				&& (anim_high_colors.size() == getRenderColorsLength())) {
-				for (auto i = 0; i < getRenderColorsLength(); i++)
+				for (size_t i = 0; i < (size_t)getRenderColorsLength(); i++)
 				{
 				    float low_val = (float)anim_low_colors[i];
 					float high_val = (float)anim_high_colors[i];
@@ -718,7 +718,7 @@ public:
 				std::vector<float>& anim_uvs = data.fileData[low_data.getAnimUvsOffset()].float_array_val;
 				if (anim_uvs.size() == getRenderUVsLength())
 				{
-					for (auto i = 0; i < getRenderUVsLength(); i++)
+					for (size_t i = 0; i < (size_t)getRenderUVsLength(); i++)
 					{
 						render_uvs.get()[i] = anim_uvs[i];
 					}
