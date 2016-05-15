@@ -444,6 +444,10 @@ FPrimitiveViewRelevance FCProceduralMeshSceneProxy::GetViewRelevance(const FScen
 	Result.bDrawRelevance = true;// IsShown(View);
 	Result.bShadowRelevance = IsShadowCast(View);
 	Result.bDynamicRelevance = true;
+	Result.bRenderInMainPass = ShouldRenderInMainPass();
+	Result.bUsesLightingChannels = GetLightingChannelMask() != GetDefaultLightingChannelMask();
+	Result.bRenderCustomDepth = ShouldRenderCustomDepth();
+
 	MaterialRelevance.SetPrimitiveViewRelevance(Result);
 
 	return Result;
