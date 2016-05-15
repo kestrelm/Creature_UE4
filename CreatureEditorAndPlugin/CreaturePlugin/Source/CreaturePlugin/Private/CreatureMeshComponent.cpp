@@ -934,13 +934,29 @@ UCreatureMeshComponent::CoreBonesOverride(std::unordered_map<std::string, meshBo
 void 
 UCreatureMeshComponent::SetBluePrintBonesIKConstraint(FCreatureBoneIK ik_data_in)
 {
-	internal_ik_map.Add(GetIkKey(ik_data_in.first_bone_name, ik_data_in.second_bone_name), ik_data_in);
+	auto cur_key = GetIkKey(ik_data_in.first_bone_name, ik_data_in.second_bone_name);
+	if (cur_key.IsEmpty())
+	{
+		return;
+	}
+
+	if (internal_ik_map.Contains(cur_key) == false) {
+		internal_ik_map.Add(cur_key, ik_data_in);
+	}
+	else {
+		auto& cur_ik_data = internal_ik_map[cur_key];
+		cur_ik_data.positive_angle = ik_data_in.positive_angle;
+		cur_ik_data.target_pos = ik_data_in.target_pos;
+	}
 }
 
 void
 UCreatureMeshComponent::RemoveBluePrintBonesIKConstraint(FCreatureBoneIK ik_data_in)
 {
-	internal_ik_map.Remove(GetIkKey(ik_data_in.first_bone_name, ik_data_in.second_bone_name));
+	auto cur_key = GetIkKey(ik_data_in.first_bone_name, ik_data_in.second_bone_name);
+	if (internal_ik_map.Contains(cur_key)) {
+		internal_ik_map.Remove(cur_key);
+	}
 }
 
 FString 
