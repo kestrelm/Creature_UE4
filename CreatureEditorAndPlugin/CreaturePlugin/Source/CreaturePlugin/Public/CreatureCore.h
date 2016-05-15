@@ -163,6 +163,7 @@ public:
 
 	glm::uint32 * GetIndicesCopy(int init_size);
 
+	std::vector<meshBone *> getAllChildrenWithIgnore(const std::string& ignore_name, meshBone * base_bone = nullptr);
 
 	// properties
 	FString creature_filename, creature_asset_filename;
