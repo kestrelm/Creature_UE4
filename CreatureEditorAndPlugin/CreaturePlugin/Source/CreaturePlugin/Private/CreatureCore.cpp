@@ -1028,6 +1028,30 @@ glm::uint32 * CreatureCore::GetIndicesCopy(int init_size)
 	return global_indices_copy.get();
 }
 
+std::vector<meshBone *> 
+CreatureCore::getAllChildrenWithIgnore(const std::string& ignore_name, meshBone * base_bone)
+{
+	if (base_bone == nullptr)
+	{
+		base_bone = GetCreatureManager()->GetCreature()->GetRenderComposition()->getRootBone();
+	}
+
+	std::vector<meshBone *> ret_data;
+	if (base_bone->getKey() == ignore_name)
+	{
+		return ret_data;
+	}
+
+	ret_data.push_back(base_bone);
+	for (auto cur_child : base_bone->getChildren())
+	{
+		std::vector<meshBone *> append_data = getAllChildrenWithIgnore(ignore_name, cur_child);
+		ret_data.insert(ret_data.end(), append_data.begin(), append_data.end());
+	}
+
+	return ret_data;
+}
+
 void 
 CreatureCore::RunBeginPlay()
 {

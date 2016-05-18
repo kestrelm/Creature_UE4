@@ -99,7 +99,7 @@ UCreaturePackMeshComponent::GetAttachmentPosition(int32 vertex_id) const
 	}
 
 	if ((vertex_id < 0)
-		|| (vertex_id >= playerObj->getRenderPointsLength()))
+		|| (vertex_id >= (int32)playerObj->getRenderPointsLength()))
 	{
 		return FVector(0, 0, 0);
 	}
@@ -157,7 +157,7 @@ UCreaturePackMeshComponent::loadPackData(const FString& filenameIn,
 	}
 
 	std::vector<uint8_t> raw_data(fileData.Num());
-	for (auto i = 0; i < raw_data.size(); i++)
+	for (size_t i = 0; i < (size_t)raw_data.size(); i++)
 	{
 		raw_data[i] = fileData[i];
 	}
@@ -239,7 +239,7 @@ UCreaturePackMeshComponent::GetProcMeshData()
 	if (regionAlphas.Num() != num_points)
 	{
 		regionAlphas.SetNum(num_points);
-		for (size_t i = 0; i < regionAlphas.Num(); i++)
+		for (size_t i = 0; i < (size_t)regionAlphas.Num(); i++)
 		{
 			regionAlphas[i] = 255;
 		}

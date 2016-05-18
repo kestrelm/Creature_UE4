@@ -113,6 +113,52 @@ struct FCreatureMeshCollection
 	}
 };
 
+USTRUCT()
+struct FCreatureBoneOverride {
+	GENERATED_USTRUCT_BODY()
+
+	/** Name of your bone */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	FString bone_name;
+
+	/** Starting position of the bone in world space */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	FVector start_pos;
+
+	/** Ending position of the bone in world space */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	FVector end_pos;
+};
+
+USTRUCT()
+struct FCreatureBoneIK  {
+	GENERATED_USTRUCT_BODY()
+	FCreatureBoneIK()
+		: children_ready(false)
+	{
+	}
+
+	/** First bone name of the IK system */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	FString first_bone_name;
+
+	/** Second bone name of the IK system */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	FString second_bone_name;
+
+	/** Target position of the IK system in world space */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	FVector target_pos;
+
+	/** Determines whether you are solving for a positive or negative angle IK System */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature",
+		meta = (MakeStructureDefaultValue = "false"))
+	bool positive_angle;
+
+	TArray<meshBone *> first_bone_children, second_bone_children;
+	bool children_ready;
+};
+
 // Blueprint event delegates event declarations
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCreatureMeshAnimationStartEvent, float, frame);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCreatureMeshAnimationEndEvent, float, frame);
@@ -189,6 +235,10 @@ public:
 	/** This enables/disables collection clip playback */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	bool enable_collection_playback;
+
+	/** A blending factor when you override the position of the bones. A value from 0 to 1.0*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	float bones_override_blend_factor;
 
 	/** Event that is triggered when the animation starts */
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
@@ -358,7 +408,25 @@ public:
 	// Blueprint function that returns whether anchor points are active for the character
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	bool GetBluePrintUseAnchorPoints() const;
-	
+
+
+	// Blueprint function that sets the list of bones you want to override positions for
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintBonesOverride(const TArray<FCreatureBoneOverride>& bones_list_in);
+
+	// Blueprint function that clears the list of bones you want to override positions for
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void ClearBluePrintBonesOverride();
+
+	// Sets a 2 bone IK constraint
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintBonesIKConstraint(FCreatureBoneIK ik_data_in);
+
+	// Removes a 2 bone IK constraint
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void RemoveBluePrintBonesIKConstraint(FCreatureBoneIK ik_data_in);
+
+
 	CreatureCore& GetCore();
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
@@ -392,6 +460,9 @@ protected:
 	FCreatureMeshCollectionClip * active_collection_clip;
 	bool active_collection_loop;
 	bool active_collection_play;
+	TArray<FCreatureBoneOverride> bones_override_list, final_bones_override_list;
+	TMap<FString, FCreatureBoneIK> internal_ik_map;
+	std::unordered_map<std::string, std::pair<glm::vec4, glm::vec4> > internal_ik_bone_pts;
 
 	void InitStandardValues();
 
@@ -417,6 +488,17 @@ protected:
 	int GetCollectionDataIndexFromClip(FCreatureMeshCollectionClip * clip_in);
 
 	void DoCreatureMeshUpdate(int render_packet_idx = -1);
+
+	void CoreBonesOverride(std::unordered_map<std::string, meshBone *>& bones_map);
+
+	FString GetIkKey(const FString& start_bone_name, const FString& end_bone_name) const;
+
+	void
+	ComputeBonesIK(
+		const FString& start_bone_name, 
+		const FString& end_bone_name,
+		TArray<FCreatureBoneOverride>& mod_list);
+
 
 	//////////////////////////////////////////////////////////////////////////
 	//Change by God of Pen

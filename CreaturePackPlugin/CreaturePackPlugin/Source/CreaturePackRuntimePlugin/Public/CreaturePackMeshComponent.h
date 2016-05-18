@@ -41,7 +41,6 @@
 #include "CustomPackProceduralMeshComponent.h"
 #include "CreaturePackModule.hpp"
 #include "CreaturePackAnimationAsset.h"
-#include "UnrealEd.h"
 #include "CreaturePackMeshComponent.generated.h"
 
 // UCreaturePackMeshComponent

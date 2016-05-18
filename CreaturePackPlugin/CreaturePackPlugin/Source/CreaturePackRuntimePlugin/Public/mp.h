@@ -2,6 +2,10 @@
 
 #include <vector>
 #include <array>
+#include <string>
+#include <cstring>
+#include <sstream>
+#include <iostream>
 
 // BareBones MessagePack Reader, only handles ints, floats, arrays and strings
 
@@ -98,7 +102,8 @@ namespace mpMini {
 			}
 
 			uint8_t * base_ptr = &buf[read_idx];
-			memcpy_s(data, limit, base_ptr, limit);
+			//memcpy_s(data, limit, base_ptr, limit);
+			std::memcpy(data, base_ptr, limit);
 			read_idx += (uint32_t)limit;
 
 			return true;

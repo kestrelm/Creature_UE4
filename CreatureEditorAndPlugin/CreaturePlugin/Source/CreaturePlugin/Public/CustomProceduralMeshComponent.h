@@ -60,8 +60,6 @@ public:
 	
 	void SetActiveRenderPacketIdx(int idxIn);
 
-	void UpdateDynamicIndexData();
-
 	void UpdateDynamicComponentData();
 
 	void SetNeedsMaterialUpdate(bool flag_in);
