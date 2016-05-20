@@ -71,3 +71,8 @@ If you want to compile your game using the Creature Plugin for different platfor
 
 **Video Tutorial** describing the process is: **[here](https://youtu.be/Ghe-yFsO0u0).**
 
+###Notes for Building on Platforms like the PS4 (Fixing compile errors)
+
+- If the compiler complains about errors having to do with miniz, #define the **CREATURE_NO_USE_ZIP** preprocessor definition in your build.
+
+- If the compiler complains about errors having to do with exceptions ( or disallows exceptions in your environment ), #define the **CREATURE_NO_USE_EXCEPTIONS** preprocessor definition in your build.
