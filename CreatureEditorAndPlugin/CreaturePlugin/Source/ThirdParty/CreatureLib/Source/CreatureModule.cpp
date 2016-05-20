@@ -34,7 +34,9 @@
  *****************************************************************************/
 
 #include "CreatureModule.h"
+#ifndef CREATURE_NO_USE_ZIP
 #include "miniz.h"
+#endif
 #include <algorithm>
 
 template <typename T>
@@ -684,6 +686,7 @@ namespace CreatureModule {
     void LoadCreatureZipJSONData(const std::string& filename_in,
                                  CreatureLoadDataPacket& load_data)
     {
+#ifndef CREATURE_NO_USE_ZIP
         mz_bool status;
         size_t uncomp_size;
         mz_zip_archive zip_archive;
@@ -715,6 +718,9 @@ namespace CreatureModule {
         
         std::string real_string((char *)extract_obj);
         LoadCreatureJSONDataFromString(real_string, load_data);
+#else
+		std::cout << "LoadCreatureZipJSONData() - Function is NOT DEFINED!" << std::endl;
+#endif
     }
 
     // Creature class
@@ -1418,7 +1424,9 @@ namespace CreatureModule {
         if(animations.count(animation_name_in) <= 0)
         {
             std::cerr<<"CreatureManager::PoseCreature() - Animation not found: "<<animation_name_in<<std::endl;
+#ifndef CREATURE_NO_USE_EXCEPTIONS
             throw "CreatureManager::PoseCreature() - Invalid animation name!";
+#endif
             return;
         }
         
@@ -1489,7 +1497,9 @@ namespace CreatureModule {
 		if (animations.count(animation_name_in) <= 0)
 		{
 			std::cerr << "CreatureManager::PoseCreature() - Animation not found: " << animation_name_in << std::endl;
+#ifndef CREATURE_NO_USE_EXCEPTIONS
 			throw "CreatureManager::PoseCreature() - Invalid animation name!";
+#endif
 			return;
 		}
 
