@@ -143,8 +143,25 @@ public:
 
 			int uv_idx = i * 2;
 			curVert->TextureCoordinate.Set(this->uvs[uv_idx], this->uvs[uv_idx + 1]);
+		}
 
-			curVert->SetTangents(FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
+		// Set Tangents
+		for (int cur_indice = 0; cur_indice < indices_num; cur_indice+=3)
+		{
+			FDynamicMeshVertex * vert0 = VertexBufferData + (indices[cur_indice]);
+			FDynamicMeshVertex * vert1 = VertexBufferData + (indices[cur_indice + 1]);
+			FDynamicMeshVertex * vert2 = VertexBufferData + (indices[cur_indice + 2]);
+
+			const FVector Edge01 = (vert1->Position - vert0->Position);
+			const FVector Edge02 = (vert2->Position - vert0->Position);
+
+			const FVector TangentX = Edge01.GetSafeNormal();
+			const FVector TangentZ = (Edge02 ^ Edge01).GetSafeNormal();
+			const FVector TangentY = (TangentX ^ TangentZ).GetSafeNormal();
+
+			vert0->SetTangents(TangentX, TangentY, TangentZ);
+			vert1->SetTangents(TangentX, TangentY, TangentZ);
+			vert2->SetTangents(TangentX, TangentY, TangentZ);
 		}
 
 		RHIUnlockVertexBuffer(VertexBuffer.VertexBufferRHI);
@@ -256,6 +273,25 @@ void FCProceduralMeshSceneProxy::AddRenderPacket(FProceduralMeshTriData * target
 		int uv_idx = i * 2;
 		Vert0.TextureCoordinate.Set(cur_packet.uvs[uv_idx], cur_packet.uvs[uv_idx + 1]);
 		VertexBuffer.Vertices[i] = Vert0;
+	}
+
+	// Set Initial Rest Tangents
+	for (int cur_indice = 0; cur_indice < cur_packet.indices_num; cur_indice += 3)
+	{
+		FDynamicMeshVertex& vert0 = VertexBuffer.Vertices[cur_packet.indices[cur_indice]];
+		FDynamicMeshVertex& vert1 = VertexBuffer.Vertices[cur_packet.indices[cur_indice + 1]];
+		FDynamicMeshVertex& vert2 = VertexBuffer.Vertices[cur_packet.indices[cur_indice + 2]];
+
+		const FVector Edge01 = (vert1.Position - vert0.Position);
+		const FVector Edge02 = (vert2.Position - vert0.Position);
+
+		const FVector TangentX = Edge01.GetSafeNormal();
+		const FVector TangentZ = (Edge02 ^ Edge01).GetSafeNormal();
+		const FVector TangentY = (TangentX ^ TangentZ).GetSafeNormal();
+
+		vert0.SetTangents(TangentX, TangentY, TangentZ);
+		vert1.SetTangents(TangentX, TangentY, TangentZ);
+		vert2.SetTangents(TangentX, TangentY, TangentZ);
 	}
 
 	// Init vertex factory
