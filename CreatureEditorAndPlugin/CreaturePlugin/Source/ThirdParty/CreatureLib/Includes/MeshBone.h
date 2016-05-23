@@ -41,12 +41,17 @@
 #include <string>
 #include <vector>
 #include <mutex>
-#include "glm.hpp"
+//#include "glm.hpp"
 #include "gtx/transform.hpp"
 #include "gtc/quaternion.hpp"
 #include "gtx/quaternion.hpp"
 #include "gtx/dual_quaternion.hpp"
-#include "ext.hpp"
+#include "vec3.hpp" // glm::vec3
+#include "vec4.hpp" // glm::vec4
+#include "mat4x4.hpp" // glm::mat4
+#include "gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
+#include "gtc/type_ptr.hpp"
+//#include "ext.hpp"
 
 class dualQuat {
 public:

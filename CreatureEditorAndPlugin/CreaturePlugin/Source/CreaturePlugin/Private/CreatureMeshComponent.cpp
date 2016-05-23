@@ -16,6 +16,12 @@
 #pragma warning(disable : 4503)
 #endif
 
+#if __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshadow"
+#endif
+
+
 DECLARE_CYCLE_STAT(TEXT("CreatureMesh_Tick"), STAT_CreatureMesh_Tick, STATGROUP_Creature);
 DECLARE_CYCLE_STAT(TEXT("CreatureMesh_UpdateCoreValues"), STAT_CreatureMesh_UpdateCoreValues, STATGROUP_Creature);
 DECLARE_CYCLE_STAT(TEXT("CreatureMesh_MeshUpdate"), STAT_CreatureMesh_MeshUpdate, STATGROUP_Creature);
@@ -1327,3 +1333,7 @@ UCreatureMeshComponent::ComputeBonesIK(
 	}
 
 }
+
+#if __clang__
+#pragma clang diagnostic pop
+#endif
