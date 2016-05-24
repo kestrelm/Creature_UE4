@@ -694,6 +694,14 @@ void UCreatureMeshComponent::StandardInit()
 
 		creature_core.SetBluePrintAnimationResetToStart();
 		PrepareRenderData(creature_core);
+		
+		// Register bone override callback
+		bones_override_list.Empty();
+		final_bones_override_list.Empty();
+		internal_ik_map.Empty();
+		std::function<void(std::unordered_map<std::string, meshBone *>&) > cur_callback =
+			std::bind(&UCreatureMeshComponent::CoreBonesOverride, this, std::placeholders::_1);
+		creature_core.creature_manager->SetBonesOverrideCallback(cur_callback);
 	}
 }
 
@@ -824,14 +832,6 @@ void UCreatureMeshComponent::BeginPlay()
 	{
 		cur_data.creature_core.SetGlobalEnablePointCache(can_use_point_cache);
 	}
-
-	// Register bone override callback
-	bones_override_list.Empty();
-	final_bones_override_list.Empty();
-	internal_ik_map.Empty();
-	std::function<void(std::unordered_map<std::string, meshBone *>&) > cur_callback =
-		std::bind(&UCreatureMeshComponent::CoreBonesOverride, this, std::placeholders::_1);
-	creature_core.creature_manager->SetBonesOverrideCallback(cur_callback);
 }
 
 void UCreatureMeshComponent::LoadAnimationFromStore()
