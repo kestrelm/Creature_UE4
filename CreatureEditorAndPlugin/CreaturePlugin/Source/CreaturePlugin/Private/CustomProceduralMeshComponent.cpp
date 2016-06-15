@@ -266,8 +266,7 @@ void FCProceduralMeshSceneProxy::AddRenderPacket(FProceduralMeshTriData * target
 		int pos_idx = i * 3;
 		Vert0.Position = FVector(cur_packet.points[pos_idx + x_id], cur_packet.points[pos_idx + y_id], cur_packet.points[pos_idx + z_id]);
 
-		float set_alpha = (*cur_packet.region_alphas)[i];
-		Vert0.Color = FColor(set_alpha, set_alpha, set_alpha, set_alpha);
+		Vert0.Color = FColor::White;
 		Vert0.SetTangents(FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
 
 		int uv_idx = i * 2;
