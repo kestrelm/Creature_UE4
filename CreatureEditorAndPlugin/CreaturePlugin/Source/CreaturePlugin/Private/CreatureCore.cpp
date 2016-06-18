@@ -167,9 +167,12 @@ void CreatureCore::UpdateCreatureRender()
 		{
 			auto dst_indices = GetIndicesCopy(cur_num_indices);
 			int cur_runtime = (int)(creature_manager->getActualRunTime());
-			meta_data->updateIndices(dst_indices,
+			meta_data->updateIndicesAndPoints(dst_indices,
 				cur_creature->GetGlobalIndices(),
+				cur_pts,
+				delta_z,
 				cur_creature->GetTotalNumIndices(),
+				cur_creature->GetTotalNumPoints(),
 				creature_manager->GetActiveAnimationName(),
 				cur_runtime);
 			should_update_render_indices = true;

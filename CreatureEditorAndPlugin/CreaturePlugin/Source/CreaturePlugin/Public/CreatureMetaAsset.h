@@ -16,9 +16,13 @@ public:
 		anim_order_map.clear();
 	}
 
-	void updateIndices(glm::uint32 * dst_indices,
+	void updateIndicesAndPoints(
+		glm::uint32 * dst_indices,
 		glm::uint32 * src_indices, 
+		glm::float32 * dst_pts,
+		float delta_z,
 		int num_indices,
+		int num_pts,
 		const std::string& anim_name,
 		int time_in)
 	{
@@ -31,6 +35,7 @@ public:
 
 		if (has_data)
 		{
+			float cur_z = 0;
 			// Copy new ordering to destination
 			glm::uint32 * write_ptr = dst_indices;
 			int total_num_write_indices = 0;
@@ -43,6 +48,7 @@ public:
 					return;
 				}
 
+				// Write indices
 				auto& mesh_data = mesh_map[region_id];
 				auto num_write_indices = mesh_data.second - mesh_data.first + 1;
 				auto region_src_ptr = src_indices + mesh_data.first;
@@ -58,6 +64,23 @@ public:
 				std::memcpy(write_ptr, region_src_ptr, num_write_indices * sizeof(glm::uint32));
 
 				write_ptr += num_write_indices;
+
+				// Write points
+				{
+					int start_idx = mesh_data.first;
+					int end_idx = mesh_data.second;
+					
+					if ((int)src_indices[end_idx] < num_pts)
+					{
+						for (int i = start_idx; i <= end_idx; i++)
+						{
+							auto cur_pt_idx = src_indices[i] * 3;
+							dst_pts[cur_pt_idx + 2] = cur_z;
+						}
+					}
+
+					cur_z += delta_z;
+				}
 			}
 		}
 		else {
