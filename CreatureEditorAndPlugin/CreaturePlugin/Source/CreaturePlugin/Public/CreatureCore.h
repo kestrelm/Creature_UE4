@@ -49,6 +49,8 @@
 // else altogether. CreatureActor for example contains a CreatureCore object and performs all its playback functionlity
 // using the CreatureCore object.
 
+class CreatureMetaData;
+
 struct FCreatureBoneData
 {
 	FVector point1;
@@ -70,6 +72,8 @@ public:
 	void UpdateCreatureRender();
 
 	bool InitCreatureRender();
+
+	void InitValues();
 
 	void FillBoneData();
 
@@ -219,6 +223,7 @@ public:
 	bool bUsingCreatureAnimatinAsset=false;//如果使用CreatureAnimationAsset的话，设置为真，不再从硬盘读取，直接从Asset读取动画信息
 	//当从AnimationAsset读取的时候，直接从pJsonData中载入，不再从硬盘中载入
 	FString* pJsonData;
+	CreatureMetaData * meta_data;
 	std::shared_ptr<glm::uint32> global_indices_copy;
 };
 

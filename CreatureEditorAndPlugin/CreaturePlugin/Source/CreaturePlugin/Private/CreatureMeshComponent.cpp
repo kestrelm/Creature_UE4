@@ -356,6 +356,7 @@ void UCreatureMeshComponent::InitStandardValues()
 	active_collection_loop = true;
 	active_collection_play = true;
 	creature_animation_asset = nullptr;
+	creature_meta_asset = nullptr;
 	can_use_point_cache = false;
 	bones_override_blend_factor = 1.0f;
 
@@ -683,7 +684,13 @@ void UCreatureMeshComponent::StandardInit()
 	UpdateCoreValues();
 	creature_core.do_file_warning = !enable_collection_playback;
 	bool retval = creature_core.InitCreatureRender();
-	creature_core.region_alpha_map.Empty();
+	creature_core.InitValues();
+
+	if (creature_meta_asset)
+	{
+		creature_meta_asset->BuildMetaData();
+		creature_core.meta_data = creature_meta_asset->GetMetaData();
+	}
 
 	if (retval)
 	{

@@ -42,6 +42,7 @@
 #include <vector>
 #include "CustomProceduralMeshComponent.h"
 #include "CreatureAnimationAsset.h"
+#include "CreatureMetaAsset.h"
 #include "CreatureCore.h"
 #include "CreatureMeshComponent.generated.h"
 
@@ -180,6 +181,10 @@ public:
 	/** Points to a Creature Animation Asset containing the JSON filename of the character. Use this instead of creature_filename if you want to use an asset based system. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
 	UCreatureAnimationAsset * creature_animation_asset;
+
+	/** Points to a Creature Meta Asset containing the JSON of the mdata file exported out from Creature. This file contains extra data like animation data for region ordering for example. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
+	UCreatureMetaAsset * creature_meta_asset;
 	
 	/** Playback speed of the animation, 2.0 is the default */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")

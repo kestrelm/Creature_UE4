@@ -1,5 +1,6 @@
 
 #include "CreaturePluginPCH.h"
+#include "CreatureMetaAsset.h"
 
 DECLARE_CYCLE_STAT(TEXT("CreatureCore_RunTick"), STAT_CreatureCore_RunTick, STATGROUP_Creature);
 DECLARE_CYCLE_STAT(TEXT("CreatureCore_UpdateCreatureRender"), STAT_CreatureCore_UpdateCreatureRender, STATGROUP_Creature);
@@ -69,6 +70,7 @@ CreatureCore::CreatureCore()
 	should_process_animation_start = false;
 	should_process_animation_end = false;
 	should_update_render_indices = false;
+	meta_data = nullptr;
 	update_lock = new std::mutex();
 }
 
@@ -158,6 +160,19 @@ void CreatureCore::UpdateCreatureRender()
 			}
 
 			region_z += delta_z;
+		}
+
+		// Grab Animated Region Order Indices if meta data is available
+		if (meta_data)
+		{
+			auto dst_indices = GetIndicesCopy(cur_num_indices);
+			int cur_runtime = (int)(creature_manager->getActualRunTime());
+			meta_data->updateIndices(dst_indices,
+				cur_creature->GetGlobalIndices(),
+				cur_creature->GetTotalNumIndices(),
+				creature_manager->GetActiveAnimationName(),
+				cur_runtime);
+			should_update_render_indices = true;
 		}
 	}
 	else {
@@ -330,6 +345,12 @@ bool CreatureCore::InitCreatureRender()
 
 
 	return init_success;
+}
+
+void CreatureCore::InitValues()
+{
+	region_alpha_map.Empty();
+	meta_data = nullptr;
 }
 
 void CreatureCore::FillBoneData()
