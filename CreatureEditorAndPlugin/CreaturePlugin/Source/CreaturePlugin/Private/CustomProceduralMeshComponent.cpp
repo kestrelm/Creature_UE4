@@ -410,6 +410,7 @@ void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScen
 	auto& VertexBuffer = cur_packet.VertexBuffer;
 	auto& IndexBuffer = cur_packet.IndexBuffer;
 	auto& VertexFactory = cur_packet.VertexFactory;
+	const FEngineShowFlags& EngineShowFlags = ViewFamily.EngineShowFlags;
 
 	if (cur_packet.point_num <= 0)
 	{
@@ -470,6 +471,8 @@ void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScen
 			Mesh.bCanApplyViewModeOverrides = false;
 			Collector.AddMesh(ViewIndex, Mesh);
 		}
+		
+		RenderBounds(Collector.GetPDI(ViewIndex), EngineShowFlags, GetBounds(), !parentComponent || !parentComponent->GetOwner() || IsSelected());
 	}
 }
 
