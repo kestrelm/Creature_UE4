@@ -43,6 +43,10 @@ public:
 	UPROPERTY()
 	TArray<uint8> CreatureZipBinary;
 
+	// Uncompressed String
+	UPROPERTY()
+	FString CreatureRawJSONString;
+
 	FString& GetJsonString();
 	
 	/** The approximation level to use when generating the point cache (range 0-20; 0=no approximation, -1=no cache generated) */
@@ -54,6 +58,8 @@ public:
 	float GetClipLength(const FName & clipName) const;
 	void LoadPointCacheForAllClips(class CreatureCore *forCore) const;
 	void LoadPointCacheForClip(const FName &animName, class CreatureCore *forCore) const;
+
+	bool UseCompressedData() const;
 
 	virtual void Serialize(FArchive& Ar) override;
 

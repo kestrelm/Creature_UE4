@@ -24,23 +24,39 @@ FString UCreatureAnimationAsset::GetCreatureFilename() const
 #endif
 }
 
+bool 
+UCreatureAnimationAsset::UseCompressedData() const
+{
+	return (CreatureZipBinary.Num() > 0);
+}
+
 FString& UCreatureAnimationAsset::GetJsonString()
 {
-	// Decompress only when needed
-	if (CreatureFileJSonData.IsEmpty())
+	// Decide if we should decompress or return the raw uncompressed string
+	if(!UseCompressedData())
 	{
-		FArchiveLoadCompressedProxy Decompressor =
-			FArchiveLoadCompressedProxy(CreatureZipBinary, ECompressionFlags::COMPRESS_ZLIB);
-
-		if (Decompressor.IsError() || (CreatureZipBinary.Num() == 0))
+		if (CreatureFileJSonData.IsEmpty())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("UCreatureAnimationAsset::Could not uncompress data"));
-			return CreatureFileJSonData;
+			CreatureFileJSonData = CreatureRawJSONString;
 		}
+	}
+	else {
+		// Decompress only when needed
+		if (CreatureFileJSonData.IsEmpty())
+		{
+			FArchiveLoadCompressedProxy Decompressor =
+				FArchiveLoadCompressedProxy(CreatureZipBinary, ECompressionFlags::COMPRESS_ZLIB);
 
-		FBufferArchive DecompressedBinaryArray;
-		Decompressor << DecompressedBinaryArray;
-		CreatureFileJSonData = UTF8_TO_TCHAR((char *)DecompressedBinaryArray.GetData());
+			if (Decompressor.IsError() || (CreatureZipBinary.Num() == 0))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("UCreatureAnimationAsset::Could not uncompress data"));
+				return CreatureFileJSonData;
+			}
+
+			FBufferArchive DecompressedBinaryArray;
+			Decompressor << DecompressedBinaryArray;
+			CreatureFileJSonData = UTF8_TO_TCHAR((char *)DecompressedBinaryArray.GetData());
+		}
 	}
 
 	return CreatureFileJSonData;
@@ -163,10 +179,20 @@ void UCreatureAnimationAsset::PostLoad()
 		AssetImportData->SourceData = MoveTemp(Info);
 	}
 
-	if (CreatureZipBinary.Num() != 0 || CreatureFileJSonData.IsEmpty() == false)
+	if (UseCompressedData())
 	{
-		// load the animation data caches from the json data
-		GatherAnimationData();
+		if (CreatureZipBinary.Num() != 0 || CreatureFileJSonData.IsEmpty() == false)
+		{
+			// load the animation data caches from the json data
+			GatherAnimationData();
+		}
+	}
+	else {
+		if (CreatureRawJSONString.Len() > 0)
+		{
+			// load the animation data caches from the json data
+			GatherAnimationData();
+		}
 	}
 }
 
