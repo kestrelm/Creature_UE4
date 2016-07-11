@@ -202,9 +202,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	FVector creature_bounds_offset;
 
-	/** Displays the bouding box */
+	/** Displays the bounding box */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	bool creature_debug_draw;
+
+	/** Displays the bones */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	bool creature_bones_draw;
 
 	/** Size of the returned bone data xform, for colliders */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")

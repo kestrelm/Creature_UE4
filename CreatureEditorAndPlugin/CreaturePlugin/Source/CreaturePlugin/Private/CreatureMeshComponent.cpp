@@ -349,6 +349,7 @@ void UCreatureMeshComponent::InitStandardValues()
 	bone_data_length_factor = 0.02f;
 	creature_bounds_scale = 1.0f;
 	creature_debug_draw = false;
+	creature_bones_draw = false;
 	creature_bounds_offset = FVector(0, 0, 0);
 	region_overlap_z_delta = 0.01f;
 	enable_collection_playback = false;
@@ -599,11 +600,32 @@ void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx)
 			FColor(255, 0, 0)
 			);
 
+		/*
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Sphere pos is: (%f, %f, %f)"), debugSphere.Center.X, debugSphere.Center.Y, debugSphere.Center.Z));
 		FTransform wTransform = GetComponentToWorld();
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Walk pos is: (%f, %f, %f)"), wTransform.GetLocation().X,
 			wTransform.GetLocation().Y,
 			wTransform.GetLocation().Z));
+		*/
+	}
+
+	if (creature_bones_draw)
+	{
+		auto base_xform = GetComponentToWorld();
+		for (auto& bone_data : creature_core.creature_manager->GetCreature()->GetRenderComposition()->getBonesMap())
+		{
+			auto cur_bone = bone_data.second;
+			auto cur_start_pos = cur_bone->getWorldStartPt();
+			auto cur_end_pos = cur_bone->getWorldEndPt();
+
+			FVector local_pt1(cur_start_pos.x, -3.0f, cur_start_pos.y);
+			FVector local_pt2(cur_end_pos.x, -3.0f, cur_end_pos.y);
+			FVector world_pt1 = base_xform.TransformPosition(local_pt1);
+			FVector world_pt2 = base_xform.TransformPosition(local_pt2);
+
+			DrawDebugLine(GetWorld(), world_pt1, world_pt2, FColor::Red);
+			DrawDebugString(GetWorld(), (world_pt1 + world_pt2) * 0.5f, FString(cur_bone->getKey().c_str()));
+		}
 	}
 }
 
@@ -1306,7 +1328,7 @@ UCreatureMeshComponent::ComputeBonesIK(
 	auto new_ik_start_pt = getBoneFVectorLamda(cur_ik_start_pt);
 	auto tmp_ik_mid_pt = rotateVec2DLamda(glm::vec4(ik_length1, 0, 0, 1), ik_angle1) + cur_ik_start_pt;
 	auto tmp_ik_end_pt = rotateVec2DLamda(glm::vec4(ik_length2, 0, 0, 1), ik_angle2) + glm::vec4(ik_length1, 0, 0, 1);
-	tmp_ik_end_pt = rotateVec2DLamda(tmp_ik_end_pt, ik_angle1);
+	tmp_ik_end_pt = rotateVec2DLamda(tmp_ik_end_pt, ik_angle1) + cur_ik_start_pt;
 
 	auto new_ik_mid_pt = getBoneFVectorLamda(tmp_ik_mid_pt);
 	auto new_ik_end_pt = getBoneFVectorLamda(tmp_ik_end_pt);
