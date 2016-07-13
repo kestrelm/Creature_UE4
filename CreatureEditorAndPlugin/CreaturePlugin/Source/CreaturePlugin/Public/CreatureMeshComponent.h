@@ -435,6 +435,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void RemoveBluePrintBonesIKConstraint(FCreatureBoneIK ik_data_in);
 
+	// Frees up some memory associated with loading of ALL Creature JSONs. Any loading of additional characters after this call will force a re-parsing of the JSON data. Use this function to free up memory when characters have all been instantiated on the level.
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void FreeBluePrintJSONMemory();
 
 	CreatureCore& GetCore();
 

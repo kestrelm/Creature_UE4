@@ -89,6 +89,10 @@ public:
 	// Loads a data packet from a string in memory
 	static bool LoadDataPacket(const std::string& filename_in,FString* pSourceData);
 
+	// Frees up memory from loading the data packets, this will force the reparsing of JSON strings if
+	// the asset is requested again
+	static void ClearAllDataPackets();
+
 	//////////////////////////////////////////////////////////////////////////
 	// Loads an animation from a file
 	static void LoadAnimation(const std::string& filename_in, const std::string& name_in);

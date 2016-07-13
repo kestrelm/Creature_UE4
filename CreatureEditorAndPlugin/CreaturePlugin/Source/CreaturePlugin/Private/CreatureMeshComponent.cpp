@@ -1363,6 +1363,13 @@ UCreatureMeshComponent::ComputeBonesIK(
 
 }
 
+void UCreatureMeshComponent::FreeBluePrintJSONMemory()
+{
+	CreatureCore::ClearAllDataPackets();
+	UE_LOG(LogTemp, Warning, TEXT("UCreatureMeshComponent::FreeBluePrintJSONMemory() - Freed up JSON Memory Data."));
+}
+
+
 #if __clang__
 #pragma clang diagnostic pop
 #endif

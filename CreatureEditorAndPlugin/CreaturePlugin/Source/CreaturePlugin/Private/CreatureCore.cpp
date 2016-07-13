@@ -619,12 +619,29 @@ bool CreatureCore::LoadDataPacket(const std::string& filename_in, FString* pSour
 }
 
 void 
+CreatureCore::ClearAllDataPackets()
+{
+	for (auto& cur_packet : global_load_data_packets)
+	{
+		cur_packet.second->allocator.deallocate();
+	}
+
+	global_load_data_packets.clear();
+}
+
+void 
 CreatureCore::LoadAnimation(const std::string& filename_in, const std::string& name_in)
 {
 	auto cur_token = GetAnimationToken(filename_in, name_in);
 	if (global_animations.count(cur_token) > 0)
 	{
 		// animation already exists, just return
+		return;
+	}
+
+	if (global_load_data_packets.count(filename_in) == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CreatureCore::LoadAnimatio() - Loading animation but %s was not loaded!"), filename_in.c_str());
 		return;
 	}
 
