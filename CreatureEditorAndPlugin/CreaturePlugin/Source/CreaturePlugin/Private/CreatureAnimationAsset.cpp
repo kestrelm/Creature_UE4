@@ -102,7 +102,7 @@ void UCreatureAnimationAsset::LoadPointCacheForClip(const FName &animName, class
 	const FCreatureAnimationDataCache *cacheForAnim = GetDataCacheForClip(animName);
 	if (cacheForAnim && forCore->GetCreatureManager())
 	{
-		CreatureModule::CreatureAnimation *anim = forCore->GetCreatureManager()->GetAnimation(ConvertToString(animName));
+		CreatureModule::CreatureAnimation *anim = forCore->GetCreatureManager()->GetAnimation(animName.ToString());
 		if (anim == nullptr || anim->hasCachePts())
 		{
 			return;
@@ -120,7 +120,7 @@ void UCreatureAnimationAsset::LoadPointCacheForClip(const FName &animName, class
 			{
 				new_pts[j] = cacheForAnim->m_points[sourcePtIdx++];
 			}
-			pts.push_back(new_pts);
+			pts.Add(new_pts);
 		}
 	}
 }
@@ -211,11 +211,11 @@ void UCreatureAnimationAsset::GatherAnimationData()
 
 	int32 arraySize = creature_core.GetCreatureManager()->GetCreature()->GetTotalNumPoints() * 3;
 
-	m_dataCache.Reset(all_animation_names.size());
+	m_dataCache.Reset(all_animation_names.Num());
 
 	for (auto& cur_name : all_animation_names)
 	{
-		FName animName(cur_name.c_str());
+		FName animName(*cur_name);
 
 		CreatureModule::CreatureAnimation *anim = creature_core.GetCreatureManager()->GetAnimation(cur_name);
 		if (ensure(anim))
@@ -235,7 +235,7 @@ void UCreatureAnimationAsset::GatherAnimationData()
 					float startTime = anim->getStartTime();
 					float endTime = anim->getEndTime();
 
-					animDataCache.m_numArrays = pts.size();
+					animDataCache.m_numArrays = pts.Num();
 					animDataCache.m_points.Reserve(animDataCache.m_numArrays * arraySize);
 
 					for (float *pt : pts)

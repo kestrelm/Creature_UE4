@@ -17,7 +17,7 @@ struct ACreatureCollectionClip
 		ref_index = 0;
 	}
 
-	std::vector<std::pair<ACreatureActor *, std::string> > actor_sequence;
+	TArray<std::pair<ACreatureActor *, FString> > actor_sequence;
 	int32 ref_index;
 };
 
@@ -30,11 +30,11 @@ class ACreatureCollectionActor : public AActor
 	GENERATED_UCLASS_BODY()
 
 protected:
-	std::unordered_map <std::string, ACreatureCollectionClip> collection_clips;
+	TMap<FString, ACreatureCollectionClip> collection_clips;
 	bool is_looping;
-	std::string active_clip_name;
+	FString active_clip_name;
 	bool should_play;
-	std::string delay_set_clip_name;
+	FString delay_set_clip_name;
 	bool hide_all_actors;
 
 	void UpdateActorAnimationToStart(ACreatureCollectionClip& collection_data);

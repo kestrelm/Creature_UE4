@@ -5,7 +5,7 @@
 #pragma once
 
 #include <mutex>
-#include "glm.hpp"
+#include  <glm/glm.hpp>
 #include "CustomProceduralMeshComponent.generated.h"
 
 class UCustomProceduralMeshComponent;

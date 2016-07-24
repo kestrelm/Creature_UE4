@@ -474,7 +474,7 @@ protected:
 	bool active_collection_play;
 	TArray<FCreatureBoneOverride> bones_override_list, final_bones_override_list;
 	TMap<FString, FCreatureBoneIK> internal_ik_map;
-	std::unordered_map<std::string, std::pair<glm::vec4, glm::vec4> > internal_ik_bone_pts;
+	TMap<FString, std::pair<glm::vec4, glm::vec4> > internal_ik_bone_pts;
 
 	void InitStandardValues();
 
@@ -501,7 +501,7 @@ protected:
 
 	void DoCreatureMeshUpdate(int render_packet_idx = -1);
 
-	void CoreBonesOverride(std::unordered_map<std::string, meshBone *>& bones_map);
+	void CoreBonesOverride(TMap<FString, meshBone *>& bones_map);
 
 	FString GetIkKey(const FString& start_bone_name, const FString& end_bone_name) const;
 

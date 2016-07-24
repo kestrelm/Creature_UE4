@@ -221,11 +221,11 @@ ACreatureSwitchItemActor:: InitSwitchRenderData()
 		{
 			auto cur_creature = creature_manager->GetCreature();
 			auto& regions_map = cur_creature->GetRenderComposition()->getRegionsMap();
-			std::string find_name = ConvertToString(creature_switch_region);
+			auto find_name = creature_switch_region;
 
 			for (auto& cur_region_pair : regions_map)
 			{
-				auto cur_region = cur_region_pair.second;
+				auto cur_region = cur_region_pair.Value;
 				if (cur_region->getName() == find_name)
 				{
 					// init render mesh

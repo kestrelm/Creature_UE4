@@ -1,19 +1,14 @@
 #pragma  once
 #include "Engine.h"
-#include <vector>
-#include <map>
-#include <string>
-
 #include "CreatureMetaAsset.generated.h"
-
 
 class CreatureMetaData {
 public:
 
 	void clear()
 	{
-		mesh_map.clear();
-		anim_order_map.clear();
+		mesh_map.Empty();
+		anim_order_map.Empty();
 	}
 
 	void updateIndicesAndPoints(
@@ -23,7 +18,7 @@ public:
 		float delta_z,
 		int num_indices,
 		int num_pts,
-		const std::string& anim_name,
+		const FString& anim_name,
 		int time_in)
 	{
 		bool has_data = false;
@@ -41,7 +36,7 @@ public:
 			int total_num_write_indices = 0;
 			for (auto region_id : (*cur_order))
 			{
-				if (mesh_map.count(region_id) == 0)
+				if (mesh_map.Contains(region_id) == false)
 				{
 					// region not found, just copy and return
 					std::memcpy(dst_indices, src_indices, num_indices * sizeof(glm::uint32));
@@ -89,34 +84,34 @@ public:
 		}
 	}
 
-	std::vector<int> * sampleOrder(const std::string& anim_name, int time_in)
+	std::vector<int> * sampleOrder(const FString& anim_name, int32 time_in)
 	{
-		if (anim_order_map.count(anim_name) > 0)
+		if (anim_order_map.Contains(anim_name))
 		{
-			auto& order_table = anim_order_map.at(anim_name);
-			if (order_table.empty())
+			auto& order_table = anim_order_map[anim_name];
+			if (order_table.Num() == 0)
 			{
 				return nullptr;
 			}
 
-			int sample_time = order_table.begin()->first;
+			int32 sample_time = 0;
 
 			for(auto& order_data : order_table)
 			{
-				if (time_in >= order_data.first)
+				if (time_in >= order_data.Key)
 				{
-					sample_time = order_data.first;
+					sample_time = order_data.Key;
 				}
 			}
 
-			return &order_table.at(sample_time);
+			return &order_table[sample_time];
 		}
 
 		return nullptr;
 	}
 
-	std::map<int, std::pair<int, int>> mesh_map;
-	std::map<std::string, std::map<int, std::vector<int> >> anim_order_map;
+	TMap<int, std::pair<int, int>> mesh_map;
+	TMap<FString, TMap<int, std::vector<int> >> anim_order_map;
 };
 
 UCLASS()

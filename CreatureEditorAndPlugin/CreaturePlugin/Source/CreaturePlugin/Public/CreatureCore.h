@@ -37,7 +37,6 @@
 
 #include "CustomProceduralMeshComponent.h"
 #include "CreatureModule.h"
-#include <map>
 #include <mutex>
 #include <memory>
 
@@ -84,10 +83,10 @@ public:
 	FProceduralMeshTriData GetProcMeshData();
 
 	// Loads a data packet from a file
-	static bool LoadDataPacket(const std::string& filename_in);
+	static bool LoadDataPacket(const FString& filename_in);
 
 	// Loads a data packet from a string in memory
-	static bool LoadDataPacket(const std::string& filename_in,FString* pSourceData);
+	static bool LoadDataPacket(const FString& filename_in,FString* pSourceData);
 
 	// Frees up memory from loading the data packets, this will force the reparsing of JSON strings if
 	// the asset is requested again
@@ -95,13 +94,13 @@ public:
 
 	//////////////////////////////////////////////////////////////////////////
 	// Loads an animation from a file
-	static void LoadAnimation(const std::string& filename_in, const std::string& name_in);
+	static void LoadAnimation(const FString& filename_in, const FString& name_in);
 
 	// Loads the creature character from a file
-	TArray<FProceduralMeshTriangle>& LoadCreature(const std::string& filename_in);
+	TArray<FProceduralMeshTriangle>& LoadCreature(const FString& filename_in);
 
 	// Adds a loaded animation onto the creature character
-	bool AddLoadedAnimation(const std::string& filename_in, const std::string& name_in);
+	bool AddLoadedAnimation(const FString& filename_in, const FString& name_in);
 
 	// Returns the CreatureManager associated with this actor
 	CreatureModule::CreatureManager * GetCreatureManager();
@@ -154,10 +153,10 @@ public:
 	bool RunTick(float delta_time);
 
 	// Sets the an active animation by name
-	void SetActiveAnimation(const std::string& name_in);
+	void SetActiveAnimation(const FString& name_in);
 
 	// Sets the active animation by smoothly blending, factor is a range of ( 0 < factor < 1 )
-	void SetAutoBlendActiveAnimation(const std::string& name_in, float factor);
+	void SetAutoBlendActiveAnimation(const FString& name_in, float factor);
 
 	void SetIsDisabled(bool flag_in);
 
@@ -171,7 +170,7 @@ public:
 
 	glm::uint32 * GetIndicesCopy(int init_size);
 
-	std::vector<meshBone *> getAllChildrenWithIgnore(const std::string& ignore_name, meshBone * base_bone = nullptr);
+	std::vector<meshBone *> getAllChildrenWithIgnore(const FString& ignore_name, meshBone * base_bone = nullptr);
 
 	// properties
 	FString creature_filename, creature_asset_filename;
@@ -190,7 +189,7 @@ public:
 
 	TArray<FProceduralMeshTriangle> draw_triangles;
 
-	std::shared_ptr<CreatureModule::CreatureManager> creature_manager;
+	TSharedPtr<CreatureModule::CreatureManager> creature_manager;
 
 	TArray<FCreatureBoneData> bone_data;
 

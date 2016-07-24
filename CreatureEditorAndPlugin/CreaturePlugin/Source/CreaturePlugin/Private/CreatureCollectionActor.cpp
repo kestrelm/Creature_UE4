@@ -56,10 +56,10 @@ void ACreatureCollectionActor::AddBluePrintCollectionClipData(FString clipName, 
 		return;
 	}
 
-	std::string new_clip_name = ConvertFStringToString(clipName);
-	std::string real_actor_clip_name = ConvertFStringToString(creatureActorClipName);
+	auto new_clip_name = clipName;
+	auto real_actor_clip_name = creatureActorClipName;
 
-	if (collection_clips.count(new_clip_name) < 0)
+	if (collection_clips.Contains(new_clip_name))
 	{
 		collection_clips[new_clip_name] = ACreatureCollectionClip();
 	}
@@ -68,7 +68,7 @@ void ACreatureCollectionActor::AddBluePrintCollectionClipData(FString clipName, 
 	creatureActor->SetDriven(false);
 	creatureActor->SetBluePrintAnimationLoop(false);
 	ACreatureCollectionClip& cur_collection_clip = collection_clips[new_clip_name];
-	cur_collection_clip.actor_sequence.push_back(std::make_pair(creatureActor, real_actor_clip_name));
+	cur_collection_clip.actor_sequence.Add(std::make_pair(creatureActor, real_actor_clip_name));
 }
 
 void ACreatureCollectionActor::SetBluePrintShouldPlay(bool flag_in)
@@ -91,13 +91,13 @@ void ACreatureCollectionActor::SetBluePrintActiveClip(FString clipName)
 {
 	if (AreAllActorsReady() == false)
 	{
-		delay_set_clip_name = ConvertFStringToString(clipName);
+		delay_set_clip_name = clipName;
 		return;
 	}
 
-	active_clip_name = ConvertFStringToString(clipName);
+	active_clip_name = clipName;
 
-	if (collection_clips.count(active_clip_name))
+	if (collection_clips.Contains(active_clip_name))
 	{
 		auto& cur_collection = collection_clips[active_clip_name];
 		cur_collection.ref_index = 0;
@@ -108,7 +108,7 @@ void ACreatureCollectionActor::SetBluePrintActiveClip(FString clipName)
 FTransform 
 ACreatureCollectionActor::GetBluePrintBoneXform(FString name_in, bool world_transform, float position_slide_factor)
 {
-	if (collection_clips.count(active_clip_name))
+	if (collection_clips.Contains(active_clip_name))
 	{
 		auto& cur_collection = collection_clips[active_clip_name];
 		int& ref_index = cur_collection.ref_index;
@@ -128,7 +128,7 @@ void ACreatureCollectionActor::UpdateActorAnimationToStart(ACreatureCollectionCl
 	auto cur_actor = cur_data.first;
 
 	cur_actor = cur_data.first;
-	cur_actor->SetBluePrintActiveAnimation_Name(FName(cur_data.second.c_str()));
+	cur_actor->SetBluePrintActiveAnimation_Name(FName(*cur_data.second));
 	cur_actor->SetBluePrintAnimationResetToStart();
 }
 
@@ -175,7 +175,7 @@ ACreatureCollectionActor::AreAllActorsReady() const
 	for (auto& collection_data : collection_clips)
 	{
 		
-		for (auto& cur_data : collection_data.second.actor_sequence)
+		for (auto& cur_data : collection_data.Value.actor_sequence)
 		{
 			auto cur_actor = cur_data.first;
 			if (cur_actor->GetCore().GetIsReadyPlay() == false)
@@ -191,7 +191,7 @@ ACreatureCollectionActor::AreAllActorsReady() const
 ACreatureActor * 
 ACreatureCollectionActor::GetActiveActor()
 {
-	if (collection_clips.count(active_clip_name))
+	if (collection_clips.Contains(active_clip_name))
 	{
 		auto& cur_collection = collection_clips[active_clip_name];
 		int& ref_index = cur_collection.ref_index;
@@ -224,10 +224,10 @@ void ACreatureCollectionActor::Tick(float DeltaTime)
 		return;
 	}
 	else {
-		if (delay_set_clip_name.empty() == false)
+		if (delay_set_clip_name.Len() > 0)
 		{
-			SetBluePrintActiveClip(FString(delay_set_clip_name.c_str()));
-			delay_set_clip_name = std::string("");
+			SetBluePrintActiveClip(delay_set_clip_name);
+			delay_set_clip_name = FString("");
 			return;
 		}
 	}
@@ -237,8 +237,8 @@ void ACreatureCollectionActor::Tick(float DeltaTime)
 	// hide other actors in other clips
 	for (auto& cur_collection_data : collection_clips)
 	{
-		if (cur_collection_data.first != active_clip_name) {
-			HideAllActors(cur_collection_data.second, GetActiveActor());
+		if (cur_collection_data.Key != active_clip_name) {
+			HideAllActors(cur_collection_data.Value, GetActiveActor());
 		}
 	}
 
@@ -247,14 +247,14 @@ void ACreatureCollectionActor::Tick(float DeltaTime)
 	{
 		for (auto& cur_collection_data : collection_clips)
 		{
-			HideAllActors(cur_collection_data.second, nullptr);
+			HideAllActors(cur_collection_data.Value, nullptr);
 		}
 
 		return;
 	}
 
 	// process active clip
-	if (collection_clips.count(active_clip_name))
+	if (collection_clips.Contains(active_clip_name))
 	{
 		auto& cur_collection = collection_clips[active_clip_name];
 		int& ref_index = cur_collection.ref_index;
@@ -271,15 +271,15 @@ void ACreatureCollectionActor::Tick(float DeltaTime)
 		auto& all_actor_animations = cur_manager->GetAllAnimations();
 		bool is_actor_animation_done = false;
 		bool is_at_sequence_end = false;
-		if (all_actor_animations.count(cur_data.second) > 0)
+		if (all_actor_animations.Contains(cur_data.second))
 		{
-			auto& actor_animation = all_actor_animations.at(cur_data.second);
+			auto& actor_animation = all_actor_animations[cur_data.second];
 			float cur_runtime = (cur_manager->getActualRunTime());
 			if (cur_runtime + true_delta_time >= actor_animation->getEndTime())
 			{
 				is_actor_animation_done = true;
 
-				if (ref_index + 1 < cur_collection.actor_sequence.size())
+				if (ref_index + 1 < cur_collection.actor_sequence.Num())
 				{
 					// switch to new actor animation
 					ref_index++;
