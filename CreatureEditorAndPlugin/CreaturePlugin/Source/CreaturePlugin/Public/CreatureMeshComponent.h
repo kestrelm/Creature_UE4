@@ -202,9 +202,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	FVector creature_bounds_offset;
 
-	/** Displays the bouding box */
+	/** Displays the bounding box */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	bool creature_debug_draw;
+
+	/** Displays the bones */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	bool creature_bones_draw;
 
 	/** Size of the returned bone data xform, for colliders */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
@@ -431,6 +435,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void RemoveBluePrintBonesIKConstraint(FCreatureBoneIK ik_data_in);
 
+	// Frees up some memory associated with loading of ALL Creature JSONs. Any loading of additional characters after this call will force a re-parsing of the JSON data. Use this function to free up memory when characters have all been instantiated on the level.
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void FreeBluePrintJSONMemory();
 
 	CreatureCore& GetCore();
 
@@ -467,7 +474,7 @@ protected:
 	bool active_collection_play;
 	TArray<FCreatureBoneOverride> bones_override_list, final_bones_override_list;
 	TMap<FString, FCreatureBoneIK> internal_ik_map;
-	std::unordered_map<std::string, std::pair<glm::vec4, glm::vec4> > internal_ik_bone_pts;
+	TMap<FString, std::pair<glm::vec4, glm::vec4> > internal_ik_bone_pts;
 
 	void InitStandardValues();
 
@@ -494,7 +501,7 @@ protected:
 
 	void DoCreatureMeshUpdate(int render_packet_idx = -1);
 
-	void CoreBonesOverride(std::unordered_map<std::string, meshBone *>& bones_map);
+	void CoreBonesOverride(TMap<FString, meshBone *>& bones_map);
 
 	FString GetIkKey(const FString& start_bone_name, const FString& end_bone_name) const;
 

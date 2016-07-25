@@ -349,6 +349,7 @@ void UCreatureMeshComponent::InitStandardValues()
 	bone_data_length_factor = 0.02f;
 	creature_bounds_scale = 1.0f;
 	creature_debug_draw = false;
+	creature_bones_draw = false;
 	creature_bounds_offset = FVector(0, 0, 0);
 	region_overlap_z_delta = 0.01f;
 	enable_collection_playback = false;
@@ -503,13 +504,13 @@ UCreatureMeshComponent::RunCollectionTick(float DeltaTime)
 		auto cur_manager = cur_core.GetCreatureManager();
 		auto& all_animations = cur_manager->GetAllAnimations();
 		auto& cur_token = active_collection_clip->sequence_clips[active_collection_clip->active_index];
-		std::string anim_string = ConvertToString(cur_token.animation_name);
-		if (all_animations.count(anim_string) == 0)
+		auto anim_string = cur_token.animation_name.ToString();
+		if (all_animations.Contains(anim_string) == false)
 		{
 			return;
 		}
 
-		auto clip_animation = all_animations.at(anim_string).get();
+		auto clip_animation = all_animations[anim_string].Get();
 		float next_time = cur_runtime + true_delta_time;
 
 		if (next_time >= clip_animation->getEndTime())
@@ -599,11 +600,32 @@ void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx)
 			FColor(255, 0, 0)
 			);
 
+		/*
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Sphere pos is: (%f, %f, %f)"), debugSphere.Center.X, debugSphere.Center.Y, debugSphere.Center.Z));
 		FTransform wTransform = GetComponentToWorld();
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Walk pos is: (%f, %f, %f)"), wTransform.GetLocation().X,
 			wTransform.GetLocation().Y,
 			wTransform.GetLocation().Z));
+		*/
+	}
+
+	if (creature_bones_draw)
+	{
+		auto base_xform = GetComponentToWorld();
+		for (auto& bone_data : creature_core.creature_manager->GetCreature()->GetRenderComposition()->getBonesMap())
+		{
+			auto cur_bone = bone_data.Value;
+			auto cur_start_pos = cur_bone->getWorldStartPt();
+			auto cur_end_pos = cur_bone->getWorldEndPt();
+
+			FVector local_pt1(cur_start_pos.x, -3.0f, cur_start_pos.y);
+			FVector local_pt2(cur_end_pos.x, -3.0f, cur_end_pos.y);
+			FVector world_pt1 = base_xform.TransformPosition(local_pt1);
+			FVector world_pt2 = base_xform.TransformPosition(local_pt2);
+
+			DrawDebugLine(GetWorld(), world_pt1, world_pt2, FColor::Red);
+			DrawDebugString(GetWorld(), (world_pt1 + world_pt2) * 0.5f, cur_bone->getKey());
+		}
 	}
 }
 
@@ -706,7 +728,7 @@ void UCreatureMeshComponent::StandardInit()
 		bones_override_list.Empty();
 		final_bones_override_list.Empty();
 		internal_ik_map.Empty();
-		std::function<void(std::unordered_map<std::string, meshBone *>&) > cur_callback =
+		std::function<void(TMap<FString, meshBone *>&) > cur_callback =
 			std::bind(&UCreatureMeshComponent::CoreBonesOverride, this, std::placeholders::_1);
 		creature_core.creature_manager->SetBonesOverrideCallback(cur_callback);
 	}
@@ -878,7 +900,7 @@ void UCreatureMeshComponent::LoadAnimationFromStore()
 }
 
 void 
-UCreatureMeshComponent::CoreBonesOverride(std::unordered_map<std::string, meshBone *>& bones_map)
+UCreatureMeshComponent::CoreBonesOverride(TMap<FString, meshBone *>& bones_map)
 {
 	if ((internal_ik_map.Num() == 0) && (bones_override_list.Num() == 0))
 	{
@@ -922,12 +944,12 @@ UCreatureMeshComponent::CoreBonesOverride(std::unordered_map<std::string, meshBo
 
 	for (auto& cur_data : final_bones_override_list)
 	{
-		auto cur_bone_name = ConvertToString(cur_data.bone_name);
+		auto cur_bone_name = cur_data.bone_name;
 		auto local_start_pos = projectLocalLamda(inv_base_xform, cur_data.start_pos);
 		auto local_end_pos = projectLocalLamda(inv_base_xform, cur_data.end_pos);
 
 		// Set to new positions based on bone name
-		if (bones_map.count(cur_bone_name) > 0) {
+		if (bones_map.Contains(cur_bone_name)) {
 			auto set_bone = bones_map[cur_bone_name];
 			auto set_start_pos = set_bone->getWorldStartPt();
 			auto set_end_pos = set_bone->getWorldEndPt();
@@ -1219,10 +1241,10 @@ UCreatureMeshComponent::ComputeBonesIK(
 				src_basis,
 				dst_basis);
 
-			internal_ik_bone_pts[cur_bone->getKey()] =
+			internal_ik_bone_pts.Add(cur_bone->getKey(),
 				std::make_pair(
 					glm::vec4(new_start_pt.X, new_start_pt.Y, 0, 1.0f),
-					glm::vec4(new_end_pt.X, new_end_pt.Y, 0, 1.0f));
+					glm::vec4(new_end_pt.X, new_end_pt.Y, 0, 1.0f)));
 		}
 	};
 
@@ -1232,9 +1254,9 @@ UCreatureMeshComponent::ComputeBonesIK(
 		)
 	{
 		FCreatureBoneOverride ret_data;
-		ret_data.bone_name = FString(bone->getKey().c_str());
+		ret_data.bone_name = bone->getKey();
 
-		if (internal_ik_bone_pts.count(bone->getKey()) > 0) 
+		if (internal_ik_bone_pts.Contains(bone->getKey())) 
 		{
 			auto pos1 = internal_ik_bone_pts[bone->getKey()].first;
 			auto pos2 = internal_ik_bone_pts[bone->getKey()].second;
@@ -1249,8 +1271,8 @@ UCreatureMeshComponent::ComputeBonesIK(
 	if (ik_data.children_ready == false)
 	{
 		auto root_bone = creature_core.creature_manager->GetCreature()->GetRenderComposition()->getRootBone();
-		auto first_name = ConvertToString(ik_data.first_bone_name);
-		auto second_name = ConvertToString(ik_data.second_bone_name);
+		auto first_name = ik_data.first_bone_name;
+		auto second_name = ik_data.second_bone_name;
 
 		auto first_children = 
 			creature_core.getAllChildrenWithIgnore(second_name,
@@ -1266,11 +1288,11 @@ UCreatureMeshComponent::ComputeBonesIK(
 	}
 
 	auto bones_map = creature_core.creature_manager->GetCreature()->GetRenderComposition()->getBonesMap();
-	auto real_first_bone_name = ConvertToString(ik_data.first_bone_name);
-	auto real_second_bone_name = ConvertToString(ik_data.second_bone_name);
+	auto real_first_bone_name = ik_data.first_bone_name;
+	auto real_second_bone_name = ik_data.second_bone_name;
 
-	if ((bones_map.count(real_first_bone_name) == 0)
-		|| (bones_map.count(real_second_bone_name) == 0))
+	if ((bones_map.Contains(real_first_bone_name) == false)
+		|| (bones_map.Contains(real_second_bone_name) == false))
 	{
 		return;
 	}
@@ -1306,7 +1328,7 @@ UCreatureMeshComponent::ComputeBonesIK(
 	auto new_ik_start_pt = getBoneFVectorLamda(cur_ik_start_pt);
 	auto tmp_ik_mid_pt = rotateVec2DLamda(glm::vec4(ik_length1, 0, 0, 1), ik_angle1) + cur_ik_start_pt;
 	auto tmp_ik_end_pt = rotateVec2DLamda(glm::vec4(ik_length2, 0, 0, 1), ik_angle2) + glm::vec4(ik_length1, 0, 0, 1);
-	tmp_ik_end_pt = rotateVec2DLamda(tmp_ik_end_pt, ik_angle1);
+	tmp_ik_end_pt = rotateVec2DLamda(tmp_ik_end_pt, ik_angle1) + cur_ik_start_pt;
 
 	auto new_ik_mid_pt = getBoneFVectorLamda(tmp_ik_mid_pt);
 	auto new_ik_end_pt = getBoneFVectorLamda(tmp_ik_end_pt);
@@ -1340,6 +1362,13 @@ UCreatureMeshComponent::ComputeBonesIK(
 	}
 
 }
+
+void UCreatureMeshComponent::FreeBluePrintJSONMemory()
+{
+	CreatureCore::ClearAllDataPackets();
+	UE_LOG(LogTemp, Warning, TEXT("UCreatureMeshComponent::FreeBluePrintJSONMemory() - Freed up JSON Memory Data."));
+}
+
 
 #if __clang__
 #pragma clang diagnostic pop

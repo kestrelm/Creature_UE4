@@ -55,6 +55,8 @@ bool UCreatureAnimationAssetFactory::ImportSourceFile(UCreatureAnimationAsset *f
 		return false;
 	}
 
+#ifdef CREATURE_USE_COMPRESS_JSON
+	// Run compression routine
 	std::string saveString(TCHAR_TO_UTF8(*readString));
 
 	forAsset->CreatureZipBinary.Reset();
@@ -71,6 +73,10 @@ bool UCreatureAnimationAssetFactory::ImportSourceFile(UCreatureAnimationAsset *f
 
 	Compressor << writeData;
 	Compressor.Flush();
+#else
+	// Just use the uncompressed string
+	forAsset->CreatureRawJSONString = readString;
+#endif
 
 	forAsset->GatherAnimationData();
 

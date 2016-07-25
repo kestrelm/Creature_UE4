@@ -24,23 +24,39 @@ FString UCreatureAnimationAsset::GetCreatureFilename() const
 #endif
 }
 
+bool 
+UCreatureAnimationAsset::UseCompressedData() const
+{
+	return (CreatureZipBinary.Num() > 0);
+}
+
 FString& UCreatureAnimationAsset::GetJsonString()
 {
-	// Decompress only when needed
-	if (CreatureFileJSonData.IsEmpty())
+	// Decide if we should decompress or return the raw uncompressed string
+	if(!UseCompressedData())
 	{
-		FArchiveLoadCompressedProxy Decompressor =
-			FArchiveLoadCompressedProxy(CreatureZipBinary, ECompressionFlags::COMPRESS_ZLIB);
-
-		if (Decompressor.IsError() || (CreatureZipBinary.Num() == 0))
+		if (CreatureFileJSonData.IsEmpty())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("UCreatureAnimationAsset::Could not uncompress data"));
-			return CreatureFileJSonData;
+			CreatureFileJSonData = CreatureRawJSONString;
 		}
+	}
+	else {
+		// Decompress only when needed
+		if (CreatureFileJSonData.IsEmpty())
+		{
+			FArchiveLoadCompressedProxy Decompressor =
+				FArchiveLoadCompressedProxy(CreatureZipBinary, ECompressionFlags::COMPRESS_ZLIB);
 
-		FBufferArchive DecompressedBinaryArray;
-		Decompressor << DecompressedBinaryArray;
-		CreatureFileJSonData = UTF8_TO_TCHAR((char *)DecompressedBinaryArray.GetData());
+			if (Decompressor.IsError() || (CreatureZipBinary.Num() == 0))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("UCreatureAnimationAsset::Could not uncompress data"));
+				return CreatureFileJSonData;
+			}
+
+			FBufferArchive DecompressedBinaryArray;
+			Decompressor << DecompressedBinaryArray;
+			CreatureFileJSonData = UTF8_TO_TCHAR((char *)DecompressedBinaryArray.GetData());
+		}
 	}
 
 	return CreatureFileJSonData;
@@ -86,7 +102,7 @@ void UCreatureAnimationAsset::LoadPointCacheForClip(const FName &animName, class
 	const FCreatureAnimationDataCache *cacheForAnim = GetDataCacheForClip(animName);
 	if (cacheForAnim && forCore->GetCreatureManager())
 	{
-		CreatureModule::CreatureAnimation *anim = forCore->GetCreatureManager()->GetAnimation(ConvertToString(animName));
+		CreatureModule::CreatureAnimation *anim = forCore->GetCreatureManager()->GetAnimation(animName.ToString());
 		if (anim == nullptr || anim->hasCachePts())
 		{
 			return;
@@ -104,7 +120,7 @@ void UCreatureAnimationAsset::LoadPointCacheForClip(const FName &animName, class
 			{
 				new_pts[j] = cacheForAnim->m_points[sourcePtIdx++];
 			}
-			pts.push_back(new_pts);
+			pts.Add(new_pts);
 		}
 	}
 }
@@ -163,10 +179,20 @@ void UCreatureAnimationAsset::PostLoad()
 		AssetImportData->SourceData = MoveTemp(Info);
 	}
 
-	if (CreatureZipBinary.Num() != 0 || CreatureFileJSonData.IsEmpty() == false)
+	if (UseCompressedData())
 	{
-		// load the animation data caches from the json data
-		GatherAnimationData();
+		if (CreatureZipBinary.Num() != 0 || CreatureFileJSonData.IsEmpty() == false)
+		{
+			// load the animation data caches from the json data
+			GatherAnimationData();
+		}
+	}
+	else {
+		if (CreatureRawJSONString.Len() > 0)
+		{
+			// load the animation data caches from the json data
+			GatherAnimationData();
+		}
 	}
 }
 
@@ -185,11 +211,11 @@ void UCreatureAnimationAsset::GatherAnimationData()
 
 	int32 arraySize = creature_core.GetCreatureManager()->GetCreature()->GetTotalNumPoints() * 3;
 
-	m_dataCache.Reset(all_animation_names.size());
+	m_dataCache.Reset(all_animation_names.Num());
 
 	for (auto& cur_name : all_animation_names)
 	{
-		FName animName(cur_name.c_str());
+		FName animName(*cur_name);
 
 		CreatureModule::CreatureAnimation *anim = creature_core.GetCreatureManager()->GetAnimation(cur_name);
 		if (ensure(anim))
@@ -209,7 +235,7 @@ void UCreatureAnimationAsset::GatherAnimationData()
 					float startTime = anim->getStartTime();
 					float endTime = anim->getEndTime();
 
-					animDataCache.m_numArrays = pts.size();
+					animDataCache.m_numArrays = pts.Num();
 					animDataCache.m_points.Reserve(animDataCache.m_numArrays * arraySize);
 
 					for (float *pt : pts)

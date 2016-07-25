@@ -32,7 +32,7 @@ UCreatureMetaAsset::BuildMetaData()
 				auto cur_start_index = cur_json->GetIntegerField(TEXT("startIndex"));
 				auto cur_end_index = cur_json->GetIntegerField(TEXT("endIndex"));
 
-				meta_data.mesh_map[cur_id] = std::pair<int, int>(cur_start_index, cur_end_index);
+				meta_data.mesh_map.Add(cur_id, std::pair<int, int>(cur_start_index, cur_end_index));
 			}
 		}
 
@@ -41,8 +41,8 @@ UCreatureMetaAsset::BuildMetaData()
 			auto orders_obj = jsonObject->GetObjectField(TEXT("regionOrders"));
 			for (auto cur_data : orders_obj->Values)
 			{
-				auto cur_anim_name = std::string(TCHAR_TO_UTF8(*cur_data.Key));
-				std::map<int, std::vector<int> > cur_switch_order_map;
+				auto cur_anim_name = cur_data.Key;
+				TMap<int, std::vector<int> > cur_switch_order_map;
 
 				auto cur_obj_array = cur_data.Value->AsArray();
 				for (auto cur_switch_json : cur_obj_array)
@@ -58,11 +58,11 @@ UCreatureMetaAsset::BuildMetaData()
 
 					auto cur_switch_time = switch_obj->GetIntegerField(TEXT("switch_time"));
 					
-					cur_switch_order_map[cur_switch_time] = cur_switch_ints;
+					cur_switch_order_map.Add(cur_switch_time, cur_switch_ints);
 				}
 
 
-				meta_data.anim_order_map[cur_anim_name] = cur_switch_order_map;
+				meta_data.anim_order_map.Add(cur_anim_name, cur_switch_order_map);
 			}
 		}
 
