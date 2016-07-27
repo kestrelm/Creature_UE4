@@ -91,7 +91,7 @@ struct FCreatureMeshCollection
 	}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	FString creature_filename;
+	FName creature_filename;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	float animation_speed;
@@ -120,7 +120,7 @@ struct FCreatureBoneOverride {
 
 	/** Name of your bone */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	FString bone_name;
+	FName bone_name;
 
 	/** Starting position of the bone in world space */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
@@ -141,11 +141,11 @@ struct FCreatureBoneIK  {
 
 	/** First bone name of the IK system */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	FString first_bone_name;
+	FName first_bone_name;
 
 	/** Second bone name of the IK system */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	FString second_bone_name;
+	FName second_bone_name;
 
 	/** Target position of the IK system in world space */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
@@ -176,7 +176,7 @@ class CREATUREPLUGIN_API UCreatureMeshComponent : public UCustomProceduralMeshCo
 public:
 	/** Deprecated: Path/Filename to the Creature JSON. Will accept .zip archives, make sure the file is with a .zip extension. Use creature_animation_asset if you can since this is not asset based and might cause extra complications during game packaging. Eventually this attribute will be phased out. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	FString creature_filename;
+	FName creature_filename;
 
 	/** Points to a Creature Animation Asset containing the JSON filename of the character. Use this instead of creature_filename if you want to use an asset based system. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
@@ -473,8 +473,8 @@ protected:
 	bool active_collection_loop;
 	bool active_collection_play;
 	TArray<FCreatureBoneOverride> bones_override_list, final_bones_override_list;
-	TMap<FString, FCreatureBoneIK> internal_ik_map;
-	TMap<FString, std::pair<glm::vec4, glm::vec4> > internal_ik_bone_pts;
+	TMap<FName, FCreatureBoneIK> internal_ik_map;
+	TMap<FName, std::pair<glm::vec4, glm::vec4> > internal_ik_bone_pts;
 
 	void InitStandardValues();
 
@@ -501,14 +501,14 @@ protected:
 
 	void DoCreatureMeshUpdate(int render_packet_idx = -1);
 
-	void CoreBonesOverride(TMap<FString, meshBone *>& bones_map);
+	void CoreBonesOverride(TMap<FName, meshBone *>& bones_map);
 
-	FString GetIkKey(const FString& start_bone_name, const FString& end_bone_name) const;
+	FName GetIkKey(const FName& start_bone_name, const FName& end_bone_name) const;
 
 	void
 	ComputeBonesIK(
-		const FString& start_bone_name, 
-		const FString& end_bone_name,
+		const FName& start_bone_name,
+		const FName& end_bone_name,
 		TArray<FCreatureBoneOverride>& mod_list);
 
 

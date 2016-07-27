@@ -68,12 +68,12 @@ namespace CreatureModule {
     
     // Opens the json file and returns the entire json structure for a creature
     // Use this to load your creatures and animatons
-    void LoadCreatureJSONData(const FString& filename_in,
+    void LoadCreatureJSONData(const FName& filename_in,
                               CreatureLoadDataPacket& load_data);
     
     // Opens the json file compressed in .zip format and returns the entire json structure for a creature
     // Use this to load your creatures and animatons
-    void LoadCreatureZipJSONData(const FString& filename_in,
+    void LoadCreatureZipJSONData(const FName& filename_in,
                                  CreatureLoadDataPacket& load_data);
     
     // Parses and creates a json from an input string and returns the entire json structure for a creature
@@ -134,19 +134,19 @@ namespace CreatureModule {
         meshRenderBoneComposition * GetRenderComposition();
 
         // Get Available Animation names. Note that these animations might not have been loaded yet.
-        const TArray<FString>& GetAnimationNames() const;
+        const TArray<FName>& GetAnimationNames() const;
 
 		// Returns the UV Swap Item Packet map
-		const TMap<FString, TArray<CreatureUVSwapPacket> >& GetUvSwapPackets() const;
+		const TMap<FName, TArray<CreatureUVSwapPacket> >& GetUvSwapPackets() const;
 
 		// Sets up an Active UV Item Swap for a particular region
-		void SetActiveItemSwap(const FString& region_name, int32 swap_idx);
+		void SetActiveItemSwap(const FName& region_name, int32 swap_idx);
 
 		// Removes an Active UV Item Swap from a particular region
-		void RemoveActiveItemSwap(const FString& region_name);
+		void RemoveActiveItemSwap(const FName& region_name);
 
 		// Returns the Actiev UV Swap Items
-		TMap<FString, int32>& GetActiveItemSwaps();
+		TMap<FName, int32>& GetActiveItemSwaps();
 
 		// Enables/Disables Anchor Points
 		void SetAnchorPointsActive(bool flag_in);
@@ -155,7 +155,7 @@ namespace CreatureModule {
 		bool GetAnchorPointsActive() const;
 
 		// Returns an Anchor Point based on an input animation clip name
-		glm::vec2 GetAnchorPoint(const FString& anim_clip_name_in) const;
+		glm::vec2 GetAnchorPoint(const FName& anim_clip_name_in) const;
     
     protected:
         
@@ -168,10 +168,10 @@ namespace CreatureModule {
         glm::uint8 * render_colours;
         int32 total_num_pts, total_num_indices;
         meshRenderBoneComposition * render_composition;
-        TArray<FString> animation_names;
-		TMap<FString, TArray<CreatureUVSwapPacket> > uv_swap_packets;
-		TMap<FString, int32> active_uv_swap_actions;
-		TMap<FString, glm::vec2> anchor_point_map;
+        TArray<FName> animation_names;
+		TMap<FName, TArray<CreatureUVSwapPacket> > uv_swap_packets;
+		TMap<FName, int32> active_uv_swap_actions;
+		TMap<FName, glm::vec2> anchor_point_map;
 		bool anchor_points_active;
     };
     
@@ -179,7 +179,7 @@ namespace CreatureModule {
     class CreatureAnimation {
     public:
         CreatureAnimation(CreatureLoadDataPacket& load_data,
-                          const FString& name_in);
+                          const FName& name_in);
         
         virtual ~CreatureAnimation();
         
@@ -203,7 +203,7 @@ namespace CreatureModule {
 
 		meshOpacityCacheManager& getOpacityCache();
         
-        const FString& getName() const;
+        const FName& getName() const;
         
         bool hasCachePts() const;
         
@@ -215,12 +215,12 @@ namespace CreatureModule {
         
     protected:
         
-        void LoadFromData(const FString& name_in,
+        void LoadFromData(const FName& name_in,
                           CreatureLoadDataPacket& load_data);
         
         int32 getIndexByTime(int32 time_in) const;
 
-        FString name;
+        FName name;
         float start_time, end_time;
         meshBoneCacheManager bones_cache;
         meshDisplacementCacheManager displacement_cache;
@@ -238,27 +238,27 @@ namespace CreatureModule {
         
         // Create an animation
         void CreateAnimation(CreatureLoadDataPacket& load_data,
-                             const FString& name_in);
+                             const FName& name_in);
         
         // Add an animation
         void AddAnimation(TSharedPtr<CreatureModule::CreatureAnimation> animation_in);
         
         // Return an animation
         CreatureModule::CreatureAnimation *
-        GetAnimation(const FString name_in);
+        GetAnimation(const FName name_in);
         
         // Return the creature
         CreatureModule::Creature *
         GetCreature();
         
         // Sets the current animation to be active by name
-        void SetActiveAnimationName(const FString& name_in, bool check_already_active=false);
+        void SetActiveAnimationName(const FName& name_in, bool check_already_active=false);
         
         // Returns the name of the currently active animation
-        const FString& GetActiveAnimationName() const;
+        const FName& GetActiveAnimationName() const;
         
         // Returns the table of all animations
-        TMap<FString, TSharedPtr<CreatureModule::CreatureAnimation> >&
+        TMap<FName, TSharedPtr<CreatureModule::CreatureAnimation> >&
         GetAllAnimations();
         
         // Returns if animation is playing
@@ -292,14 +292,14 @@ namespace CreatureModule {
         void SetBlending(bool flag_in);
         
         // Sets blending animation names
-        void SetBlendingAnimations(const FString& name_1, const FString& name_2);
+        void SetBlendingAnimations(const FName& name_1, const FName& name_2);
         
         // Sets the blending factor
         void SetBlendingFactor(float value_in);
         
         // Given a set of coordinates in local creature space,
         // see if any bone is in contact
-        FString IsContactBone(const glm::vec2& pt_in,
+        FName IsContactBone(const glm::vec2& pt_in,
                                   const glm::mat4& creature_xform,
                                   float radius) const;
         
@@ -317,19 +317,19 @@ namespace CreatureModule {
         void SetShouldLoop(bool flag_in);
         
         // Sets the callback to modify/override bone positions
-        void SetBonesOverrideCallback(std::function<void (TMap<FString, meshBone *>&) >& callback_in);
+        void SetBonesOverrideCallback(std::function<void (TMap<FName, meshBone *>&) >& callback_in);
         
         // Creates point cache for animation
-        void MakePointCache(const FString& animation_name_in, int32 gap_step);
+        void MakePointCache(const FName& animation_name_in, int32 gap_step);
 
 		// Clears point cache for animation
-		void ClearPointCache(const FString& animation_name_in);
+		void ClearPointCache(const FName& animation_name_in);
         
         // Sets auto blending
         void SetAutoBlending(bool flag_in);
         
         // Uses auto blending to blend to the next animation
-        void AutoBlendTo(const FString& animation_name_in, float blend_delta);
+        void AutoBlendTo(const FName& animation_name_in, float blend_delta);
 
 		// Global switch to enable/disable point caching
 		void SetDoPointCache(bool flag_in);
@@ -339,14 +339,14 @@ namespace CreatureModule {
         
     protected:
 
-		float correctRunTime(float time_in, const FString& animation_name);
+		float correctRunTime(float time_in, const FName& animation_name);
         
-        FString ProcessContactBone(const glm::vec2& pt_in,
+        FName ProcessContactBone(const glm::vec2& pt_in,
                                        float radius,
                                        meshBone * bone_in) const;
 
         
-        void PoseCreature(const FString& animation_name_in,
+        void PoseCreature(const FName& animation_name_in,
                           glm::float32 * target_pts,
 						  float input_run_time);
         
@@ -356,41 +356,41 @@ namespace CreatureModule {
 
 		glm::float32 * interpFloatArray(glm::float32 * first_list, glm::float32 * second_list, float factor, int32 array_size);
 
-		void ResetBlendTime(const FString& name_in);
+		void ResetBlendTime(const FName& name_in);
 
-		void UpdateRegionSwitches(const FString& animation_name_in);
+		void UpdateRegionSwitches(const FName& animation_name_in);
 
-		void PoseJustBones(const FString& animation_name_in,
+		void PoseJustBones(const FName& animation_name_in,
 								glm::float32 * target_pts,
 								float input_run_time);
 
-		void JustRunUVWarps(const FString& animation_name_in, float input_run_time);
+		void JustRunUVWarps(const FName& animation_name_in, float input_run_time);
 
 		void RunUVItemSwap();
 
-		void AlterBonesByAnchor(TMap<FString, meshBone *>& bones_map, const FString& animation_name_in);
+		void AlterBonesByAnchor(TMap<FName, meshBone *>& bones_map, const FName& animation_name_in);
         
-        TMap<FString, TSharedPtr<CreatureModule::CreatureAnimation> > animations;
+        TMap<FName, TSharedPtr<CreatureModule::CreatureAnimation> > animations;
         TSharedPtr<CreatureModule::Creature> target_creature;
-        FString active_animation_name;
+        FName active_animation_name;
         bool is_playing;
         float run_time;
         float time_scale;
         glm::float32 * blend_render_pts[2];
         bool do_blending;
         float blending_factor;
-        FString active_blend_animation_names[2];
-		TMap<FString, float> active_blend_run_times;
+        FName active_blend_animation_names[2];
+		TMap<FName, float> active_blend_run_times;
         bool mirror_y;
         bool use_custom_time_range;
         int32 custom_start_time, custom_end_time;
         bool should_loop;
         bool do_auto_blending;
-        FString auto_blend_names[2];
+        FName auto_blend_names[2];
         float auto_blend_delta;
 		bool do_point_caching;
         
-        std::function<void (TMap<FString, meshBone *>&) > bones_override_callback;
+        std::function<void (TMap<FName, meshBone *>&) > bones_override_callback;
         
     };
 };

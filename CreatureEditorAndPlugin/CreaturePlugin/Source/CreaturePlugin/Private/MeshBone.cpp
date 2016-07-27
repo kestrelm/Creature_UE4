@@ -37,6 +37,10 @@
 #include "MeshBone.h"
 #include <math.h>
 
+DECLARE_CYCLE_STAT(TEXT("MeshBoneCacheManager_retrieveValuesAtTime"), STAT_MeshBoneCacheManager_retrieveValuesAtTime, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("MeshOpacityCacheManager_retrieveValuesAtTime"), STAT_MeshOpacityCacheManager_retrieveValuesAtTime, STATGROUP_Creature);
+
+
 dualQuat::dualQuat() {
     real.w = 0;
     real.x = 0;
@@ -141,7 +145,7 @@ static float angleVec4(const glm::vec4& vec_in)
 }
 
 // meshBone
-meshBone::meshBone(const FString& key_in,
+meshBone::meshBone(const FName& key_in,
                    const glm::vec4& start_pt_in,
                    const glm::vec4& end_pt_in,
                    const glm::mat4& parent_transform)
@@ -227,14 +231,14 @@ meshBone::getBoneDepth(meshBone * bone_in, int32 depth) const
     return -1;
 }
 
-TArray<FString>
+TArray<FName>
 meshBone::getAllBoneKeys() const
 {
-    TArray<FString> ret_data;
+    TArray<FName> ret_data;
     ret_data.Add(getKey());
     
     for(auto i = 0; i < children.Num(); i++) {
-        TArray<FString> append_data = children[i]->getAllBoneKeys();
+        TArray<FName> append_data = children[i]->getAllBoneKeys();
         ret_data.Append(append_data);
     }
     
@@ -307,12 +311,12 @@ glm::vec4 meshBone::getWorldEndPt() const
     return world_end_pt;
 }
 
-const FString& meshBone::getKey() const
+const FName& meshBone::getKey() const
 {
     return key;
 }
 
-void meshBone::setKey(const FString& key_in)
+void meshBone::setKey(const FName& key_in)
 {
     key = key_in;
 }
@@ -572,7 +576,7 @@ meshBone::hasBone(meshBone * bone_in) const
     return false;
 }
 
-meshBone * meshBone::getChildByKey(const FString& search_key)
+meshBone * meshBone::getChildByKey(const FName& search_key)
 {
     if(key == search_key) {
         return this;
@@ -682,15 +686,15 @@ glm::float32 * meshRenderRegion::getUVs() const
     return store_uvs + (2  * start_pt_index);
 }
 
-TMap<FString, TArray<float> >&
+TMap<FName, TArray<float> >&
 meshRenderRegion::getWeights()
 {
     return normal_weight_map;
 }
 
 void
-meshRenderRegion::renameWeightValuesByKey(const FString& old_key,
-                                          const FString& new_key)
+meshRenderRegion::renameWeightValuesByKey(const FName& old_key,
+                                          const FName& new_key)
 {
     if(normal_weight_map.Contains(old_key) == false)
     {
@@ -703,7 +707,7 @@ meshRenderRegion::renameWeightValuesByKey(const FString& old_key,
 }
 
 void
-meshRenderRegion::initFastNormalWeightMap(const TMap<FString, meshBone *>& bones_map)
+meshRenderRegion::initFastNormalWeightMap(const TMap<FName, meshBone *>& bones_map)
 {
     fast_normal_weight_map.Empty();
     fast_bones_map.Empty();
@@ -768,7 +772,7 @@ int32 meshRenderRegion::getNumIndices() const
     return end_index - start_index + 1;
 }
 
-void meshRenderRegion::setMainBoneKey(const FString& key_in)
+void meshRenderRegion::setMainBoneKey(const FName& key_in)
 {
     main_bone_key = key_in;
 }
@@ -790,12 +794,12 @@ meshRenderRegion::getUseDq() const
 }
 
 void
-meshRenderRegion::setName(const FString& name_in)
+meshRenderRegion::setName(const FName& name_in)
 {
     name = name_in;
 }
 
-const FString&
+const FName&
 meshRenderRegion::getName() const
 {
     return name;
@@ -995,7 +999,7 @@ meshRenderRegion::getLocalIndex(int32 index_in) const
 }
 
 void meshRenderRegion::poseFinalPts(glm::float32 * output_pts,
-                                    TMap<FString, meshBone *>& bones_map)
+                                    TMap<FName, meshBone *>& bones_map)
 {
     glm::float32 * read_pt = getRestPts();
     glm::float32 * write_pt = output_pts;
@@ -1015,7 +1019,7 @@ void meshRenderRegion::poseFinalPts(glm::float32 * output_pts,
         int32 n_index = 0;
         for(auto& cur_iter : bones_map)
         {
-            const FString& cur_key = cur_iter.Key;
+            const FName& cur_key = cur_iter.Key;
             meshBone * cur_bone = cur_iter.Value;
             float cur_weight_val = 0;
             if(fast_normal_weight_map.Num() > 0) {
@@ -1176,13 +1180,13 @@ void meshRenderBoneComposition::initBoneMap()
     bones_map = meshRenderBoneComposition::genBoneMap(root_bone);
 }
 
-TMap<FString, meshBone *>
+TMap<FName, meshBone *>
 meshRenderBoneComposition::genBoneMap(meshBone * input_bone)
 {
-    TMap<FString, meshBone *> ret_map;
-    TArray<FString> all_keys = input_bone->getAllBoneKeys();
+    TMap<FName, meshBone *> ret_map;
+    TArray<FName> all_keys = input_bone->getAllBoneKeys();
     for(auto i = 0; i < all_keys.Num(); i++) {
-        FString cur_key = all_keys[i];
+		FName cur_key = all_keys[i];
         ret_map.Add(cur_key, input_bone->getChildByKey(cur_key));
     }
     
@@ -1194,18 +1198,18 @@ meshRenderBoneComposition::initRegionsMap()
 {
     regions_map.Empty();
     for(auto i = 0; i < regions.Num(); i++) {
-        FString cur_key = regions[i]->getName();
+        FName cur_key = regions[i]->getName();
         regions_map.Add(cur_key, regions[i]);
     }
 }
 
-TMap<FString, meshBone *>&
+TMap<FName, meshBone *>&
 meshRenderBoneComposition::getBonesMap()
 {
     return bones_map;
 }
 
-TMap<FString, meshRenderRegion *>&
+TMap<FName, meshRenderRegion *>&
 meshRenderBoneComposition::getRegionsMap()
 {
     return regions_map;
@@ -1235,7 +1239,7 @@ meshRenderBoneComposition::resetToWorldRestPts()
 
 
 // meshBoneCache
-meshBoneCache::meshBoneCache(const FString& key_in)
+meshBoneCache::meshBoneCache(const FName& key_in)
 {
     key = key_in;
 }
@@ -1246,7 +1250,7 @@ meshBoneCache::~meshBoneCache()
 }
 
 // meshDisplacementCache
-meshDisplacementCache::meshDisplacementCache(const FString& key_in)
+meshDisplacementCache::meshDisplacementCache(const FName& key_in)
 {
     key = key_in;
 }
@@ -1270,7 +1274,7 @@ meshDisplacementCache::getPostDisplacements() const
 
 
 // meshUVWarpCache
-meshUVWarpCache::meshUVWarpCache(const FString& key_in)
+meshUVWarpCache::meshUVWarpCache(const FName& key_in)
 {
     uv_warp_global_offset = uv_warp_local_offset = glm::vec2(0,0);
     uv_warp_scale = glm::vec2(-1,-1);
@@ -1385,13 +1389,13 @@ meshBoneCacheManager::getIndexByTime(int32 time_in) const
 
 void
 meshBoneCacheManager::setValuesAtTime(int32 time_in,
-                                      TMap<FString, meshBone *>& bone_map)
+                                      TMap<FName, meshBone *>& bone_map)
 {
     TArray<meshBoneCache> cache_list;
     int32 set_index = getIndexByTime(time_in);
     for(auto& cur_iter : bone_map)
     {
-        const FString& cur_key = cur_iter.Key;
+        const FName& cur_key = cur_iter.Key;
         meshBone * cur_bone = cur_iter.Value;
         
         meshBoneCache new_cache(cur_key);
@@ -1429,8 +1433,10 @@ meshBoneCacheManager::allReady()
 
 void
 meshBoneCacheManager::retrieveValuesAtTime(float time_in,
-                                           TMap<FString, meshBone *>& bone_map)
+                                           TMap<FName, meshBone *>& bone_map)
 {
+	SCOPE_CYCLE_COUNTER(STAT_MeshBoneCacheManager_retrieveValuesAtTime);
+
     int32 base_time = getIndexByTime((int32)floorf(time_in));
     int32 end_time = getIndexByTime((int32)ceilf(time_in));
 
@@ -1452,7 +1458,7 @@ meshBoneCacheManager::retrieveValuesAtTime(float time_in,
     for(auto i = 0; i < base_cache.Num(); i++) {
         const meshBoneCache& base_data = base_cache[i];
         const meshBoneCache& end_data = end_cache[i];
-        const FString& cur_key = base_data.getKey();
+        const FName& cur_key = base_data.getKey();
         
         glm::vec4 final_world_start_pt = ((1.0f - ratio) * base_data.getWorldStartPt()) +
                                         (ratio * end_data.getWorldStartPt());
@@ -1466,7 +1472,7 @@ meshBoneCacheManager::retrieveValuesAtTime(float time_in,
 }
 
 std::pair<glm::vec4, glm::vec4>
-meshBoneCacheManager::retrieveSingleBoneValueAtTime(const FString& key_in,
+meshBoneCacheManager::retrieveSingleBoneValueAtTime(const FName& key_in,
                                                     float time_in)
 {
     int32 base_time = getIndexByTime((int32)floorf(time_in));
@@ -1490,7 +1496,7 @@ meshBoneCacheManager::retrieveSingleBoneValueAtTime(const FString& key_in,
     for(auto i = 0; i < base_cache.Num(); i++) {
         const meshBoneCache& base_data = base_cache[i];
         const meshBoneCache& end_data = end_cache[i];
-        const FString& cur_key = base_data.getKey();
+        const FName& cur_key = base_data.getKey();
         
         if(cur_key == key_in) {
             glm::vec4 final_world_start_pt = ((1.0f - ratio) * base_data.getWorldStartPt()) +
@@ -1573,13 +1579,13 @@ int32 meshDisplacementCacheManager::getIndexByTime(int32 time_in) const
 }
 
 void meshDisplacementCacheManager::setValuesAtTime(int32 time_in,
-                                                   TMap<FString,meshRenderRegion *>& regions_map)
+                                                   TMap<FName,meshRenderRegion *>& regions_map)
 {
     TArray<meshDisplacementCache> cache_list;
     int32 set_index = getIndexByTime(time_in);
     for(auto& cur_iter : regions_map)
     {
-        const FString& cur_key = cur_iter.Key;
+        const FName& cur_key = cur_iter.Key;
         meshRenderRegion * cur_region = cur_iter.Value;
         
         meshDisplacementCache new_cache(cur_key);
@@ -1599,7 +1605,7 @@ void meshDisplacementCacheManager::setValuesAtTime(int32 time_in,
 }
 
 void meshDisplacementCacheManager::retrieveValuesAtTime(float time_in,
-                                                        TMap<FString,meshRenderRegion *>& regions_map)
+                                                        TMap<FName,meshRenderRegion *>& regions_map)
 {
     int32 base_time = getIndexByTime((int32)floorf(time_in));
     int32 end_time = getIndexByTime((int32)ceilf(time_in));
@@ -1622,7 +1628,7 @@ void meshDisplacementCacheManager::retrieveValuesAtTime(float time_in,
     for(auto i = 0; i < base_cache.Num(); i++) {
         const meshDisplacementCache& base_data = base_cache[i];
         const meshDisplacementCache& end_data = end_cache[i];
-        const FString& cur_key = base_data.getKey();
+        const FName cur_key = base_data.getKey();
         
         meshRenderRegion * set_region = regions_map[cur_key];
 
@@ -1670,7 +1676,7 @@ void meshDisplacementCacheManager::retrieveValuesAtTime(float time_in,
 }
 
 void
-meshDisplacementCacheManager::retrieveSingleDisplacementValueAtTime(const FString& key_in,
+meshDisplacementCacheManager::retrieveSingleDisplacementValueAtTime(const FName& key_in,
                                                                    float time_in,
                                                                     meshRenderRegion * region)
 {
@@ -1695,7 +1701,7 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueAtTime(const FStrin
     for(auto i = 0; i < base_cache.Num(); i++) {
         const meshDisplacementCache& base_data = base_cache[i];
         const meshDisplacementCache& end_data = end_cache[i];
-        const FString& cur_key = base_data.getKey();
+        const FName& cur_key = base_data.getKey();
         
         if(cur_key == key_in) {
             if(region->getUseLocalDisplacements()) {
@@ -1727,7 +1733,7 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueAtTime(const FStrin
 }
 
 void
-meshDisplacementCacheManager::retrieveSingleDisplacementValueNoRegionAtTime(const FString& key_in,
+meshDisplacementCacheManager::retrieveSingleDisplacementValueNoRegionAtTime(const FName& key_in,
                                                                             float time_in,
                                                                             meshRenderRegion * region,
                                                                             TArray<glm::vec2>& out_displacements)
@@ -1753,7 +1759,7 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueNoRegionAtTime(cons
     for(auto i = 0; i < base_cache.Num(); i++) {
         const meshDisplacementCache& base_data = base_cache[i];
         const meshDisplacementCache& end_data = end_cache[i];
-        const FString& cur_key = base_data.getKey();
+        const FName& cur_key = base_data.getKey();
         
         if(cur_key == key_in) {
             if(region->getUseLocalDisplacements()) {
@@ -1785,7 +1791,7 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueNoRegionAtTime(cons
 }
 
 void
-meshDisplacementCacheManager::retrieveSingleDisplacementValueDirectAtTime(const FString& key_in,
+meshDisplacementCacheManager::retrieveSingleDisplacementValueDirectAtTime(const FName& key_in,
                                                                           float time_in,
                                                                           TArray<glm::vec2>& out_local_displacements,
                                                                           TArray<glm::vec2>& out_post_displacements)
@@ -1811,7 +1817,7 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueDirectAtTime(const 
     for(auto i = 0; i < base_cache.Num(); i++) {
         const meshDisplacementCache& base_data = base_cache[i];
         const meshDisplacementCache& end_data = end_cache[i];
-        const FString& cur_key = base_data.getKey();
+        const FName& cur_key = base_data.getKey();
         
         if(cur_key == key_in) {
             bool has_local_displacements = (base_data.getLocalDisplacements().Num() != 0);
@@ -1933,7 +1939,7 @@ meshUVWarpCacheManager::getIndexByTime(int32 time_in) const
 
 void
 meshUVWarpCacheManager::setValuesAtTime(int32 time_in,
-                                        TMap<FString, meshRenderRegion *>& regions_map)
+                                        TMap<FName, meshRenderRegion *>& regions_map)
 {
     int32 set_index = getIndexByTime(time_in);
     TArray<meshUVWarpCache> cache_list;
@@ -1959,7 +1965,7 @@ meshUVWarpCacheManager::setValuesAtTime(int32 time_in,
 
 void
 meshUVWarpCacheManager::retrieveValuesAtTime(float time_in,
-                                            TMap<FString, meshRenderRegion *>& regions_map)
+                                            TMap<FName, meshRenderRegion *>& regions_map)
 {
     int32 base_time = getIndexByTime((int32)floorf(time_in));
     int32 end_time = getIndexByTime((int32)ceilf(time_in));
@@ -1978,7 +1984,7 @@ meshUVWarpCacheManager::retrieveValuesAtTime(float time_in,
     
     for(auto i = 0; i < base_cache.Num(); i++) {
         const meshUVWarpCache& base_data = base_cache[i];
-        const FString& cur_key = base_data.getKey();
+        const FName& cur_key = base_data.getKey();
         
         meshRenderRegion * set_region = regions_map[cur_key];
         if(set_region->getUseUvWarp() || base_data.getEnabled())
@@ -2028,7 +2034,7 @@ meshUVWarpCacheManager::retrieveSingleValueAtTime(float time_in,
     for(auto i = 0; i < base_cache.Num(); i++) {
         const meshUVWarpCache& base_data = base_cache[i];
         const meshUVWarpCache& end_data = end_cache[i];
-        const FString& cur_key = base_data.getKey();
+        const FName &cur_key = base_data.getKey();
         
         meshRenderRegion * set_region = region;
         if(cur_key == set_region->getName()) {
@@ -2135,7 +2141,7 @@ meshOpacityCacheManager::getIndexByTime(int32 time_in) const
 
 void
 meshOpacityCacheManager::setValuesAtTime(int32 time_in,
-						TMap<FString, meshRenderRegion *>& regions_map)
+						TMap<FName, meshRenderRegion *>& regions_map)
 {
 	int32 set_index = getIndexByTime(time_in);
 	TArray<meshOpacityCache> cache_list;
@@ -2152,8 +2158,10 @@ meshOpacityCacheManager::setValuesAtTime(int32 time_in,
 
 void
 meshOpacityCacheManager::retrieveValuesAtTime(float time_in,
-											TMap<FString, meshRenderRegion *>& regions_map)
+											TMap<FName, meshRenderRegion *>& regions_map)
 {
+	SCOPE_CYCLE_COUNTER(STAT_MeshOpacityCacheManager_retrieveValuesAtTime);
+
 	int32 base_time = getIndexByTime((int32)floorf(time_in));
 	int32 end_time = getIndexByTime((int32)ceilf(time_in));
 
@@ -2171,7 +2179,7 @@ meshOpacityCacheManager::retrieveValuesAtTime(float time_in,
 
 	for (auto i = 0; i < base_cache.Num(); i++) {
 		const meshOpacityCache& base_data = base_cache[i];
-		const FString& cur_key = base_data.getKey();
+		const FName& cur_key = base_data.getKey();
 
 		meshRenderRegion * set_region = regions_map[cur_key];
 		float final_opacity = base_data.getOpacity();
@@ -2204,7 +2212,7 @@ meshOpacityCacheManager::retrieveSingleValueAtTime(float time_in,
 	for (auto i = 0; i < base_cache.Num(); i++) {
 		const meshOpacityCache& base_data = base_cache[i];
 		const meshOpacityCache& end_data = end_cache[i];
-		const FString& cur_key = base_data.getKey();
+		const FName& cur_key = base_data.getKey();
 
 		meshRenderRegion * set_region = region;
 		if (cur_key == set_region->getName()) {

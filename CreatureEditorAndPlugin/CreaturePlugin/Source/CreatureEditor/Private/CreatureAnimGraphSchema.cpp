@@ -167,7 +167,7 @@ UEdGraphNode* FEdGraphSchemaAction_NewCreatureAnimationEndTransition::PerformAct
 	NewAnimationEndTransitionNode->NodePosY		= Location.Y;
 	NewAnimationEndTransitionNode->InputPin		= NewAnimationEndTransitionNode->CreatePin(EEdGraphPinDirection::EGPD_Input, FEdGraphPinType(), TEXT("Input"));
 	NewAnimationEndTransitionNode->OutputPin	= NewAnimationEndTransitionNode->CreatePin(EEdGraphPinDirection::EGPD_Output, FEdGraphPinType(), TEXT("Output"));
-	NewAnimationEndTransitionNode->TransitionCondition = FString(TEXT("AnimationEnd"));
+	NewAnimationEndTransitionNode->TransitionCondition = FName(TEXT("AnimationEnd"));
 	NewAnimationEndTransitionNode->TransitionFlag = true;
 	ParentGraph->AddNode(NewAnimationEndTransitionNode, true, false);
 

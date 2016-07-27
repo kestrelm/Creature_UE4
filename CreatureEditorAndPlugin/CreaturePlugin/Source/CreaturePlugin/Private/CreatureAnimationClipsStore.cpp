@@ -20,7 +20,7 @@ void UCreatureAnimationClipsStore::LoadAnimationDataToComponent(class UCreatureM
 		{
 			//根据ShortClip中的引用，构建CollectionData
 			FCreatureMeshCollection CollectionData;
-			CollectionData.creature_filename = ShortClip.SourceAsset->GetName();
+			CollectionData.creature_filename = FName(*ShortClip.SourceAsset->GetName());
 			//直接给出JsonString的引用，不需要再次载入
 			CollectionData.creature_core.pJsonData = &(ShortClip.SourceAsset->GetJsonString());
 			

@@ -7,7 +7,7 @@ bool UCreatureAnimTransition::Translate(UCreatureAnimStateMachineInstance *forIn
 {
 	for (FCreatureTransitionCondition condition : TransitionConditions)
 	{
-		bool currentConditionValue = forInstance->GetCondition(condition.TransitionName);
+		bool currentConditionValue = forInstance->GetConditionByName(condition.TransitionName);
 		if (currentConditionValue != condition.TransitionFlag)
 		{
 			return false;
@@ -26,7 +26,7 @@ bool UCreatureAnimTransition::Translate(UCreatureAnimStateMachineInstance *forIn
 void UCreatureAnimTransition::AnimationEndTranslate(class UCreatureAnimStateMachineInstance *forInstance)
 {
 	//优先检查当前转换是否为AnimationEnd
-	if (TransitionConditions[0].TransitionName == FString(TEXT("AnimationEnd")))
+	if (TransitionConditions[0].TransitionName == FName(TEXT("AnimationEnd")))
 	{
 		forInstance->SetCurrentState(TargetState);
 	}

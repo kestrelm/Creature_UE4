@@ -46,7 +46,7 @@ public:
 	*/
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
-	FString creature_filename;
+	FName creature_filename;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Materials)
 	float animation_speed;

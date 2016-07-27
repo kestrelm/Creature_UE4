@@ -504,13 +504,13 @@ UCreatureMeshComponent::RunCollectionTick(float DeltaTime)
 		auto cur_manager = cur_core.GetCreatureManager();
 		auto& all_animations = cur_manager->GetAllAnimations();
 		auto& cur_token = active_collection_clip->sequence_clips[active_collection_clip->active_index];
-		auto anim_string = cur_token.animation_name.ToString();
-		if (all_animations.Contains(anim_string) == false)
+		auto anim_name = cur_token.animation_name;
+		if (all_animations.Contains(anim_name) == false)
 		{
 			return;
 		}
 
-		auto clip_animation = all_animations[anim_string].Get();
+		auto clip_animation = all_animations[anim_name].Get();
 		float next_time = cur_runtime + true_delta_time;
 
 		if (next_time >= clip_animation->getEndTime())
@@ -624,7 +624,7 @@ void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx)
 			FVector world_pt2 = base_xform.TransformPosition(local_pt2);
 
 			DrawDebugLine(GetWorld(), world_pt1, world_pt2, FColor::Red);
-			DrawDebugString(GetWorld(), (world_pt1 + world_pt2) * 0.5f, cur_bone->getKey());
+			DrawDebugString(GetWorld(), (world_pt1 + world_pt2) * 0.5f, cur_bone->getKey().ToString());
 		}
 	}
 }
@@ -728,7 +728,7 @@ void UCreatureMeshComponent::StandardInit()
 		bones_override_list.Empty();
 		final_bones_override_list.Empty();
 		internal_ik_map.Empty();
-		std::function<void(TMap<FString, meshBone *>&) > cur_callback =
+		std::function<void(TMap<FName, meshBone *>&) > cur_callback =
 			std::bind(&UCreatureMeshComponent::CoreBonesOverride, this, std::placeholders::_1);
 		creature_core.creature_manager->SetBonesOverrideCallback(cur_callback);
 	}
@@ -900,7 +900,7 @@ void UCreatureMeshComponent::LoadAnimationFromStore()
 }
 
 void 
-UCreatureMeshComponent::CoreBonesOverride(TMap<FString, meshBone *>& bones_map)
+UCreatureMeshComponent::CoreBonesOverride(TMap<FName, meshBone *>& bones_map)
 {
 	if ((internal_ik_map.Num() == 0) && (bones_override_list.Num() == 0))
 	{
@@ -970,7 +970,7 @@ void
 UCreatureMeshComponent::SetBluePrintBonesIKConstraint(FCreatureBoneIK ik_data_in)
 {
 	auto cur_key = GetIkKey(ik_data_in.first_bone_name, ik_data_in.second_bone_name);
-	if (cur_key.IsEmpty())
+	if (cur_key.IsNone())
 	{
 		return;
 	}
@@ -994,20 +994,20 @@ UCreatureMeshComponent::RemoveBluePrintBonesIKConstraint(FCreatureBoneIK ik_data
 	}
 }
 
-FString 
-UCreatureMeshComponent::GetIkKey(const FString& start_bone_name, const FString& end_bone_name) const
+FName
+UCreatureMeshComponent::GetIkKey(const FName& start_bone_name, const FName& end_bone_name) const
 {
-	return start_bone_name + end_bone_name;
+	return FName(*(start_bone_name.ToString() + end_bone_name.ToString()));
 }
 
 void
 UCreatureMeshComponent::ComputeBonesIK(
-	const FString& start_bone_name, 
-	const FString& end_bone_name,
+	const FName& start_bone_name, 
+	const FName& end_bone_name,
 	TArray<FCreatureBoneOverride>& mod_list)
 {
-	FString ik_key = GetIkKey(start_bone_name, end_bone_name);
-	if (ik_key.IsEmpty())
+	FName ik_key = GetIkKey(start_bone_name, end_bone_name);
+	if (ik_key.IsNone())
 	{
 		return;
 	}
@@ -1256,7 +1256,7 @@ UCreatureMeshComponent::ComputeBonesIK(
 		FCreatureBoneOverride ret_data;
 		ret_data.bone_name = bone->getKey();
 
-		if (internal_ik_bone_pts.Contains(bone->getKey())) 
+		if (internal_ik_bone_pts.Contains(ret_data.bone_name))
 		{
 			auto pos1 = internal_ik_bone_pts[bone->getKey()].first;
 			auto pos2 = internal_ik_bone_pts[bone->getKey()].second;
@@ -1271,15 +1271,13 @@ UCreatureMeshComponent::ComputeBonesIK(
 	if (ik_data.children_ready == false)
 	{
 		auto root_bone = creature_core.creature_manager->GetCreature()->GetRenderComposition()->getRootBone();
-		auto first_name = ik_data.first_bone_name;
-		auto second_name = ik_data.second_bone_name;
 
 		auto first_children = 
-			creature_core.getAllChildrenWithIgnore(second_name,
-				root_bone->getChildByKey(first_name));
+			creature_core.getAllChildrenWithIgnore(ik_data.second_bone_name,
+				root_bone->getChildByKey(ik_data.first_bone_name));
 		auto second_children = 
-			creature_core.getAllChildrenWithIgnore(first_name,
-				root_bone->getChildByKey(second_name));
+			creature_core.getAllChildrenWithIgnore(ik_data.first_bone_name,
+				root_bone->getChildByKey(ik_data.second_bone_name));
 
 		fillBoneArrayLambda(first_children, ik_data.first_bone_children);
 		fillBoneArrayLambda(second_children, ik_data.second_bone_children);

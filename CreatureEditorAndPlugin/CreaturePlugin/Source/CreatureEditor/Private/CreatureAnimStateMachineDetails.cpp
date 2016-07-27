@@ -52,7 +52,7 @@ void FCreatureAnimStateMachineDetails::CustomizeDetails(IDetailLayoutBuilder& De
 				.NameContent()
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString(condition.TransitionName))
+					.Text(FText::FromName(condition.TransitionName))
 					.Font(IDetailLayoutBuilder::GetDetailFont())
 				]
 			.ValueContent().MinDesiredWidth(100)

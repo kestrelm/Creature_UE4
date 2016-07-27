@@ -13,20 +13,36 @@ UCreatureAnimStateMachineInstance::UCreatureAnimStateMachineInstance()
 void UCreatureAnimStateMachineInstance::SetCondition(FString ConditionName, bool Flag)
 {
 	FName conditionAsName(*ConditionName);
-
-	m_currentConditionValues.Add(conditionAsName, Flag);
-
-	if (CurrentState)
-	{
-		CurrentState->CheckCondition(this);
-	}
+	SetConditionByName(conditionAsName, Flag);
 }
 
 bool UCreatureAnimStateMachineInstance::GetCondition(FString ConditionName) const
 {
 	FName conditionAsName(*ConditionName);
-	const bool *value = m_currentConditionValues.Find(conditionAsName);
+	return GetConditionByName(conditionAsName);
+}
+
+bool UCreatureAnimStateMachineInstance::GetConditionByName(FName conditionName) const
+{
+	const bool *value = m_currentConditionValues.Find(conditionName);
+
 	return (value) ? *value : false;
+}
+
+void UCreatureAnimStateMachineInstance::SetConditionByName(FName conditionName, bool Flag)
+{
+	if (GetConditionByName(conditionName) == Flag)
+	{
+		// it's already set: skip
+		return;
+	}
+
+	m_currentConditionValues.Add(conditionName, Flag);
+
+	if (CurrentState)
+	{
+		CurrentState->CheckCondition(this);
+	}
 }
 
 void UCreatureAnimStateMachineInstance::SetCurrentState(UCreatureAnimState *state)

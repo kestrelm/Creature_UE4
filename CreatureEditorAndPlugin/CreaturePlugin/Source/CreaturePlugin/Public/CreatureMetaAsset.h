@@ -1,5 +1,7 @@
 #pragma  once
 #include "Engine.h"
+#include "glm/fwd.hpp"
+#include <vector>
 #include "CreatureMetaAsset.generated.h"
 
 class CreatureMetaData {

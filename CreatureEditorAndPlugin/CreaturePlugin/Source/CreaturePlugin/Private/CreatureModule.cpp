@@ -35,22 +35,30 @@
 #include "CreaturePluginPCH.h"
 #include "CreatureModule.h"
 
+DECLARE_CYCLE_STAT(TEXT("CreatureManager_Update"), STAT_CreatureManager_Update, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("CreatureManager_IncreRunTime"), STAT_CreatureManager_IncreRunTime, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("CreatureManager_PoseJustBones"), STAT_CreatureManager_PoseJustBones, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("CreatureManager_PoseCreature"), STAT_CreatureManager_PoseCreature, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("CreatureManager_RunUVItemSwap"), STAT_CreatureManager_RunUVItemSwap, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("CreatureManager_AlterBonesByAnchor"), STAT_CreatureManager_AlterBonesByAnchor, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("CreatureManager_JustRunUVWarps"), STAT_CreatureManager_JustRunUVWarps, STATGROUP_Creature);
+
 template <typename T>
 static T clipNum(const T& n, const T& lower, const T& upper) {
 	return FMath::Clamp(n, lower, upper);
 }
 
 static JsonNode * GetJSONLevelNodeFromKey(JsonNode& json_obj,
-                                          const FString& key)
+                                          const FName& key)
 {
     JsonNode * ret_node = NULL;
-    if(FString(json_obj.key) == key) {
+    if(FName(json_obj.key) == key) {
         ret_node = &json_obj;
     }
     else {
         JsonNode * cur_node = &json_obj;
         while(true) {
-            if(FString(cur_node->key) == key) {
+            if(FName(cur_node->key) == key) {
                 ret_node = cur_node;
                 break;
             }
@@ -68,7 +76,7 @@ static JsonNode * GetJSONLevelNodeFromKey(JsonNode& json_obj,
 }
 
 static JsonNode * GetJSONNodeFromKey(JsonNode& json_obj,
-                                     const FString& key)
+                                     const FName& key)
 {
     JsonNode * ret_node = NULL;
     
@@ -76,7 +84,7 @@ static JsonNode * GetJSONNodeFromKey(JsonNode& json_obj,
     for(JsonIterator it = JsonBegin(json_obj.value);
         it != JsonEnd(json_obj.value); ++it)
     {
-        if( FString((*it)->key) == key) {
+        if( FName((*it)->key) == key) {
             ret_node = *it;
             break;
         }
@@ -85,13 +93,13 @@ static JsonNode * GetJSONNodeFromKey(JsonNode& json_obj,
     return ret_node;
 }
 
-static TArray<FString> GetJSONKeysFromNode(JsonNode& json_obj)
+static TArray<FName> GetJSONKeysFromNode(JsonNode& json_obj)
 {
-    TArray<FString> ret_keys;
+    TArray<FName> ret_keys;
     for(JsonIterator it = JsonBegin(json_obj.value);
         it != JsonEnd(json_obj.value); ++it)
     {
-        ret_keys.Add(FString((*it)->key));
+        ret_keys.Add(FName((*it)->key));
     }
     
     return ret_keys;
@@ -124,7 +132,7 @@ static TArray<int32> GetJSONNodeIntArray(JsonNode& json_obj)
 }
 
 static glm::float32 * ReadJSONPoints3D(JsonNode& json_obj,
-                                       const FString& key,
+                                       const FName& key,
                                        int32& num_pts)
 {
     TArray<float> pts_array = GetJSONNodeFloatArray(*GetJSONNodeFromKey(json_obj, key));
@@ -147,7 +155,7 @@ static glm::float32 * ReadJSONPoints3D(JsonNode& json_obj,
 }
 
 static glm::float32 * ReadJSONPoints2D(JsonNode& json_obj,
-                                       const FString& key,
+                                       const FName& key,
                                        int32& num_pts)
 {
     TArray<float> pts_array = GetJSONNodeFloatArray(*GetJSONNodeFromKey(json_obj, key));
@@ -163,7 +171,7 @@ static glm::float32 * ReadJSONPoints2D(JsonNode& json_obj,
 }
 
 static TArray<glm::vec2> ReadJSONPoints2DVector(JsonNode& json_obj,
-                                                     const FString& key)
+                                                     const FName& key)
 {
     TArray<float> pts_array = GetJSONNodeFloatArray(*GetJSONNodeFromKey(json_obj, key));
 	TArray<glm::vec2> ret_pts;
@@ -182,7 +190,7 @@ static TArray<glm::vec2> ReadJSONPoints2DVector(JsonNode& json_obj,
 }
 
 static glm::uint32 * ReadJSONUints(JsonNode& json_obj,
-                                   const FString& key,
+                                   const FName& key,
                                    int32& num_ints)
 {
     TArray<int32> ints_array = GetJSONNodeIntArray(*GetJSONNodeFromKey(json_obj, key));
@@ -198,21 +206,21 @@ static glm::uint32 * ReadJSONUints(JsonNode& json_obj,
 }
 
 static glm::vec2 ReadJSONVec2(JsonNode& json_obj,
-                                const FString& key)
+                                const FName& key)
 {
     TArray<float> read_array = GetJSONNodeFloatArray(*GetJSONNodeFromKey(json_obj, key));
     return glm::vec2(read_array[0], read_array[1]);
 }
 
 static glm::vec4 ReadJSONVec4_2(JsonNode& json_obj,
-                                const FString& key)
+                                const FName& key)
 {
     TArray<float> read_array = GetJSONNodeFloatArray(*GetJSONNodeFromKey(json_obj, key));
     return glm::vec4(read_array[0], read_array[1], 0, 1.0f);
 }
 
 static glm::mat4 ReadJSONMat4(JsonNode& json_obj,
-                              const FString& key)
+                              const FName& key)
 {
     TArray<float> read_array = GetJSONNodeFloatArray(*GetJSONNodeFromKey(json_obj, key));
     float mat_vals[16];
@@ -224,7 +232,7 @@ static glm::mat4 ReadJSONMat4(JsonNode& json_obj,
 }
 
 static TArray<int32> ReadIntArray(JsonNode& json_obj,
-                                     const FString& key)
+                                     const FName& key)
 {
     TArray<int32> read_array = GetJSONNodeIntArray(*GetJSONNodeFromKey(json_obj, key));;
     TArray<int32> ret_array;
@@ -238,7 +246,7 @@ static TArray<int32> ReadIntArray(JsonNode& json_obj,
 }
 
 static TArray<float> ReadFloatArray(JsonNode& json_obj,
-                                     const FString& key)
+                                     const FName& key)
 {
     TArray<float> read_array = GetJSONNodeFloatArray(*GetJSONNodeFromKey(json_obj, key));
     TArray<float> ret_array;
@@ -252,7 +260,7 @@ static TArray<float> ReadFloatArray(JsonNode& json_obj,
 }
 
 static meshBone * CreateBones(JsonNode& json_obj,
-                              const FString& key)
+                              const FName& key)
 {
     meshBone * root_bone = NULL;
     JsonNode * base_obj =  GetJSONLevelNodeFromKey(json_obj, key);
@@ -266,7 +274,7 @@ static meshBone * CreateBones(JsonNode& json_obj,
     {
         JsonNode * cur_node = *it;
         
-        FString cur_name(cur_node->key);
+        FName cur_name(cur_node->key);
         int32 cur_id =  (int32)GetJSONNodeFromKey(*cur_node, "id")->value.toNumber();
         glm::mat4 cur_parent_mat = ReadJSONMat4(*cur_node, "restParentMat");
         glm::vec4 cur_local_rest_start_pt = ReadJSONVec4_2(*cur_node, "localRestStartPt");
@@ -317,7 +325,7 @@ static meshBone * CreateBones(JsonNode& json_obj,
 }
 
 static TArray<meshRenderRegion *> CreateRegions(JsonNode& json_obj,
-                                                     const FString& key,
+                                                     const FName& key,
                                                      glm::uint32 * indices_in,
                                                      glm::float32 * rest_pts_in,
                                                      glm::float32 * uvs_in)
@@ -331,7 +339,7 @@ static TArray<meshRenderRegion *> CreateRegions(JsonNode& json_obj,
     {
         JsonNode * cur_node = *it;
 
-        FString cur_name(cur_node->key);
+        FName cur_name(cur_node->key);
         
         int32 cur_id = (int32)GetJSONNodeFromKey(*cur_node, "id")->value.toNumber();
         int32 cur_start_pt_index = (int32)GetJSONNodeFromKey(*cur_node, "start_pt_index")->value.toNumber();
@@ -351,7 +359,7 @@ static TArray<meshRenderRegion *> CreateRegions(JsonNode& json_obj,
         new_region->setTagId(cur_id);
         
         // Read in weights
-        TMap<FString, TArray<float> >& weight_map =
+        TMap<FName, TArray<float> >& weight_map =
             new_region->getWeights();
         JsonNode * weight_obj =  GetJSONNodeFromKey(*cur_node, "weights");
         
@@ -361,7 +369,7 @@ static TArray<meshRenderRegion *> CreateRegions(JsonNode& json_obj,
         {
             JsonNode * w_node = *w_it;
             
-            FString cur_key(w_node->key);
+            FName cur_key(w_node->key);
             TArray<float> values = ReadFloatArray(*weight_obj, cur_key);
             weight_map.Add(cur_key, values);
         }
@@ -373,7 +381,7 @@ static TArray<meshRenderRegion *> CreateRegions(JsonNode& json_obj,
 }
 
 static std::pair<int32, int32> GetStartEndTimes(JsonNode& json_obj,
-                                            const FString& key)
+                                            const FName& key)
 {
     std::pair<int32, int32> ret_times(0,0);
     bool first = true;
@@ -406,7 +414,7 @@ static std::pair<int32, int32> GetStartEndTimes(JsonNode& json_obj,
 }
 
 static void FillBoneCache(JsonNode& json_obj,
-                          const FString& key,
+                          const FName& key,
                           int32 start_time,
                           int32 end_time,
                           meshBoneCacheManager& cache_manager)
@@ -430,7 +438,7 @@ static void FillBoneCache(JsonNode& json_obj,
         {
             JsonNode * bone_node = *bone_it;
             
-            FString cur_name(bone_node->key);
+			FName cur_name(bone_node->key);
             glm::vec4 cur_start_pt = ReadJSONVec4_2(*bone_node, "start_pt");
             glm::vec4 cur_end_pt = ReadJSONVec4_2(*bone_node, "end_pt");
             
@@ -449,7 +457,7 @@ static void FillBoneCache(JsonNode& json_obj,
 }
 
 static void FillDeformationCache(JsonNode& json_obj,
-                          const FString& key,
+                          const FName& key,
                           int32 start_time,
                           int32 end_time,
                           meshDisplacementCacheManager& cache_manager)
@@ -473,7 +481,7 @@ static void FillDeformationCache(JsonNode& json_obj,
         {
             JsonNode * mesh_node = *mesh_it;
             
-            FString cur_name(mesh_node->key);
+            FName cur_name(mesh_node->key);
             
             meshDisplacementCache cache_data(cur_name);
             
@@ -502,7 +510,7 @@ static void FillDeformationCache(JsonNode& json_obj,
 
 
 static void FillUVSwapCache(JsonNode& json_obj,
-                            const FString& key,
+                            const FName& key,
                             int32 start_time,
                             int32 end_time,
                             meshUVWarpCacheManager& cache_manager)
@@ -526,7 +534,7 @@ static void FillUVSwapCache(JsonNode& json_obj,
         {
             JsonNode * uv_node = *uv_it;
             
-            FString cur_name(uv_node->key);
+            FName cur_name(uv_node->key);
 
             meshUVWarpCache cache_data(cur_name);
             bool use_uv = GetJSONNodeFromKey(*uv_node, "enabled")->value.toBool();
@@ -551,7 +559,7 @@ static void FillUVSwapCache(JsonNode& json_obj,
 }
 
 static void FillOpacityCache(JsonNode& json_obj,
-	const FString& key,
+	const FName& key,
 	int32 start_time,
 	int32 end_time,
 	meshOpacityCacheManager& cache_manager)
@@ -580,7 +588,7 @@ static void FillOpacityCache(JsonNode& json_obj,
 		{
 			JsonNode * opacity_node = *uv_it;
 
-			FString cur_name(opacity_node->key);
+			FName cur_name(opacity_node->key);
 
 			meshOpacityCache cache_data(cur_name);
 			float cur_opacity = (float)GetJSONNodeFromKey(*opacity_node, "opacity")->value.toNumber();
@@ -597,16 +605,16 @@ static void FillOpacityCache(JsonNode& json_obj,
 
 }
 
-static TMap<FString, TArray<CreatureModule::CreatureUVSwapPacket> >
+static TMap<FName, TArray<CreatureModule::CreatureUVSwapPacket> >
 FillSwapUVPacketMap(JsonNode& json_obj)
 {
-	TMap<FString, TArray<CreatureModule::CreatureUVSwapPacket> > ret_map;
+	TMap<FName, TArray<CreatureModule::CreatureUVSwapPacket> > ret_map;
 	for (JsonIterator it = JsonBegin(json_obj.value);
 		it != JsonEnd(json_obj.value);
 		++it)
 	{
 		JsonNode * cur_node = *it;
-		FString cur_name(cur_node->key);
+		FName cur_name(cur_node->key);
 		TArray<CreatureModule::CreatureUVSwapPacket> cur_packets;
 
 		for (JsonIterator node_it = JsonBegin(cur_node->value); 
@@ -629,19 +637,19 @@ FillSwapUVPacketMap(JsonNode& json_obj)
 	return ret_map;
 }
 
-static TMap<FString, glm::vec2>
+static TMap<FName, glm::vec2>
 FillAnchorPointMap(JsonNode& json_obj)
 {
 	auto anchor_data_node = GetJSONNodeFromKey(json_obj, "AnchorPoints");
 
-	TMap<FString, glm::vec2> ret_map;
+	TMap<FName, glm::vec2> ret_map;
 	for (JsonIterator it = JsonBegin(anchor_data_node->value);
 	it != JsonEnd(anchor_data_node->value);
 		++it)
 	{
 		JsonNode * cur_node = *it;
 		glm::vec2 cur_pt = ReadJSONVec2(*cur_node, "point");
-		FString cur_name(GetJSONNodeFromKey(*cur_node, "anim_clip_name")->value.toString());
+		FName cur_name(GetJSONNodeFromKey(*cur_node, "anim_clip_name")->value.toString());
 
 		ret_map.Add(cur_name, cur_pt);
 	}
@@ -652,16 +660,16 @@ FillAnchorPointMap(JsonNode& json_obj)
 
 namespace CreatureModule {
     // Load the json structure
-    void LoadCreatureJSONData(const FString& filename_in,
+    void LoadCreatureJSONData(const FName& filename_in,
                               CreatureLoadDataPacket& load_data)
     {
         std::ifstream read_file;
-        read_file.open(TCHAR_TO_UTF8(*filename_in));
+        read_file.open(TCHAR_TO_UTF8(*filename_in.ToString()));
         std::stringstream str_stream;
         str_stream << read_file.rdbuf();
         read_file.close();
         
-        LoadCreatureJSONDataFromString(FString(str_stream.str().c_str()), load_data);
+        LoadCreatureJSONDataFromString(str_stream.str().c_str(), load_data);
     }
     
     void LoadCreatureJSONDataFromString(const FString& string_in,
@@ -682,7 +690,7 @@ namespace CreatureModule {
         }
     }
     
-    void LoadCreatureZipJSONData(const FString& filename_in,
+    void LoadCreatureZipJSONData(const FName& filename_in,
                                  CreatureLoadDataPacket& load_data)
     {
 		std::cout << "LoadCreatureZipJSONData() - Function is NOT DEFINED!" << std::endl;
@@ -766,31 +774,31 @@ namespace CreatureModule {
         }
     }
 
-    const TArray<FString>& 
+    const TArray<FName>& 
     Creature::GetAnimationNames() const
     {
         return animation_names;
     }
 
-	const TMap<FString, TArray<CreatureUVSwapPacket> >& 
+	const TMap<FName, TArray<CreatureUVSwapPacket> >& 
 	Creature::GetUvSwapPackets() const
 	{
 		return uv_swap_packets;
 	}
 
 	void 
-	Creature::SetActiveItemSwap(const FString& region_name, int32 swap_idx)
+	Creature::SetActiveItemSwap(const FName& region_name, int32 swap_idx)
 	{
 		active_uv_swap_actions.Add(region_name, swap_idx);
 	}
 
 	void 
-	Creature::RemoveActiveItemSwap(const FString& region_name)
+	Creature::RemoveActiveItemSwap(const FName& region_name)
 	{
 		active_uv_swap_actions.Remove(region_name);
 	}
 
-	TMap<FString, int32>&
+	TMap<FName, int32>&
 	Creature::GetActiveItemSwaps()
 	{
 		return active_uv_swap_actions;
@@ -806,7 +814,7 @@ namespace CreatureModule {
 		return anchor_points_active;
 	}
 
-	glm::vec2 Creature::GetAnchorPoint(const FString & anim_clip_name_in) const
+	glm::vec2 Creature::GetAnchorPoint(const FName & anim_clip_name_in) const
 	{
 		if (anchor_point_map.Contains(anim_clip_name_in))
 		{
@@ -884,7 +892,7 @@ namespace CreatureModule {
     
     // CreatureAnimation class
     CreatureAnimation::CreatureAnimation(CreatureLoadDataPacket& load_data,
-                                         const FString& name_in)
+                                         const FName& name_in)
     : name(name_in)
     {
             LoadFromData(name_in, load_data);
@@ -945,14 +953,14 @@ namespace CreatureModule {
 		return opacity_cache;
 	}
     
-    const FString&
+    const FName&
     CreatureAnimation::getName() const
     {
         return name;
     }
 
     void
-    CreatureAnimation::LoadFromData(const FString& name_in,
+    CreatureAnimation::LoadFromData(const FName& name_in,
                                     CreatureLoadDataPacket& load_data)
     {
         JsonNode * json_root = load_data.base_node.toNode();
@@ -1081,7 +1089,7 @@ namespace CreatureModule {
     
     void
     CreatureManager::CreateAnimation(CreatureLoadDataPacket& load_data,
-                                     const FString& name_in)
+                                     const FName& name_in)
     {
         auto new_animation = TSharedPtr<CreatureModule::CreatureAnimation>(new CreatureAnimation(load_data,
                                                                                                       name_in));
@@ -1090,7 +1098,7 @@ namespace CreatureModule {
 
     
     CreatureModule::CreatureAnimation *
-    CreatureManager::GetAnimation(const FString name_in)
+    CreatureManager::GetAnimation(const FName name_in)
     {
         if(animations.Contains(name_in)) {
             return animations[name_in].Get();
@@ -1106,7 +1114,7 @@ namespace CreatureModule {
     }
 
     void
-    CreatureManager::SetActiveAnimationName(const FString& name_in, bool check_already_active)
+    CreatureManager::SetActiveAnimationName(const FName& name_in, bool check_already_active)
     {
         if(check_already_active)
         {
@@ -1127,7 +1135,7 @@ namespace CreatureModule {
     }
 
 	void 
-	CreatureManager::UpdateRegionSwitches(const FString& animation_name_in)
+	CreatureManager::UpdateRegionSwitches(const FName& animation_name_in)
 	{
 		if (animations.Contains(animation_name_in)) {
 			auto& cur_animation = animations[animation_name_in];
@@ -1160,13 +1168,13 @@ namespace CreatureModule {
 		}
 	}
 
-    const FString&
+    const FName&
     CreatureManager::GetActiveAnimationName() const
     {
         return active_animation_name;
     }
 
-    TMap<FString, TSharedPtr<CreatureModule::CreatureAnimation> >&
+    TMap<FName, TSharedPtr<CreatureModule::CreatureAnimation> >&
     CreatureManager::GetAllAnimations()
     {
         return animations;
@@ -1207,7 +1215,7 @@ namespace CreatureModule {
     }
     
     void
-    CreatureManager::SetBlendingAnimations(const FString& name_1, const FString& name_2)
+    CreatureManager::SetBlendingAnimations(const FName& name_1, const FName& name_2)
     {
         active_blend_animation_names[0] = name_1;
         active_blend_animation_names[1] = name_2;
@@ -1226,7 +1234,7 @@ namespace CreatureModule {
     }
     
     void
-    CreatureManager::AutoBlendTo(const FString& animation_name_in, float blend_delta)
+    CreatureManager::AutoBlendTo(const FName& animation_name_in, float blend_delta)
     {
         if(animation_name_in == auto_blend_names[1])
         {
@@ -1257,7 +1265,7 @@ namespace CreatureModule {
 	}
 
 	void 
-	CreatureManager::ResetBlendTime(const FString& name_in)
+	CreatureManager::ResetBlendTime(const FName& name_in)
 	{
 		auto& cur_animation = animations[name_in];
 		active_blend_run_times[name_in] = cur_animation->getStartTime();
@@ -1289,7 +1297,7 @@ namespace CreatureModule {
     }
 
 	void 
-	CreatureManager::ClearPointCache(const FString& animation_name_in)
+	CreatureManager::ClearPointCache(const FName& animation_name_in)
 	{
 		if (animations.Contains(animation_name_in) == false)
 		{
@@ -1304,7 +1312,7 @@ namespace CreatureModule {
 	}
     
     void
-	CreatureManager::MakePointCache(const FString& animation_name_in, int32 gap_step)
+	CreatureManager::MakePointCache(const FName& animation_name_in, int32 gap_step)
     {
 		if (animations.Contains(animation_name_in) == false)
 		{
@@ -1382,10 +1390,11 @@ namespace CreatureModule {
 	}
 
     void
-    CreatureManager::PoseCreature(const FString& animation_name_in,
+    CreatureManager::PoseCreature(const FName& animation_name_in,
                                   glm::float32 * target_pts,
 								  float input_run_time)
     {
+		SCOPE_CYCLE_COUNTER(STAT_CreatureManager_PoseCreature);
         if(animations.Contains(animation_name_in) == false)
         {
 #ifndef CREATURE_NO_USE_EXCEPTIONS
@@ -1405,9 +1414,9 @@ namespace CreatureModule {
         target_creature->GetRenderComposition();
         
         // Extract values from caches
-        TMap<FString, meshBone *>& bones_map =
+        TMap<FName, meshBone *>& bones_map =
         render_composition->getBonesMap();
-        TMap<FString, meshRenderRegion *>& regions_map =
+        TMap<FName, meshRenderRegion *>& regions_map =
         render_composition->getRegionsMap();
         
 		bone_cache_manager.retrieveValuesAtTime(input_run_time,
@@ -1454,11 +1463,14 @@ namespace CreatureModule {
     }
 
 	void 
-		CreatureManager::PoseJustBones(const FString& animation_name_in,
+		CreatureManager::PoseJustBones(const FName& animation_name_in,
 											glm::float32 * target_pts,
 											float input_run_time)
 	{
-		if (animations.Contains(animation_name_in) == false)
+		SCOPE_CYCLE_COUNTER(STAT_CreatureManager_PoseJustBones);
+
+		auto *animEntry = animations.Find(animation_name_in);
+		if (animEntry == nullptr)
 		{
 #ifndef CREATURE_NO_USE_EXCEPTIONS
 			throw "CreatureManager::PoseCreature() - Invalid animation name!";
@@ -1466,7 +1478,7 @@ namespace CreatureModule {
 			return;
 		}
 
-		auto& cur_animation = animations[animation_name_in];
+		auto& cur_animation = *animEntry;
 
 		auto& bone_cache_manager = cur_animation->getBonesCache();
 		auto& opacity_cache_manager = cur_animation->getOpacityCache();
@@ -1475,9 +1487,9 @@ namespace CreatureModule {
 			target_creature->GetRenderComposition();
 
 		// Extract values from caches
-		TMap<FString, meshBone *>& bones_map =
+		TMap<FName, meshBone *>& bones_map =
 			render_composition->getBonesMap();
-		TMap<FString, meshRenderRegion *>& regions_map =
+		TMap<FName, meshRenderRegion *>& regions_map =
 			render_composition->getRegionsMap();
 
 		bone_cache_manager.retrieveValuesAtTime(input_run_time,
@@ -1496,13 +1508,15 @@ namespace CreatureModule {
 		JustRunUVWarps(animation_name_in, input_run_time);
 	}
 
-	void CreatureManager::JustRunUVWarps(const FString& animation_name_in, float input_run_time)
+	void CreatureManager::JustRunUVWarps(const FName& animation_name_in, float input_run_time)
 	{
+		SCOPE_CYCLE_COUNTER(STAT_CreatureManager_JustRunUVWarps);
+
 		auto& cur_animation = animations[animation_name_in];
 
 		meshRenderBoneComposition * render_composition =
 			target_creature->GetRenderComposition();
-		TMap<FString, meshRenderRegion *>& regions_map =
+		TMap<FName, meshRenderRegion *>& regions_map =
 			render_composition->getRegionsMap();
 
 		auto& uv_warp_cache_manager = cur_animation->getUVWarpCache();
@@ -1522,9 +1536,10 @@ namespace CreatureModule {
 	void 
 	CreatureManager::RunUVItemSwap()
 	{
+		SCOPE_CYCLE_COUNTER(STAT_CreatureManager_RunUVItemSwap);
 		meshRenderBoneComposition * render_composition =
 			target_creature->GetRenderComposition();
-		TMap<FString, meshRenderRegion *>& regions_map =
+		TMap<FName, meshRenderRegion *>& regions_map =
 			render_composition->getRegionsMap();
 
 		auto& swap_packets = target_creature->GetUvSwapPackets();
@@ -1559,8 +1574,9 @@ namespace CreatureModule {
 		}
 	}
 
-	void CreatureManager::AlterBonesByAnchor(TMap<FString, meshBone*>& bones_map, const FString & animation_name_in)
+	void CreatureManager::AlterBonesByAnchor(TMap<FName, meshBone*>& bones_map, const FName & animation_name_in)
 	{
+		SCOPE_CYCLE_COUNTER(STAT_CreatureManager_AlterBonesByAnchor);
 		if (target_creature->GetAnchorPointsActive() == false)
 		{
 			return;
@@ -1584,6 +1600,7 @@ namespace CreatureModule {
     void
     CreatureManager::Update(float delta)
     {
+		SCOPE_CYCLE_COUNTER(STAT_CreatureManager_Update);
         if(!is_playing)
         {
             return;
@@ -1658,12 +1675,12 @@ namespace CreatureModule {
         mirror_y = flag_in;
     }
     
-    FString
+    FName
     CreatureManager::IsContactBone(const glm::vec2& pt_in,
                                    const glm::mat4& creature_xform,
                                    float radius) const
     {
-        FString ret_name;
+        FName ret_name;
         meshBone * cur_bone = target_creature->GetRenderComposition()->getRootBone();
         
         glm::vec4 local_pt = glm::inverse(creature_xform) * glm::vec4(pt_in, 0, 1);
@@ -1676,12 +1693,12 @@ namespace CreatureModule {
         return ProcessContactBone(real_pt, radius, cur_bone);
     }
     
-    FString
+    FName
     CreatureManager::ProcessContactBone(const glm::vec2& pt_in,
                                         float radius,
                                         meshBone * bone_in) const
     {
-        FString ret_name;
+        FName ret_name;
         glm::vec2 cur_vec = glm::vec2(bone_in->getWorldEndPt() - bone_in->getWorldStartPt());
         float cur_length = glm::length(cur_vec);
         glm::vec2 unit_vec = glm::normalize(cur_vec);
@@ -1703,7 +1720,7 @@ namespace CreatureModule {
         for(auto& cur_child : cur_children)
         {
             ret_name = ProcessContactBone(pt_in, radius, cur_child);
-            if(ret_name.Len() > 0) {
+            if(ret_name != NAME_None) {
                 break;
             }
         }
@@ -1737,7 +1754,7 @@ namespace CreatureModule {
 
  
 	float 
-	CreatureManager::correctRunTime(float time_in, const FString& animation_name)
+	CreatureManager::correctRunTime(float time_in, const FName& animation_name)
 	{
 		float ret_time = time_in;
 		auto& cur_animation = animations[animation_name];
@@ -1778,6 +1795,7 @@ namespace CreatureModule {
     void
     CreatureManager::increRunTime(float delta_in)
     {
+		SCOPE_CYCLE_COUNTER(STAT_CreatureManager_IncreRunTime);
         if(animations.Contains(active_animation_name) == false)
         {
             return;
@@ -1790,7 +1808,7 @@ namespace CreatureModule {
 	void 
 	CreatureManager::increAutoBlendRuntimes(float delta_in)
 	{
-		FString set_animation_name;
+		FName set_animation_name;
 		for (auto& cur_animation_name : auto_blend_names)
 		{
 			if ((animations.Contains(cur_animation_name)) 
@@ -1825,7 +1843,7 @@ namespace CreatureModule {
     }
     
     void
-    CreatureManager::SetBonesOverrideCallback(std::function<void (TMap<FString, meshBone *>&) >& callback_in)
+    CreatureManager::SetBonesOverrideCallback(std::function<void (TMap<FName, meshBone *>&) >& callback_in)
     {
         bones_override_callback = callback_in;
     }

@@ -271,9 +271,10 @@ void ACreatureCollectionActor::Tick(float DeltaTime)
 		auto& all_actor_animations = cur_manager->GetAllAnimations();
 		bool is_actor_animation_done = false;
 		bool is_at_sequence_end = false;
-		if (all_actor_animations.Contains(cur_data.second))
+		FName animAsName(*cur_data.second);
+		if (all_actor_animations.Contains(animAsName))
 		{
-			auto& actor_animation = all_actor_animations[cur_data.second];
+			auto& actor_animation = all_actor_animations[animAsName];
 			float cur_runtime = (cur_manager->getActualRunTime());
 			if (cur_runtime + true_delta_time >= actor_animation->getEndTime())
 			{

@@ -33,10 +33,10 @@ void FCreatureAnimationAssetTypeActions::GetResolvedSourceFilePaths(const TArray
 
 		if (animAsset != nullptr)
 		{
-			const FString &filename = animAsset->GetCreatureFilename();
-			if (!filename.IsEmpty())
+			const FName &filename = animAsset->GetCreatureFilename();
+			if (!filename.IsNone())
 			{
-				OutSourceFilePaths.Add(filename);
+				OutSourceFilePaths.Add(filename.ToString());
 			}
 		}
 	}
