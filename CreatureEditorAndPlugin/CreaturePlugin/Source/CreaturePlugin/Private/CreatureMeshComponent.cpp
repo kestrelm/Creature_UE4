@@ -703,6 +703,9 @@ void UCreatureMeshComponent::OnRegister()
 
 void UCreatureMeshComponent::StandardInit()
 {
+	creature_core.ClearMemory();
+	creature_core = CreatureCore();
+
 	UpdateCoreValues();
 	creature_core.do_file_warning = !enable_collection_playback;
 	bool retval = creature_core.InitCreatureRender();

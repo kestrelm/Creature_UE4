@@ -64,6 +64,10 @@ class CREATUREPLUGIN_API CreatureCore {
 public:
 	CreatureCore();
 
+	virtual ~CreatureCore();
+
+	void ClearMemory();
+
 	bool GetAndClearShouldAnimStart();
 
 	bool GetAndClearShouldAnimEnd();
@@ -227,7 +231,7 @@ public:
 	//当从AnimationAsset读取的时候，直接从pJsonData中载入，不再从硬盘中载入
 	FString* pJsonData;
 	CreatureMetaData * meta_data;
-	std::shared_ptr<glm::uint32> global_indices_copy;
+	glm::uint32 * global_indices_copy;
 };
 
 std::string ConvertToString(const FString &str);
