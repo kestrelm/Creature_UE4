@@ -735,6 +735,10 @@ void UCreatureMeshComponent::StandardInit()
 			std::bind(&UCreatureMeshComponent::CoreBonesOverride, this, std::placeholders::_1);
 		creature_core.creature_manager->SetBonesOverrideCallback(cur_callback);
 	}
+	else {
+		static FProceduralMeshTriData empty_data;
+		SetProceduralMeshTriData(empty_data);
+	}
 }
 
 void UCreatureMeshComponent::CollectionInit()

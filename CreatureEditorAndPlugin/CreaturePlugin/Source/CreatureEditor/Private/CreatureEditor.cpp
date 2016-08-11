@@ -5,6 +5,8 @@
 #include "CreatureAnimStateMachineAssetTypeActions.h"
 #include "CreatureAnimationAssetTypeActions.h"
 #include "CreatureMetaAssetTypeActions.h"
+#include "CreatureCustomSplineDetails.h"
+
 #define LOCTEXT_NAMESPACE "CreatureEditor"
 void CreatureEditor::StartupModule()
 {
@@ -12,6 +14,7 @@ void CreatureEditor::StartupModule()
 
 	//Custom detail views
 	PropertyModule.RegisterCustomClassLayout("CreatureAnimStateMachine", FOnGetDetailCustomizationInstance::CreateStatic(&FCreatureAnimStateMachineDetails::MakeInstance));
+	PropertyModule.RegisterCustomClassLayout("SplineComponent", FOnGetDetailCustomizationInstance::CreateStatic(&FCreatureCustomSplineDetails::MakeInstance));
 
 	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
 	EAssetTypeCategories::Type CreatureAssetCategoryBit = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("CreatureAssetCategory")), LOCTEXT("CreatureAssetCategory", "Creature"));

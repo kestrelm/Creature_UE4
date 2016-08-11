@@ -31,7 +31,7 @@ namespace UnrealBuildTool.Rules
 
             PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "CreaturePlugin", "UnrealEd", "PropertyEditor", "Paper2DEditor","AssetTools","EditorStyle","KismetWidgets","GraphEditor","AnimGraph" });
 
-            PrivateDependencyModuleNames.AddRange(new string[] { "RHI", "RenderCore", "ShaderCore", "CreaturePlugin", "SlateCore", "Slate", "AssetTools", "GraphEditor", "AnimGraph" });
+            PrivateDependencyModuleNames.AddRange(new string[] { "RHI", "RenderCore", "ShaderCore", "CreaturePlugin", "SlateCore", "Slate", "AssetTools", "GraphEditor", "AnimGraph", "Json", "JsonUtilities" });
 
            // LoadCreatureLib(Target);
         }
