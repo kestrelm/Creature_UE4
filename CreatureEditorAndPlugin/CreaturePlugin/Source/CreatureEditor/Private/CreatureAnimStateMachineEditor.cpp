@@ -13,10 +13,10 @@
 
 #define LOCTEXT_NAMESPACE "AnimAssetEditors"
 
-void FCreatureAnimStateMachineEditor::RegisterTabSpawners(const TSharedRef<class FTabManager>& TabManager)
+void FCreatureAnimStateMachineEditor::RegisterTabSpawners(const TSharedRef<class FTabManager>& TabManagerIn)
 {
 	GraphEditorCommands = MakeShareable(new FUICommandList());
-	FAssetEditorToolkit::RegisterTabSpawners(TabManager);
+	FAssetEditorToolkit::RegisterTabSpawners(TabManagerIn);
 
 	
 	//蓝图编辑器命令绑定
@@ -42,7 +42,7 @@ void FCreatureAnimStateMachineEditor::RegisterTabSpawners(const TSharedRef<class
 		.GraphEvents(NodeAction)
 		;
 	//将细节面板放入左侧面板
-	TabManager->RegisterTabSpawner(FName(TEXT("Details")), FOnSpawnTab::CreateLambda(
+	TabManagerIn->RegisterTabSpawner(FName(TEXT("Details")), FOnSpawnTab::CreateLambda(
 		[&](const FSpawnTabArgs& Args){
 		TSharedPtr<FCreatureAnimStateMachineEditor> StateMechineEditorPtr = SharedThis(this);
 
@@ -59,7 +59,7 @@ void FCreatureAnimStateMachineEditor::RegisterTabSpawners(const TSharedRef<class
 		.SetDisplayName(LOCTEXT("DetailsTabLabel", "Details"))
 		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.Tabs.Details"));
 
-		TabManager->RegisterTabSpawner(FName(TEXT("BluePrint")), FOnSpawnTab::CreateLambda(
+		TabManagerIn->RegisterTabSpawner(FName(TEXT("BluePrint")), FOnSpawnTab::CreateLambda(
 			//用于产生布局的Lambda表达式
 			[&](const FSpawnTabArgs& Args){
 			return SNew(SDockTab)
@@ -76,9 +76,10 @@ void FCreatureAnimStateMachineEditor::RegisterTabSpawners(const TSharedRef<class
 
 
 }
-void FCreatureAnimStateMachineEditor::UnregisterTabSpawners(const TSharedRef<class FTabManager>& TabManager)
+
+void FCreatureAnimStateMachineEditor::UnregisterTabSpawners(const TSharedRef<class FTabManager>& TabManagerIn)
 {
-	FAssetEditorToolkit::UnregisterTabSpawners(TabManager);
+	FAssetEditorToolkit::UnregisterTabSpawners(TabManagerIn);
 
 }
 FName FCreatureAnimStateMachineEditor::GetToolkitFName() const

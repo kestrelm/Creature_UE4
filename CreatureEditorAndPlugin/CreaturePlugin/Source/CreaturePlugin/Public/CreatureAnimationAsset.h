@@ -67,7 +67,7 @@ public:
 	void SetCreatureFilename(const FString &newFilename);
 	void GetAssetRegistryTags(TArray<FAssetRegistryTag>& OutTags) const override;
 	void PostLoad() override;
-	void PreSave() override;
+	void PreSave(const class ITargetPlatform* TargetPlatform) override;
 	void PostInitProperties() override;
 	
 	void GatherAnimationData();

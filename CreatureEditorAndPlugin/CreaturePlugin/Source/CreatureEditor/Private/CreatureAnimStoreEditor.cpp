@@ -19,13 +19,13 @@
 #pragma clang diagnostic ignored "-Wshadow"
 #endif
 
-void FCreatureAnimStoreEditor::RegisterTabSpawners(const TSharedRef<class FTabManager>& TabManager)
+void FCreatureAnimStoreEditor::RegisterTabSpawners(const TSharedRef<class FTabManager>& TabManagerIn)
 {
-	FAssetEditorToolkit::RegisterTabSpawners(TabManager);
+	FAssetEditorToolkit::RegisterTabSpawners(TabManagerIn);
 	TSharedPtr<FCreatureAnimStoreEditor> StoreEditorPtr = SharedThis(this);// Spawn the tab
 	StorePanel = SNew(SStoreDetailPanel, StoreEditorPtr);
 	//×¢²áÏ¸½ÚÃæ°å
-	TabManager->RegisterTabSpawner(FName(TEXT("Details")), FOnSpawnTab::CreateLambda(
+	TabManagerIn->RegisterTabSpawner(FName(TEXT("Details")), FOnSpawnTab::CreateLambda(
 		[&](const FSpawnTabArgs& Args){		
 		return SNew(SDockTab)
 			.Icon(FEditorStyle::GetBrush("LevelEditor.Tabs.Details"))
@@ -42,7 +42,7 @@ void FCreatureAnimStoreEditor::RegisterTabSpawners(const TSharedRef<class FTabMa
 				ClipViewport = SNew(SCreatureAnimClipStoreEditorViewport)
 					.ObjectToEdit(EditClipsStore);
 //×¢²áViewport
-TabManager->RegisterTabSpawner(FName(TEXT("Preview")), FOnSpawnTab::CreateLambda(
+TabManagerIn->RegisterTabSpawner(FName(TEXT("Preview")), FOnSpawnTab::CreateLambda(
 		[&](const FSpawnTabArgs& Args){
 		TSharedPtr<FCreatureAnimStoreEditor> StoreEditorPtr = SharedThis(this);// Spawn the tab
 		return SNew(SDockTab)
@@ -56,9 +56,9 @@ TabManager->RegisterTabSpawner(FName(TEXT("Preview")), FOnSpawnTab::CreateLambda
 		.SetDisplayName(LOCTEXT("ViewportLabel", "Preview"))
 		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.Tabs.Details"));
 }
-void FCreatureAnimStoreEditor::UnregisterTabSpawners(const TSharedRef<class FTabManager>& TabManager)
+void FCreatureAnimStoreEditor::UnregisterTabSpawners(const TSharedRef<class FTabManager>& TabManagerIn)
 {
-	FAssetEditorToolkit::UnregisterTabSpawners(TabManager);
+	FAssetEditorToolkit::UnregisterTabSpawners(TabManagerIn);
 
 }
 FName FCreatureAnimStoreEditor::GetToolkitFName() const

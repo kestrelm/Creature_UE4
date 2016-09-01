@@ -75,7 +75,6 @@ FCreatureCustomSplineDetails::SaveCurveToFile(const FString& write_filename)
 	auto num_pts = active_spline->GetNumberOfSplinePoints();
 
 	const float scale_factor = 1.0f / 100.0f;
-	float cur_distance = 0;
 	TArray<TSharedPtr<FJsonObject>> write_objs;
 
 	for (auto i = 0; i < num_pts; i++)

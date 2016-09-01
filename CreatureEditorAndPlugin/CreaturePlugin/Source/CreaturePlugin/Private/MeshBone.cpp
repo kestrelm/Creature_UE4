@@ -1432,7 +1432,7 @@ meshBoneCacheManager::retrieveValuesAtTime(float time_in,
                                            TMap<FString, meshBone *>& bone_map)
 {
     int32 base_time = getIndexByTime((int32)floorf(time_in));
-    int32 end_time = getIndexByTime((int32)ceilf(time_in));
+    int32 final_time = getIndexByTime((int32)ceilf(time_in));
 
     float ratio = (time_in - (float)floorf(time_in));
 
@@ -1441,13 +1441,13 @@ meshBoneCacheManager::retrieveValuesAtTime(float time_in,
     }
     
     if((bone_cache_data_ready[base_time] == false)
-       || (bone_cache_data_ready[end_time] == false))
+       || (bone_cache_data_ready[final_time] == false))
     {
         return;
     }
     
     TArray<meshBoneCache>& base_cache = bone_cache_table[base_time];
-    TArray<meshBoneCache>& end_cache = bone_cache_table[end_time];
+    TArray<meshBoneCache>& end_cache = bone_cache_table[final_time];
     
     for(auto i = 0; i < base_cache.Num(); i++) {
         const meshBoneCache& base_data = base_cache[i];
@@ -1469,44 +1469,44 @@ std::pair<glm::vec4, glm::vec4>
 meshBoneCacheManager::retrieveSingleBoneValueAtTime(const FString& key_in,
                                                     float time_in)
 {
-    int32 base_time = getIndexByTime((int32)floorf(time_in));
-    int32 end_time = getIndexByTime((int32)ceilf(time_in));
-    float ratio = (time_in - (float)floorf(time_in));
-    std::pair<glm::vec4, glm::vec4> ret_data;
+	int32 base_time = getIndexByTime((int32)floorf(time_in));
+	int32 final_time = getIndexByTime((int32)ceilf(time_in));
+	float ratio = (time_in - (float)floorf(time_in));
+	std::pair<glm::vec4, glm::vec4> ret_data;
 
-    if(bone_cache_data_ready.Num() == 0) {
-        return ret_data;
-    }
-    
-    if((bone_cache_data_ready[base_time] == false)
-       || (bone_cache_data_ready[end_time] == false))
-    {
-        return ret_data;
-    }
+	if (bone_cache_data_ready.Num() == 0) {
+		return ret_data;
+	}
 
-    TArray<meshBoneCache>& base_cache = bone_cache_table[base_time];
-    TArray<meshBoneCache>& end_cache = bone_cache_table[end_time];
-    
-    for(auto i = 0; i < base_cache.Num(); i++) {
-        const meshBoneCache& base_data = base_cache[i];
-        const meshBoneCache& end_data = end_cache[i];
-        const FString& cur_key = base_data.getKey();
-        
-        if(cur_key == key_in) {
-            glm::vec4 final_world_start_pt = ((1.0f - ratio) * base_data.getWorldStartPt()) +
-                                                (ratio * end_data.getWorldStartPt());
-            
-            glm::vec4 final_world_end_pt = ((1.0f - ratio) * base_data.getWorldEndPt()) +
-                                                (ratio * end_data.getWorldEndPt());
+	if ((bone_cache_data_ready[base_time] == false)
+		|| (bone_cache_data_ready[final_time] == false))
+	{
+		return ret_data;
+	}
 
-            ret_data.first = final_world_start_pt;
-            ret_data.second = final_world_end_pt;
-            
-            break;
-        }
-    }
+	TArray<meshBoneCache>& base_cache = bone_cache_table[base_time];
+	TArray<meshBoneCache>& end_cache = bone_cache_table[final_time];
 
-    return ret_data;
+	for (auto i = 0; i < base_cache.Num(); i++) {
+		const meshBoneCache& base_data = base_cache[i];
+		const meshBoneCache& end_data = end_cache[i];
+		const FString& cur_key = base_data.getKey();
+
+		if (cur_key == key_in) {
+			glm::vec4 final_world_start_pt = ((1.0f - ratio) * base_data.getWorldStartPt()) +
+				(ratio * end_data.getWorldStartPt());
+
+			glm::vec4 final_world_end_pt = ((1.0f - ratio) * base_data.getWorldEndPt()) +
+				(ratio * end_data.getWorldEndPt());
+
+			ret_data.first = final_world_start_pt;
+			ret_data.second = final_world_end_pt;
+
+			break;
+		}
+	}
+
+	return ret_data;
 }
 
 
@@ -1602,7 +1602,7 @@ void meshDisplacementCacheManager::retrieveValuesAtTime(float time_in,
                                                         TMap<FString,meshRenderRegion *>& regions_map)
 {
     int32 base_time = getIndexByTime((int32)floorf(time_in));
-    int32 end_time = getIndexByTime((int32)ceilf(time_in));
+    int32 final_time = getIndexByTime((int32)ceilf(time_in));
     
     float ratio = (time_in - (float)floorf(time_in));
     
@@ -1611,13 +1611,13 @@ void meshDisplacementCacheManager::retrieveValuesAtTime(float time_in,
     }
     
     if((displacement_cache_data_ready[base_time] == false)
-       || (displacement_cache_data_ready[end_time] == false))
+       || (displacement_cache_data_ready[final_time] == false))
     {
         return;
     }
         
     TArray<meshDisplacementCache>& base_cache = displacement_cache_table[base_time];
-    TArray<meshDisplacementCache>& end_cache = displacement_cache_table[end_time];
+    TArray<meshDisplacementCache>& end_cache = displacement_cache_table[final_time];
     
     for(auto i = 0; i < base_cache.Num(); i++) {
         const meshDisplacementCache& base_data = base_cache[i];
@@ -1675,7 +1675,7 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueAtTime(const FStrin
                                                                     meshRenderRegion * region)
 {
     int32 base_time = getIndexByTime((int32)floorf(time_in));
-    int32 end_time = getIndexByTime((int32)ceilf(time_in));
+    int32 final_time = getIndexByTime((int32)ceilf(time_in));
     float ratio = (time_in - (float)floorf(time_in));
     std::pair<glm::vec4, glm::vec4> ret_data;
     
@@ -1684,13 +1684,13 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueAtTime(const FStrin
     }
     
     if((displacement_cache_data_ready[base_time] == false)
-       || (displacement_cache_data_ready[end_time] == false))
+       || (displacement_cache_data_ready[final_time] == false))
     {
         return;
     }
         
     TArray<meshDisplacementCache>& base_cache = displacement_cache_table[base_time];
-    TArray<meshDisplacementCache>& end_cache = displacement_cache_table[end_time];
+    TArray<meshDisplacementCache>& end_cache = displacement_cache_table[final_time];
     
     for(auto i = 0; i < base_cache.Num(); i++) {
         const meshDisplacementCache& base_data = base_cache[i];
@@ -1701,11 +1701,11 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueAtTime(const FStrin
             if(region->getUseLocalDisplacements()) {
                 TArray<glm::vec2>& displacements =
                 region->getLocalDisplacements();
-                for(auto i = 0; i < displacements.Num(); i++) {
+                for(auto j = 0; j < displacements.Num(); j++) {
                     glm::vec2 interp_val =
-                    ((1.0f - ratio) * base_data.getLocalDisplacements()[i]) +
-                    (ratio * end_data.getLocalDisplacements()[i]);
-                    displacements[i] = interp_val;
+                    ((1.0f - ratio) * base_data.getLocalDisplacements()[j]) +
+                    (ratio * end_data.getLocalDisplacements()[j]);
+                    displacements[j] = interp_val;
                 }
 
             }
@@ -1713,11 +1713,11 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueAtTime(const FStrin
             if(region->getUsePostDisplacements()) {
                 TArray<glm::vec2>& displacements =
                 region->getPostDisplacements();
-                for(auto i = 0; i < displacements.Num(); i++) {
+                for(auto j = 0; j < displacements.Num(); j++) {
                     glm::vec2 interp_val =
-                    ((1.0f - ratio) * base_data.getPostDisplacements()[i]) +
-                    (ratio * end_data.getPostDisplacements()[i]);
-                    displacements[i] = interp_val;
+                    ((1.0f - ratio) * base_data.getPostDisplacements()[j]) +
+                    (ratio * end_data.getPostDisplacements()[j]);
+                    displacements[j] = interp_val;
                 }
             }
             
@@ -1733,7 +1733,7 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueNoRegionAtTime(cons
                                                                             TArray<glm::vec2>& out_displacements)
 {
     int32 base_time = getIndexByTime((int32)floorf(time_in));
-    int32 end_time = getIndexByTime((int32)ceilf(time_in));
+    int32 final_time = getIndexByTime((int32)ceilf(time_in));
     float ratio = (time_in - (float)floorf(time_in));
     std::pair<glm::vec4, glm::vec4> ret_data;
     
@@ -1742,13 +1742,13 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueNoRegionAtTime(cons
     }
     
     if((displacement_cache_data_ready[base_time] == false)
-       || (displacement_cache_data_ready[end_time] == false))
+       || (displacement_cache_data_ready[final_time] == false))
     {
         return;
     }
         
     TArray<meshDisplacementCache>& base_cache = displacement_cache_table[base_time];
-    TArray<meshDisplacementCache>& end_cache = displacement_cache_table[end_time];
+    TArray<meshDisplacementCache>& end_cache = displacement_cache_table[final_time];
     
     for(auto i = 0; i < base_cache.Num(); i++) {
         const meshDisplacementCache& base_data = base_cache[i];
@@ -1759,11 +1759,11 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueNoRegionAtTime(cons
             if(region->getUseLocalDisplacements()) {
                 TArray<glm::vec2>& displacements =
                 region->getLocalDisplacements();
-                for(auto i = 0; i < displacements.Num(); i++) {
+                for(auto j = 0; j < displacements.Num(); j++) {
                     glm::vec2 interp_val =
-                    ((1.0f - ratio) * base_data.getLocalDisplacements()[i]) +
-                    (ratio * end_data.getLocalDisplacements()[i]);
-                    out_displacements[i] = interp_val;
+                    ((1.0f - ratio) * base_data.getLocalDisplacements()[j]) +
+                    (ratio * end_data.getLocalDisplacements()[j]);
+                    out_displacements[j] = interp_val;
                 }
                 
             }
@@ -1771,11 +1771,11 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueNoRegionAtTime(cons
             if(region->getUsePostDisplacements()) {
                 TArray<glm::vec2>& displacements =
                 region->getPostDisplacements();
-                for(auto i = 0; i < displacements.Num(); i++) {
+                for(auto j = 0; j < displacements.Num(); j++) {
                     glm::vec2 interp_val =
-                    ((1.0f - ratio) * base_data.getPostDisplacements()[i]) +
-                    (ratio * end_data.getPostDisplacements()[i]);
-                    out_displacements[i] = interp_val;
+                    ((1.0f - ratio) * base_data.getPostDisplacements()[j]) +
+                    (ratio * end_data.getPostDisplacements()[j]);
+                    out_displacements[j] = interp_val;
                 }
             }
             
@@ -1791,7 +1791,7 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueDirectAtTime(const 
                                                                           TArray<glm::vec2>& out_post_displacements)
 {
     int32 base_time = getIndexByTime((int32)floorf(time_in));
-    int32 end_time = getIndexByTime((int32)ceilf(time_in));
+    int32 final_time = getIndexByTime((int32)ceilf(time_in));
     float ratio = (time_in - (float)floorf(time_in));
     std::pair<glm::vec4, glm::vec4> ret_data;
     
@@ -1800,13 +1800,13 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueDirectAtTime(const 
     }
     
     if((displacement_cache_data_ready[base_time] == false)
-       || (displacement_cache_data_ready[end_time] == false))
+       || (displacement_cache_data_ready[final_time] == false))
     {
         return;
     }
         
     TArray<meshDisplacementCache>& base_cache = displacement_cache_table[base_time];
-    TArray<meshDisplacementCache>& end_cache = displacement_cache_table[end_time];
+    TArray<meshDisplacementCache>& end_cache = displacement_cache_table[final_time];
     
     for(auto i = 0; i < base_cache.Num(); i++) {
         const meshDisplacementCache& base_data = base_cache[i];
@@ -1819,22 +1819,22 @@ meshDisplacementCacheManager::retrieveSingleDisplacementValueDirectAtTime(const 
             
             if(has_local_displacements) {
                 out_local_displacements.SetNumZeroed(base_data.getLocalDisplacements().Num());
-                for(auto i = 0; i < base_data.getLocalDisplacements().Num(); i++) {
+                for(auto j = 0; j < base_data.getLocalDisplacements().Num(); j++) {
                     glm::vec2 interp_val =
-                    ((1.0f - ratio) * base_data.getLocalDisplacements()[i]) +
-                    (ratio * end_data.getLocalDisplacements()[i]);
-                    out_local_displacements[i] = interp_val;
+                    ((1.0f - ratio) * base_data.getLocalDisplacements()[j]) +
+                    (ratio * end_data.getLocalDisplacements()[j]);
+                    out_local_displacements[j] = interp_val;
                 }
                 
             }
             
             if(has_post_displacements) {
                 out_post_displacements.SetNumZeroed(base_data.getPostDisplacements().Num());
-                for(auto i = 0; i < base_data.getPostDisplacements().Num(); i++) {
+                for(auto j = 0; j < base_data.getPostDisplacements().Num(); j++) {
                     glm::vec2 interp_val =
-                    ((1.0f - ratio) * base_data.getPostDisplacements()[i]) +
-                    (ratio * end_data.getPostDisplacements()[i]);
-                    out_post_displacements[i] = interp_val;
+                    ((1.0f - ratio) * base_data.getPostDisplacements()[j]) +
+                    (ratio * end_data.getPostDisplacements()[j]);
+                    out_post_displacements[j] = interp_val;
                 }
             }
             
@@ -1962,14 +1962,14 @@ meshUVWarpCacheManager::retrieveValuesAtTime(float time_in,
                                             TMap<FString, meshRenderRegion *>& regions_map)
 {
     int32 base_time = getIndexByTime((int32)floorf(time_in));
-    int32 end_time = getIndexByTime((int32)ceilf(time_in));
+    int32 final_time = getIndexByTime((int32)ceilf(time_in));
     
     if(uv_cache_data_ready.Num() == 0) {
         return;
     }
     
     if((uv_cache_data_ready[base_time] == false)
-       || (uv_cache_data_ready[end_time] == false))
+       || (uv_cache_data_ready[final_time] == false))
     {
         return;
     }
@@ -2006,20 +2006,20 @@ meshUVWarpCacheManager::retrieveSingleValueAtTime(float time_in,
                                                   glm::vec2& scale)
 {
     int32 base_time = getIndexByTime((int32)floorf(time_in));
-    int32 end_time = getIndexByTime((int32)ceilf(time_in));
+    int32 final_time = getIndexByTime((int32)ceilf(time_in));
     
     if(uv_cache_data_ready.Num() == 0) {
         return;
     }
     
     if((uv_cache_data_ready[base_time] == false)
-       || (uv_cache_data_ready[end_time] == false))
+       || (uv_cache_data_ready[final_time] == false))
     {
         return;
     }
     
     TArray<meshUVWarpCache>& base_cache = uv_cache_table[base_time];
-    TArray<meshUVWarpCache>& end_cache = uv_cache_table[end_time];
+    TArray<meshUVWarpCache>& end_cache = uv_cache_table[final_time];
     
     local_offset = glm::vec2(0,0);
     global_offset = glm::vec2(0,0);
@@ -2155,14 +2155,14 @@ meshOpacityCacheManager::retrieveValuesAtTime(float time_in,
 											TMap<FString, meshRenderRegion *>& regions_map)
 {
 	int32 base_time = getIndexByTime((int32)floorf(time_in));
-	int32 end_time = getIndexByTime((int32)ceilf(time_in));
+	int32 final_time = getIndexByTime((int32)ceilf(time_in));
 
 	if (opacity_cache_data_ready.Num() == 0) {
 		return;
 	}
 
 	if ((opacity_cache_data_ready[base_time] == false)
-		|| (opacity_cache_data_ready[end_time] == false))
+		|| (opacity_cache_data_ready[final_time] == false))
 	{
 		return;
 	}
@@ -2185,20 +2185,20 @@ meshOpacityCacheManager::retrieveSingleValueAtTime(float time_in,
 												float& out_opacity)
 {
 	int32 base_time = getIndexByTime((int32)floorf(time_in));
-	int32 end_time = getIndexByTime((int32)ceilf(time_in));
+	int32 final_time = getIndexByTime((int32)ceilf(time_in));
 
 	if (opacity_cache_data_ready.Num() == 0) {
 		return;
 	}
 
 	if ((opacity_cache_data_ready[base_time] == false)
-		|| (opacity_cache_data_ready[end_time] == false))
+		|| (opacity_cache_data_ready[final_time] == false))
 	{
 		return;
 	}
 
 	TArray<meshOpacityCache>& base_cache = opacity_cache_table[base_time];
-	TArray<meshOpacityCache>& end_cache = opacity_cache_table[end_time];
+	TArray<meshOpacityCache>& end_cache = opacity_cache_table[final_time];
 
 
 	for (auto i = 0; i < base_cache.Num(); i++) {

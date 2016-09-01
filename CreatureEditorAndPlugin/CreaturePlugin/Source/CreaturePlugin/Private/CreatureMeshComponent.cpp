@@ -563,8 +563,8 @@ UCreatureMeshComponent::RunCollectionTick(float DeltaTime)
 
 				auto& cur_seq = active_collection_clip->sequence_clips[active_collection_clip->active_index];
 				auto data_idx = cur_seq.collection_data_index;
-				auto& cur_data = collectionData[data_idx];
-				cur_data.creature_core.SetBluePrintAnimationResetToEnd();
+				auto& collect_data = collectionData[data_idx];
+				collect_data.creature_core.SetBluePrintAnimationResetToEnd();
 			}
 		}
 
@@ -591,11 +591,11 @@ void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx)
 	// Debug
 
 	if (creature_debug_draw) {
-		FSphere debugSphere = GetDebugBoundsSphere();
+		FSphere tmpDebugSphere = GetDebugBoundsSphere();
 		DrawDebugSphere(
 			GetWorld(),
-			debugSphere.Center,
-			debugSphere.W,
+			tmpDebugSphere.Center,
+			tmpDebugSphere.W,
 			32,
 			FColor(255, 0, 0)
 			);

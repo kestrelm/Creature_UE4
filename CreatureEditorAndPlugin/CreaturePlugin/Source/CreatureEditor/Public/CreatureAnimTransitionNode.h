@@ -34,9 +34,10 @@ public:
 		FString TransitionCondition;
 	UPROPERTY(EditAnyWhere, Category = "CreaturePlugin")
 		bool	TransitionFlag;
-	UPROPERTY()
+
+	//UPROPERTY()
 	UEdGraphPin* InputPin;
-	UPROPERTY()
+	//UPROPERTY()
 	UEdGraphPin* OutputPin;
 	UPROPERTY()
 	class	UCreatureAnimStateNode* TransitionTargetNode;
