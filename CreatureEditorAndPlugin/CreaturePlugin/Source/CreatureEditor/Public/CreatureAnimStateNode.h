@@ -16,11 +16,11 @@ class CREATUREEDITOR_API UCreatureAnimStateNode :public UEdGraphNode
 
 public:
 
-	//UPROPERTY()
-	TArray<class UEdGraphPin*> InputPins;
+	UPROPERTY()
+	TArray<FEdGraphPinReference> InputPins;
 
-	//UPROPERTY()
-	TArray<class UEdGraphPin*> OutputPins;
+	UPROPERTY()
+	TArray<FEdGraphPinReference> OutputPins;
 
 	UPROPERTY(EditAnyWhere, Category = "CreaturePlugin")
 	FString AnimName;
