@@ -37,6 +37,7 @@
 
 #include "CustomProceduralMeshComponent.h"
 #include "CreatureModule.h"
+#include <vector>
 #include <mutex>
 #include <memory>
 
