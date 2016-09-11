@@ -33,11 +33,11 @@ public:
 	UPROPERTY(EditAnyWhere, Category = "CreaturePlugin")
 	FName TransitionCondition;
 	UPROPERTY(EditAnyWhere, Category = "CreaturePlugin")
-		bool	TransitionFlag;
-	//UPROPERTY()
-	UEdGraphPin* InputPin;
-	//UPROPERTY()
-	UEdGraphPin* OutputPin;
+	bool	TransitionFlag;
+	UPROPERTY()
+	FEdGraphPinReference InputPin;
+	UPROPERTY()
+	FEdGraphPinReference OutputPin;
 	UPROPERTY()
 	class	UCreatureAnimStateNode* TransitionTargetNode;
 	UPROPERTY()
