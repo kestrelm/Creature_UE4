@@ -68,7 +68,7 @@ public:
 
 class meshBone {
 public:
-    meshBone(const FString& key_in,
+    meshBone(const FName& key_in,
              const glm::vec4& start_pt_in,
              const glm::vec4& end_pt_in,
              const glm::mat4& parent_transform);
@@ -142,13 +142,13 @@ public:
     
     bool hasBone(meshBone * bone_in) const;
     
-    meshBone * getChildByKey(const FString& search_key);
+    meshBone * getChildByKey(const FName& search_key);
     
-    const FString& getKey() const;
+    const FName& getKey() const;
     
-    void setKey(const FString& key_in);
+    void setKey(const FName& key_in);
     
-    TArray<FString> getAllBoneKeys() const;
+    TArray<FName> getAllBoneKeys() const;
     
     TArray<meshBone *> getAllChildren();
     
@@ -185,7 +185,7 @@ protected:
     glm::vec4 world_rest_pos;
     float world_rest_angle;
     float rest_length;
-    FString key;
+    FName key;
     int32 tag_id;
 
     glm::vec4 world_start_pt, world_end_pt;
@@ -214,10 +214,10 @@ public:
     
     glm::float32 * getUVs() const;
     
-    TMap<FString, TArray<float> >& getWeights();
+    TMap<FName, TArray<float> >& getWeights();
     
-    void renameWeightValuesByKey(const FString& old_key,
-                                 const FString& new_key);
+    void renameWeightValuesByKey(const FName& old_key,
+                                 const FName& new_key);
     
     int32 getNumPts() const;
     
@@ -232,14 +232,14 @@ public:
     int32 getEndIndex() const;
     
     void poseFinalPts(glm::float32 * output_pts,
-                      TMap<FString, meshBone *>& bones_map);
+                      TMap<FName, meshBone *>& bones_map);
     
     void poseFastFinalPts(glm::float32 * output_pts,
 						  bool try_local_displacements=true,
 						  bool try_post_displacements=true,
 						  bool try_uv_swap=true);
     
-    void setMainBoneKey(const FString& key_in);
+    void setMainBoneKey(const FName& key_in);
 
     void determineMainBone(meshBone * root_bone_in);
     
@@ -247,9 +247,9 @@ public:
     
     bool getUseDq() const;
     
-    void setName(const FString& name_in);
+    void setName(const FName& name_in);
     
-    const FString& getName() const;
+    const FName& getName() const;
     
     void setUseLocalDisplacements(bool flag_in);
     
@@ -297,7 +297,7 @@ public:
     
     void setTagId(int32 value_in);
     
-    void initFastNormalWeightMap(const TMap<FString, meshBone *>& bones_map);
+    void initFastNormalWeightMap(const TMap<FName, meshBone *>& bones_map);
 
 	void setUVLevel(int32 value_in);
 
@@ -325,17 +325,17 @@ protected:
     TArray<glm::vec2> uv_warp_ref_uvs;
 	int32 uv_level;
 	float opacity;
-    TMap<FString, TArray<float> > normal_weight_map;
+    TMap<FName, TArray<float> > normal_weight_map;
 //    TMap<int32, TArray<float> > fast_normal_weight_map;
     TArray<TArray<float> > fast_normal_weight_map;
     TArray<TArray<float> > reverse_fast_normal_weight_map;
     TArray<meshBone *> fast_bones_map;
     TArray<TArray<int32> > relevant_bones_indices;
     TArray<dualQuat> fill_dq_array;
-    FString main_bone_key;
+    FName main_bone_key;
     meshBone * main_bone;
     bool use_dq;
-    FString name;
+	FName name;
     int32 tag_id;
 };
 
@@ -355,11 +355,11 @@ public:
     
     void initRegionsMap();
     
-    static TMap<FString, meshBone *> genBoneMap(meshBone * input_bone);
+    static TMap<FName, meshBone *> genBoneMap(meshBone * input_bone);
     
-    TMap<FString, meshBone *>& getBonesMap();
+    TMap<FName, meshBone *>& getBonesMap();
     
-    TMap<FString, meshRenderRegion *>& getRegionsMap();
+    TMap<FName, meshRenderRegion *>& getRegionsMap();
     
     TArray<meshRenderRegion *>& getRegions();
     
@@ -372,14 +372,14 @@ public:
 protected:
     
     meshBone * root_bone;
-    TMap<FString, meshBone *> bones_map;
+    TMap<FName, meshBone *> bones_map;
     TArray<meshRenderRegion *> regions;
-    TMap<FString, meshRenderRegion *> regions_map;
+    TMap<FName, meshRenderRegion *> regions_map;
 };
 
 class meshBoneCache {
 public:
-    meshBoneCache(const FString& key_in);
+    meshBoneCache(const FName& key_in);
     virtual ~meshBoneCache();
     
     void setWorldStartPt(const glm::vec4& pt_in) {
@@ -398,23 +398,23 @@ public:
         return world_end_pt;
     }
     
-    const FString& getKey() const {
+    const FName& getKey() const {
         return key;
     }
     
-    void setKey(const FString& key_in)
+    void setKey(const FName& key_in)
     {
         key = key_in;
     }
 
 protected:
-    FString key;
+    FName key;
     glm::vec4 world_start_pt, world_end_pt;
 };
 
 class meshDisplacementCache {
 public:
-    meshDisplacementCache(const FString& key_in);
+    meshDisplacementCache(const FName& key_in);
     virtual ~meshDisplacementCache();
     
     void setLocalDisplacements(const TArray<glm::vec2>& displacements_in)
@@ -427,11 +427,11 @@ public:
         post_displacements = displacements_in;
     }
     
-    const FString& getKey() const {
+    const FName& getKey() const {
         return key;
     }
     
-    void setKey(const FString& key_in)
+    void setKey(const FName& key_in)
     {
         key = key_in;
     }
@@ -441,14 +441,14 @@ public:
     const TArray<glm::vec2>& getPostDisplacements() const;
     
 protected:
-    FString key;
+    FName key;
     TArray<glm::vec2> local_displacements;
     TArray<glm::vec2> post_displacements;
 };
 
 class meshUVWarpCache {
 public:
-    meshUVWarpCache(const FString& key_in);
+    meshUVWarpCache(const FName& key_in);
     virtual ~meshUVWarpCache();
     
     void setUvWarpLocalOffset(const glm::vec2& vec_in);
@@ -463,11 +463,11 @@ public:
     
     const glm::vec2& getUvWarpScale() const;
     
-    const FString& getKey() const {
+    const FName& getKey() const {
         return key;
     }
     
-    void setKey(const FString& key_in)
+    void setKey(const FName& key_in)
     {
         key = key_in;
     }
@@ -490,7 +490,7 @@ public:
 	}
 
 protected:
-    FString key;
+	FName key;
     glm::vec2 uv_warp_local_offset, uv_warp_global_offset, uv_warp_scale;
     bool enabled;
 	int32 level;
@@ -498,7 +498,7 @@ protected:
 
 class meshOpacityCache {
 public:
-	meshOpacityCache(const FString& key_in)
+	meshOpacityCache(const FName& key_in)
 	{
 		key = key_in;
 		opacity = 100.0f;
@@ -516,17 +516,17 @@ public:
 		return opacity;
 	}
 
-	const FString& getKey() const {
+	const FName& getKey() const {
 		return key;
 	}
 
-	void setKey(const FString& key_in)
+	void setKey(const FName& key_in)
 	{
 		key = key_in;
 	}
 
 protected:
-	FString key;
+	FName key;
 	float opacity;
 };
 
@@ -563,12 +563,12 @@ public:
     int32 getIndexByTime(int32 time_in) const;
     
     void setValuesAtTime(int32 time_in,
-                         TMap<FString, meshBone *>& bone_map);
+                         TMap<FName, meshBone *>& bone_map);
     
     void retrieveValuesAtTime(float time_in,
-                              TMap<FString, meshBone *>& bone_map);
+                              TMap<FName, meshBone *>& bone_map);
     
-    std::pair<glm::vec4, glm::vec4> retrieveSingleBoneValueAtTime(const FString& key_in,
+    std::pair<glm::vec4, glm::vec4> retrieveSingleBoneValueAtTime(const FName& key_in,
                                                                   float time_in);
     
     bool allReady();
@@ -619,21 +619,21 @@ public:
     int32 getIndexByTime(int32 time_in) const;
     
     void setValuesAtTime(int32 time_in,
-                         TMap<FString,meshRenderRegion *>& regions_map);
+                         TMap<FName,meshRenderRegion *>& regions_map);
     
     void retrieveValuesAtTime(float time_in,
-                              TMap<FString, meshRenderRegion *>& regions_map);
+                              TMap<FName, meshRenderRegion *>& regions_map);
     
-    void retrieveSingleDisplacementValueAtTime(const FString& key_in,
+    void retrieveSingleDisplacementValueAtTime(const FName& key_in,
                                                float time_in,
                                                meshRenderRegion * region);
     
-    void retrieveSingleDisplacementValueNoRegionAtTime(const FString& key_in,
+    void retrieveSingleDisplacementValueNoRegionAtTime(const FName& key_in,
                                                        float time_in,
                                                        meshRenderRegion * region,
                                                        TArray<glm::vec2>& out_displacements);
 
-    void retrieveSingleDisplacementValueDirectAtTime(const FString& key_in,
+    void retrieveSingleDisplacementValueDirectAtTime(const FName& key_in,
                                                      float time_in,
                                                      TArray<glm::vec2>& out_local_displacements,
                                                      TArray<glm::vec2>& out_post_displacements);
@@ -686,10 +686,10 @@ public:
     int32 getIndexByTime(int32 time_in) const;
     
     void setValuesAtTime(int32 time_in,
-                         TMap<FString, meshRenderRegion *>& regions_map);
+                         TMap<FName, meshRenderRegion *>& regions_map);
     
     void retrieveValuesAtTime(float time_in,
-                              TMap<FString, meshRenderRegion *>& regions_map);
+                              TMap<FName, meshRenderRegion *>& regions_map);
     
     void retrieveSingleValueAtTime(float time_in,
                                    meshRenderRegion * region,
@@ -745,10 +745,10 @@ public:
 	int32 getIndexByTime(int32 time_in) const;
 
 	void setValuesAtTime(int32 time_in,
-		TMap<FString, meshRenderRegion *>& regions_map);
+		TMap<FName, meshRenderRegion *>& regions_map);
 
 	void retrieveValuesAtTime(float time_in,
-		TMap<FString, meshRenderRegion *>& regions_map);
+		TMap<FName, meshRenderRegion *>& regions_map);
 
 	void retrieveSingleValueAtTime(float time_in,
 		meshRenderRegion * region,

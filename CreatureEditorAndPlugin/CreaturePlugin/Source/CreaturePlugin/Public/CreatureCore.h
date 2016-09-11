@@ -88,10 +88,10 @@ public:
 	FProceduralMeshTriData GetProcMeshData();
 
 	// Loads a data packet from a file
-	static bool LoadDataPacket(const FString& filename_in);
+	static bool LoadDataPacket(const FName& filename_in);
 
 	// Loads a data packet from a string in memory
-	static bool LoadDataPacket(const FString& filename_in,FString* pSourceData);
+	static bool LoadDataPacket(const FName& filename_in,FString* pSourceData);
 
 	// Frees up memory from loading the data packets, this will force the reparsing of JSON strings if
 	// the asset is requested again
@@ -99,13 +99,13 @@ public:
 
 	//////////////////////////////////////////////////////////////////////////
 	// Loads an animation from a file
-	static void LoadAnimation(const FString& filename_in, const FString& name_in);
+	static void LoadAnimation(const FName& filename_in, const FName& name_in);
 
 	// Loads the creature character from a file
-	TArray<FProceduralMeshTriangle>& LoadCreature(const FString& filename_in);
+	TArray<FProceduralMeshTriangle>& LoadCreature(const FName& filename_in);
 
 	// Adds a loaded animation onto the creature character
-	bool AddLoadedAnimation(const FString& filename_in, const FString& name_in);
+	bool AddLoadedAnimation(const FName& filename_in, const FName& name_in);
 
 	// Returns the CreatureManager associated with this actor
 	CreatureModule::CreatureManager * GetCreatureManager();
@@ -158,10 +158,10 @@ public:
 	bool RunTick(float delta_time);
 
 	// Sets the an active animation by name
-	void SetActiveAnimation(const FString& name_in);
+	void SetActiveAnimation(const FName& name_in);
 
 	// Sets the active animation by smoothly blending, factor is a range of ( 0 < factor < 1 )
-	void SetAutoBlendActiveAnimation(const FString& name_in, float factor);
+	void SetAutoBlendActiveAnimation(const FName& name_in, float factor);
 
 	void SetIsDisabled(bool flag_in);
 
@@ -175,10 +175,10 @@ public:
 
 	glm::uint32 * GetIndicesCopy(int init_size);
 
-	std::vector<meshBone *> getAllChildrenWithIgnore(const FString& ignore_name, meshBone * base_bone = nullptr);
+	std::vector<meshBone *> getAllChildrenWithIgnore(const FName& ignore_name, meshBone * base_bone = nullptr);
 
 	// properties
-	FString creature_filename, creature_asset_filename;
+	FName creature_filename, creature_asset_filename;
 
 	float bone_data_size;
 
@@ -188,7 +188,7 @@ public:
 
 	bool smooth_transitions;
 
-	FString start_animation_name;
+	FName start_animation_name;
 
 	float animation_frame;
 
@@ -204,7 +204,7 @@ public:
 
 	TArray<FName> region_custom_order;
 
-	FString absolute_creature_filename;
+	FName absolute_creature_filename;
 
 	bool should_play, is_looping;
 

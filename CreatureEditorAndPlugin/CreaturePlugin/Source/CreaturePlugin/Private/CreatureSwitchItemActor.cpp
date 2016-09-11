@@ -226,7 +226,7 @@ ACreatureSwitchItemActor:: InitSwitchRenderData()
 			for (auto& cur_region_pair : regions_map)
 			{
 				auto cur_region = cur_region_pair.Value;
-				if (cur_region->getName() == find_name)
+				if (cur_region->getName() == FName(*find_name))
 				{
 					// init render mesh
 					real_switch_region = cur_region;

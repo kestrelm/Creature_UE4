@@ -10,10 +10,17 @@ class CREATUREPLUGIN_API UCreatureAnimStateMachineInstance : public UObject
 public:
 	UCreatureAnimStateMachineInstance();
 
-	UFUNCTION(BlueprintCallable, Category = "Creature")
+	UFUNCTION(BlueprintCallable, Category = "Creature", meta = (DeprecatedFunction, DeprecationMessage = "Please replace with SetConditionByName to improve performance"))
 	void SetCondition(FString ConditionName, bool Flag);
 
+	UFUNCTION(BlueprintCallable, Category = "Creature", meta = (DeprecatedFunction, DeprecationMessage = "Please replace with _Name version of this function to improve performance"))
 	bool GetCondition(FString conditionName) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Creature")
+	void SetConditionByName(FName ConditionName, bool Flag);
+
+	UFUNCTION(BlueprintCallable, Category = "Creature")
+	bool GetConditionByName(FName conditionName) const;
 
 	void InitInstance(class UCreatureAnimStateMachine* forStateMachine);
 

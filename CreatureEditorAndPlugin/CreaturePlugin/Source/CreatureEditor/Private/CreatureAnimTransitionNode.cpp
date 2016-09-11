@@ -5,7 +5,7 @@
 #include "EdGraph/EdGraph.h"
 FText UCreatureAnimTransitionNode::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
-	return FText::FromString(TransitionCondition);
+	return FText::FromName(TransitionCondition);
 }
 
 FLinearColor UCreatureAnimTransitionNode::GetNodeTitleColor() const
@@ -27,7 +27,7 @@ void  UCreatureAnimTransitionNode::PostEditChangeProperty(FPropertyChangedEvent&
 UCreatureAnimTransitionNode::UCreatureAnimTransitionNode()
 	:Super()
 {
-	TransitionCondition = TEXT("DefaultTransition");
+	TransitionCondition = FName(TEXT("DefaultTransition"));
 	TransitionFlag = false;
 	NodeWidth = 20;
 

@@ -3,7 +3,7 @@
 #include "CreatureAnimationAsset.h"
 #include "CreatureCore.h"
 
-FString UCreatureAnimationAsset::GetCreatureFilename() const
+FName UCreatureAnimationAsset::GetCreatureFilename() const
 {
 #if WITH_EDITORONLY_DATA
 	TArray<FString> filenames;
@@ -13,7 +13,7 @@ FString UCreatureAnimationAsset::GetCreatureFilename() const
 	}
 	if (filenames.Num() > 0)
 	{
-		return filenames[0];
+		return FName(*filenames[0]);
 	}
 	else
 	{
@@ -102,7 +102,7 @@ void UCreatureAnimationAsset::LoadPointCacheForClip(const FName &animName, class
 	const FCreatureAnimationDataCache *cacheForAnim = GetDataCacheForClip(animName);
 	if (cacheForAnim && forCore->GetCreatureManager())
 	{
-		CreatureModule::CreatureAnimation *anim = forCore->GetCreatureManager()->GetAnimation(animName.ToString());
+		CreatureModule::CreatureAnimation *anim = forCore->GetCreatureManager()->GetAnimation(animName);
 		if (anim == nullptr || anim->hasCachePts())
 		{
 			return;
@@ -144,22 +144,22 @@ void UCreatureAnimationAsset::Serialize(FArchive& Ar)
 }
 
 #if WITH_EDITORONLY_DATA
-void UCreatureAnimationAsset::SetCreatureFilename(const FString &newFilename)
+void UCreatureAnimationAsset::SetCreatureFilename(const FName &newFilename)
 {
-	AssetImportData->UpdateFilenameOnly(newFilename);
+	AssetImportData->UpdateFilenameOnly(newFilename.ToString());
 
 	// extract again to ensure properly sanitised
 	TArray<FString> filenames;
 	AssetImportData->ExtractFilenames(filenames);
 	if (filenames.Num() > 0)
 	{
-		creature_filename = filenames[0];
+		creature_filename = FName(*filenames[0]);
 	}
 }
 
 void UCreatureAnimationAsset::GetAssetRegistryTags(TArray<FAssetRegistryTag>& OutTags) const
 {
-	if (!creature_filename.IsEmpty())
+	if (creature_filename != NAME_None)
 	{
 		OutTags.Add(FAssetRegistryTag(SourceFileTagName(), AssetImportData->GetSourceData().ToJson(), FAssetRegistryTag::TT_Hidden));
 	}
@@ -171,11 +171,11 @@ void UCreatureAnimationAsset::PostLoad()
 {
 	Super::PostLoad();
 
-	if (!creature_filename.IsEmpty() && AssetImportData && AssetImportData->GetSourceData().SourceFiles.Num() == 0)
+	if (!creature_filename.IsNone() && AssetImportData && AssetImportData->GetSourceData().SourceFiles.Num() == 0)
 	{
 		// convert old source file path to proper UE4 Asset data system
 		FAssetImportInfo Info;
-		Info.Insert(FAssetImportInfo::FSourceFile(creature_filename));
+		Info.Insert(FAssetImportInfo::FSourceFile(creature_filename.ToString()));
 		AssetImportData->SourceData = MoveTemp(Info);
 	}
 
@@ -215,13 +215,11 @@ void UCreatureAnimationAsset::GatherAnimationData()
 
 	for (auto& cur_name : all_animation_names)
 	{
-		FName animName(*cur_name);
-
 		CreatureModule::CreatureAnimation *anim = creature_core.GetCreatureManager()->GetAnimation(cur_name);
 		if (ensure(anim))
 		{
 			FCreatureAnimationDataCache &animDataCache = m_dataCache[m_dataCache.AddZeroed(1)];
-			animDataCache.m_animationName = animName;
+			animDataCache.m_animationName = cur_name;
 			animDataCache.m_length = anim->getEndTime() - anim->getStartTime();
 
 			if (m_pointsCacheApproximationLevel >= 0)

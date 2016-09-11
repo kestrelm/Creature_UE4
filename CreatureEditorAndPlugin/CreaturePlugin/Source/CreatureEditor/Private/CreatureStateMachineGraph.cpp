@@ -60,7 +60,7 @@ void UCreatureStateMachineGraph::CreateDefaultStateNode()
 		NewStateNode->NodePosX = 0;
 		NewStateNode->NodePosY = 0;
 		NewStateNode->InputPins.Add(NewStateNode->CreatePin(EEdGraphPinDirection::EGPD_Output, FEdGraphPinType(), TEXT("Output")));
-		NewStateNode->AnimName = FString(TEXT("Default"));
+		NewStateNode->AnimName = FName(TEXT("Default"));
 		DefaultRootNode = NewStateNode;
 		AddNode(NewStateNode, true, false);
 	}

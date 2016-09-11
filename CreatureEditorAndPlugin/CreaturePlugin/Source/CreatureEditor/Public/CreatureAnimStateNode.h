@@ -23,7 +23,7 @@ public:
 	TArray<FEdGraphPinReference> OutputPins;
 
 	UPROPERTY(EditAnyWhere, Category = "CreaturePlugin")
-	FString AnimName;
+	FName AnimName;
 
 	UPROPERTY()
 	UCreatureAnimState* CompiledState;
