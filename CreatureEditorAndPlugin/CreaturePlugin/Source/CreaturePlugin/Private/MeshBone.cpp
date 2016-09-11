@@ -1485,6 +1485,7 @@ meshBoneCacheManager::retrieveSingleBoneValueAtTime(const FName& key_in,
 	}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     TArray<meshBoneCache>& base_cache = bone_cache_table[base_time];
     TArray<meshBoneCache>& end_cache = bone_cache_table[end_time];
     
@@ -1500,12 +1501,17 @@ meshBoneCacheManager::retrieveSingleBoneValueAtTime(const FName& key_in,
             glm::vec4 final_world_end_pt = ((1.0f - ratio) * base_data.getWorldEndPt()) +
                                                 (ratio * end_data.getWorldEndPt());
 =======
+=======
+>>>>>>> refs/remotes/kestrelm/master
 	if ((bone_cache_data_ready[base_time] == false)
 		|| (bone_cache_data_ready[final_time] == false))
 	{
 		return ret_data;
 	}
+<<<<<<< HEAD
 >>>>>>> 7e21e2fb9b4e25265336c9a7093c09fd34548cb1
+=======
+>>>>>>> refs/remotes/kestrelm/master
 
 	TArray<meshBoneCache>& base_cache = bone_cache_table[base_time];
 	TArray<meshBoneCache>& end_cache = bone_cache_table[final_time];
