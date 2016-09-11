@@ -1473,7 +1473,7 @@ meshBoneCacheManager::retrieveValuesAtTime(float time_in,
 
 std::pair<glm::vec4, glm::vec4>
 meshBoneCacheManager::retrieveSingleBoneValueAtTime(const FName& key_in,
-                                                    float time_in)
+	float time_in)
 {
 	int32 base_time = getIndexByTime((int32)floorf(time_in));
 	int32 final_time = getIndexByTime((int32)ceilf(time_in));
@@ -1484,34 +1484,11 @@ meshBoneCacheManager::retrieveSingleBoneValueAtTime(const FName& key_in,
 		return ret_data;
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    TArray<meshBoneCache>& base_cache = bone_cache_table[base_time];
-    TArray<meshBoneCache>& end_cache = bone_cache_table[end_time];
-    
-    for(auto i = 0; i < base_cache.Num(); i++) {
-        const meshBoneCache& base_data = base_cache[i];
-        const meshBoneCache& end_data = end_cache[i];
-        const FName& cur_key = base_data.getKey();
-        
-        if(cur_key == key_in) {
-            glm::vec4 final_world_start_pt = ((1.0f - ratio) * base_data.getWorldStartPt()) +
-                                                (ratio * end_data.getWorldStartPt());
-            
-            glm::vec4 final_world_end_pt = ((1.0f - ratio) * base_data.getWorldEndPt()) +
-                                                (ratio * end_data.getWorldEndPt());
-=======
-=======
->>>>>>> refs/remotes/kestrelm/master
 	if ((bone_cache_data_ready[base_time] == false)
 		|| (bone_cache_data_ready[final_time] == false))
 	{
 		return ret_data;
 	}
-<<<<<<< HEAD
->>>>>>> 7e21e2fb9b4e25265336c9a7093c09fd34548cb1
-=======
->>>>>>> refs/remotes/kestrelm/master
 
 	TArray<meshBoneCache>& base_cache = bone_cache_table[base_time];
 	TArray<meshBoneCache>& end_cache = bone_cache_table[final_time];
@@ -1519,7 +1496,7 @@ meshBoneCacheManager::retrieveSingleBoneValueAtTime(const FName& key_in,
 	for (auto i = 0; i < base_cache.Num(); i++) {
 		const meshBoneCache& base_data = base_cache[i];
 		const meshBoneCache& end_data = end_cache[i];
-		const FString& cur_key = base_data.getKey();
+		const FName& cur_key = base_data.getKey();
 
 		if (cur_key == key_in) {
 			glm::vec4 final_world_start_pt = ((1.0f - ratio) * base_data.getWorldStartPt()) +
