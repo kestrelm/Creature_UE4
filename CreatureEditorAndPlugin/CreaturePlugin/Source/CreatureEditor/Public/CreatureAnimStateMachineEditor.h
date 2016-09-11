@@ -8,8 +8,8 @@
 class FCreatureAnimStateMachineEditor :public FAssetEditorToolkit{
 public:
 	//IToolKitInterface
-	virtual void RegisterTabSpawners(const TSharedRef<class FTabManager>& TabManager) override;
-	virtual void UnregisterTabSpawners(const TSharedRef<class FTabManager>& TabManager) override;
+	virtual void RegisterTabSpawners(const TSharedRef<class FTabManager>& TabManagerIn) override;
+	virtual void UnregisterTabSpawners(const TSharedRef<class FTabManager>& TabManagerIn) override;
 	//EndIToolKitInterface
 
 	// FAssetEditorToolkit

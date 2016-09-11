@@ -306,25 +306,6 @@ void ACreatureActor::Tick(float DeltaTime)
 
 		creature_mesh->SetTagString(GetName());
 		creature_mesh->ForceAnUpdate();
-
-		// Debug
-
-		if (creature_debug_draw) {
-			FSphere debugSphere = creature_mesh->GetDebugBoundsSphere();
-			DrawDebugSphere(
-				GetWorld(),
-				debugSphere.Center,
-				debugSphere.W,
-				32,
-				FColor(255, 0, 0)
-				);
-
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Sphere pos is: (%f, %f, %f)"), debugSphere.Center.X, debugSphere.Center.Y, debugSphere.Center.Z));
-			FTransform wTransform = GetTransform();
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Walk pos is: (%f, %f, %f)"), wTransform.GetLocation().X,
-				wTransform.GetLocation().Y,
-				wTransform.GetLocation().Z));
-		}
 	}
 }
 

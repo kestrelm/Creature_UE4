@@ -72,7 +72,22 @@ CreatureCore::CreatureCore()
 	should_process_animation_end = false;
 	should_update_render_indices = false;
 	meta_data = nullptr;
+	global_indices_copy = nullptr;
 	update_lock = new std::mutex();
+}
+
+CreatureCore::~CreatureCore()
+{
+	ClearMemory();
+}
+
+void 
+CreatureCore::ClearMemory()
+{
+	if (global_indices_copy)
+	{
+		delete[] global_indices_copy;
+	}
 }
 
 bool 
@@ -1047,11 +1062,10 @@ glm::uint32 * CreatureCore::GetIndicesCopy(int init_size)
 {
 	if (!global_indices_copy)
 	{
-		global_indices_copy = std::shared_ptr<glm::uint32>(new glm::uint32[init_size],
-			std::default_delete<glm::uint32[]>());
+		global_indices_copy = new glm::uint32[init_size];
 	}
 
-	return global_indices_copy.get();
+	return global_indices_copy;
 }
 
 std::vector<meshBone *> 

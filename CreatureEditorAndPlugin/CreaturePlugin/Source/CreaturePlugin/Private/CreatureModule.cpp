@@ -705,12 +705,18 @@ namespace CreatureModule {
     
     Creature::~Creature()
     {
-        delete global_pts;
-        delete global_indices;
-        delete global_uvs;
-        delete render_colours;
+        delete [] global_pts;
+        delete [] global_indices;
+        delete [] global_uvs;
+        delete [] render_colours;
         delete render_composition;
-        delete render_pts;
+        delete [] render_pts;
+
+		global_pts = nullptr;
+		global_indices = nullptr;
+		global_uvs = nullptr;
+		render_composition = nullptr;
+		render_pts = nullptr;
     }
     
     glm::uint32 *
@@ -1075,7 +1081,7 @@ namespace CreatureModule {
     {
         for(int32 i = 0; i < 2; i++) {
             if(blend_render_pts[i] != NULL) {
-                delete blend_render_pts[i];
+                delete [] blend_render_pts[i];
             }
         }
     }

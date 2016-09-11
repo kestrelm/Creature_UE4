@@ -282,16 +282,16 @@ UCreaturePackMeshComponent::doCreatureMeshUpdate(int render_packet_idx)
 	ForceAnUpdate(render_packet_idx);
 
 	if (creature_debug_draw) {
-		FSphere debugSphere = GetDebugBoundsSphere();
+		FSphere tmpDebugSphere = GetDebugBoundsSphere();
 		DrawDebugSphere(
 			GetWorld(),
-			debugSphere.Center,
-			debugSphere.W,
+			tmpDebugSphere.Center,
+			tmpDebugSphere.W,
 			32,
 			FColor(255, 0, 0)
 			);
 
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Sphere pos is: (%f, %f, %f)"), debugSphere.Center.X, debugSphere.Center.Y, debugSphere.Center.Z));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Sphere pos is: (%f, %f, %f)"), tmpDebugSphere.Center.X, tmpDebugSphere.Center.Y, tmpDebugSphere.Center.Z));
 		FTransform wTransform = GetComponentToWorld();
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Walk pos is: (%f, %f, %f)"), wTransform.GetLocation().X,
 			wTransform.GetLocation().Y,

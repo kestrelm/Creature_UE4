@@ -106,9 +106,9 @@ void UCreaturePackAnimationAsset::GatherAnimationData()
 	GetFileData();
 }
 
-void UCreaturePackAnimationAsset::PreSave()
+void UCreaturePackAnimationAsset::PreSave(const class ITargetPlatform* TargetPlatform)
 {
-	Super::PreSave();
+	Super::PreSave(TargetPlatform);
 
 	// before saving, always ensure animation data is up to date
 	GatherAnimationData();
