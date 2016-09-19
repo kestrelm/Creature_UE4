@@ -1,7 +1,5 @@
 #include "CreatureEditorPCH.h"
 #include "CreatureAnimGraphSchema.h"
-#include "AnimStateNode.h"
-#include "AnimStateConduitNode.h"
 #include "EdGraph/EdGraph.h"
 #include "CreatureAnimStateNode.h"
 #include "GenericCommands.h"

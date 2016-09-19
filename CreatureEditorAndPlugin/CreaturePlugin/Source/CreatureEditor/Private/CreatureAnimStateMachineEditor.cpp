@@ -107,11 +107,6 @@ FString FCreatureAnimStateMachineEditor::GetWorldCentricTabPrefix() const
 	return TEXT("StateMachineEditor");
 }
 
-FString FCreatureAnimStateMachineEditor::GetDocumentationLink() const
-{
-	return TEXT("Engine/Paper2D/TileMapEditor");
-}
-
 void FCreatureAnimStateMachineEditor::OnToolkitHostingStarted(const TSharedRef< class IToolkit >& Toolkit)
 {
 	
