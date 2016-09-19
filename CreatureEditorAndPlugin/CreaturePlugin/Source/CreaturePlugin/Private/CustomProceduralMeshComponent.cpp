@@ -197,7 +197,7 @@ FCProceduralMeshSceneProxy::FCProceduralMeshSceneProxy(UCustomProceduralMeshComp
 	MaterialRelevance(Component->GetMaterialRelevance(GetScene().GetFeatureLevel()))
 {
 	parentComponent = Component;
-	needs_updating = false;
+	needs_updating = true;
 	needs_index_updating = false;
 	active_render_packet_idx = INDEX_NONE;
 
