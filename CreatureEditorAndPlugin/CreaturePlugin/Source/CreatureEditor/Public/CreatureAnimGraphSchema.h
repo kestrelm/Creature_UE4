@@ -6,7 +6,6 @@
 
 #include "Engine.h"
 #include "EdGraph/EdGraphSchema.h"
-#include "AnimationStateMachineSchema.h"
 #include "CreatureAnimGraphSchema.generated.h"
 #pragma  once
 
