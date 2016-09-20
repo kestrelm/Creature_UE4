@@ -109,7 +109,7 @@ CreatureCore::GetAndClearShouldAnimEnd()
 }
 
 FProceduralMeshTriData 
-CreatureCore::GetProcMeshData()
+CreatureCore::GetProcMeshData(EWorldType::Type world_type)
 {
 	if (!creature_manager.Get())
 	{
@@ -135,6 +135,14 @@ CreatureCore::GetProcMeshData()
 	if (region_alphas.Num() != num_points)
 	{
 		region_alphas.SetNum(num_points);
+	}
+
+	if ((world_type == EWorldType::Type::Editor) || (world_type == EWorldType::Type::Preview))
+	{
+		for (auto i = 0; i < region_alphas.Num(); i++)
+		{
+			region_alphas[i] = 255;
+		}
 	}
 
 	FProceduralMeshTriData ret_data(copy_indices,

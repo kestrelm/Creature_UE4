@@ -390,7 +390,7 @@ void UCreatureMeshComponent::UpdateCoreValues()
 void UCreatureMeshComponent::PrepareRenderData(CreatureCore &forCore)
 {
 	RecreateRenderProxy(true);
-	SetProceduralMeshTriData(forCore.GetProcMeshData());
+	SetProceduralMeshTriData(forCore.GetProcMeshData(GetWorld()->WorldType));
 }
 
 void UCreatureMeshComponent::InitializeComponent()
@@ -838,7 +838,7 @@ FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
 	// Loop through and add in the collectionData
 	for (auto& cur_data : collectionData)
 	{
-		auto proc_mesh_data = cur_data.creature_core.GetProcMeshData();
+		auto proc_mesh_data = cur_data.creature_core.GetProcMeshData(GetWorld()->WorldType);
 		if (proc_mesh_data.point_num > 0) {
 			Proxy->AddRenderPacket(&proc_mesh_data);
 		}
@@ -894,7 +894,7 @@ void UCreatureMeshComponent::LoadAnimationFromStore()
 		// Loop through and add in the collectionData
 		for (auto& cur_data : collectionData)
 		{
-			auto proc_mesh_data = cur_data.creature_core.GetProcMeshData();
+			auto proc_mesh_data = cur_data.creature_core.GetProcMeshData(GetWorld()->WorldType);
 			if (proc_mesh_data.point_num > 0)
 			{
 				localRenderProxy->AddRenderPacket(&proc_mesh_data);
