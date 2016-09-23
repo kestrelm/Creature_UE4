@@ -896,6 +896,9 @@ void UCreatureMeshComponent::BeginPlay()
 	{
 		cur_data.creature_core.SetGlobalEnablePointCache(can_use_point_cache);
 	}
+
+	creature_core.creature_manager->ResetToStartTimes();
+	ResetFrameCallbacks();
 }
 
 void UCreatureMeshComponent::LoadAnimationFromStore()
