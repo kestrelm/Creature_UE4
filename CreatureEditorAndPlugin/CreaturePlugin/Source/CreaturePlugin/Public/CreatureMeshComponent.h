@@ -185,7 +185,7 @@ struct FCreatureFrameCallback {
 		}
 		
 		auto triggerFrame = (float)frame;
-		if(triggerFrame > oldFrame && triggerFrame <= currentFrame)
+		if(triggerFrame >= oldFrame && triggerFrame <= currentFrame)
 		{
 			triggered = true;
 			return true;
