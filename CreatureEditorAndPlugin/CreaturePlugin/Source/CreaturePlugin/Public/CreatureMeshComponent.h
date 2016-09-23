@@ -165,7 +165,7 @@ USTRUCT()
 struct FCreatureFrameCallback {
 	GENERATED_USTRUCT_BODY()
 	FCreatureFrameCallback()
-		: triggered(false)
+		: triggered(false), accuracy(1.5f)
 	{}
 
 	void resetCallback(float frameIn)
@@ -176,16 +176,16 @@ struct FCreatureFrameCallback {
 
 	bool tryTrigger(float frameIn)
 	{
-		auto oldFrame = (float)currentFrame;
 		currentFrame = (int32)frameIn;
 
 		if (triggered)
 		{
 			return false;
 		}
+
+		auto frame_diff = fabs(frameIn - (float)frame);
 		
-		auto triggerFrame = (float)frame;
-		if(triggerFrame > oldFrame && triggerFrame <= currentFrame)
+		if(frame_diff <= accuracy)
 		{
 			triggered = true;
 			return true;
@@ -205,6 +205,10 @@ struct FCreatureFrameCallback {
 	/** Frame to trigger event*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	int32 frame;
+
+	/** What frame difference is required before the trigger is fired. A recommended value is 1.0 to 1.5 frame difference */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	float accuracy;
 
 	bool triggered;
 	int32 currentFrame;
