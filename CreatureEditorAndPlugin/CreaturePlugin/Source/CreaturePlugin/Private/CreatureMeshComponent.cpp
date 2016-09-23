@@ -1425,7 +1425,7 @@ void UCreatureMeshComponent::ResetFrameCallbacks()
 {
 	for (auto& frame_callback : frame_callbacks)
 	{
-		frame_callback.resetCallback(creature_core.creature_manager->getRunTime());
+		frame_callback.resetCallback();
 	}
 
 	for (auto& frame_callback : repeat_frame_callbacks)
