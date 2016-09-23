@@ -160,107 +160,9 @@ struct FCreatureBoneIK  {
 	bool children_ready;
 };
 
-// Frame/Time Event callback structs
-USTRUCT()
-struct FCreatureFrameCallback {
-	GENERATED_USTRUCT_BODY()
-	FCreatureFrameCallback()
-		: triggered(false)
-	{}
-
-	void resetCallback()
-	{
-		triggered = false;
-	}
-
-	bool tryTrigger(float frameIn)
-	{
-		if (triggered)
-		{
-			return false;
-		}
-
-		if ((int32)roundf(frameIn) >= frame)
-		{
-			triggered = true;
-			return true;
-		}
-
-		return false;
-	}
-
-	/** Name of callback event*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	FName name;
-
-	/** Name of animation clip to associate this callback with*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	FName animClipName;
-
-	/** Frame to trigger event*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	int32 frame;
-
-	bool triggered;
-};
-
-USTRUCT()
-struct FCreatureRepeatFrameCallback {
-	GENERATED_USTRUCT_BODY()
-	FCreatureRepeatFrameCallback()
-		: currentFrame(0), triggeredFrame(0), startFrame(0)
-	{}
-
-	void resetCallback(float frameIn)
-	{
-		currentFrame = (int32)roundf(frameIn);
-		startFrame = currentFrame + offsetFrame;
-		triggeredFrame = currentFrame - 1;
-	}
-
-
-	bool tryTrigger(float frameIn)
-	{
-		currentFrame = (int32)roundf(frameIn);
-		if (currentFrame - startFrame >= repeatFrames)
-		{
-			if (triggeredFrame != currentFrame)
-			{
-				startFrame = currentFrame;
-				triggeredFrame = currentFrame;
-				return true;
-			}
-
-			return false;
-		}
-
-		return false;
-	}
-
-	/** Name of callback event*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	FName name;
-
-	/** Name of animation clip to associate this callback with*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	FName animClipName;
-
-	/** How many frames pass before the event triggers and repeats itself */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	int32 repeatFrames;
-
-	/** When does the repeat event start offset by the specificed number of frames */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	int32 offsetFrame;
-
-	int32 currentFrame, triggeredFrame, startFrame;
-};
-
 // Blueprint event delegates event declarations
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCreatureMeshAnimationStartEvent, float, frame);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCreatureMeshAnimationEndEvent, float, frame);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCreatureFrameCallbackEvent, FName, name);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCreatureRepeatFrameCallbackEvent, FName, name);
 
 /** Component that allows you to specify custom triangle mesh geometry */
 //////////////////////////////////////////////////////////////////////////
@@ -354,14 +256,6 @@ public:
 	/** Event that is triggered when the animation ends */
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
 	FCreatureMeshAnimationEndEvent CreatureAnimationEndEvent;
-
-	/** Event that is triggered when custom specific frame callbacks are assigned*/
-	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
-	FCreatureFrameCallbackEvent CreatureFrameCallbackEvent;
-
-	/** Event that is repeatedly triggered when custom repeated frame callbacks are assigned */
-	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
-	FCreatureRepeatFrameCallbackEvent CreatureRepeatFrameCallbackEvent;
 
 	// Returns the CreatureManager associated with this actor
 	CreatureModule::CreatureManager * GetCreatureManager();
@@ -541,22 +435,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void RemoveBluePrintBonesIKConstraint(FCreatureBoneIK ik_data_in);
 
-	// Blueprint function that sets the custom frame callbacks
-	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void SetBluePrintFrameCallbacks(const TArray<FCreatureFrameCallback>& callbacks_in);
-
-	// Blueprint function that clears the list of custom frame callbacks
-	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void ClearBluePrintFrameCallbacks();
-
-	// Blueprint function that sets the custom repeated frame callbacks
-	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void SetBluePrintRepeatFrameCallbacks(const TArray<FCreatureRepeatFrameCallback>& callbacks_in);
-
-	// Blueprint function that clears the list of custom repeated frame callbacks
-	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void ClearBluePrintRepeatFrameCallbacks();
-
 	// Frees up some memory associated with loading of ALL Creature JSONs. Any loading of additional characters after this call will force a re-parsing of the JSON data. Use this function to free up memory when characters have all been instantiated on the level.
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void FreeBluePrintJSONMemory();
@@ -597,8 +475,6 @@ protected:
 	TArray<FCreatureBoneOverride> bones_override_list, final_bones_override_list;
 	TMap<FName, FCreatureBoneIK> internal_ik_map;
 	TMap<FName, std::pair<glm::vec4, glm::vec4> > internal_ik_bone_pts;
-	TArray<FCreatureFrameCallback> frame_callbacks;
-	TArray<FCreatureRepeatFrameCallback> repeat_frame_callbacks;
 
 	void InitStandardValues();
 
@@ -634,10 +510,6 @@ protected:
 		const FName& start_bone_name,
 		const FName& end_bone_name,
 		TArray<FCreatureBoneOverride>& mod_list);
-
-	void ResetFrameCallbacks();
-
-	void ProcessFrameCallbacks();
 
 
 	//////////////////////////////////////////////////////////////////////////
