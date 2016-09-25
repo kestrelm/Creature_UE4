@@ -998,11 +998,13 @@ bool CreatureCore::GetUseAnchorPoints() const
 {
 	return creature_manager->GetCreature()->GetAnchorPointsActive();
 }
+
 void
 CreatureCore::SetActiveAnimation(const FName& name_in)
 {
 	SCOPE_CYCLE_COUNTER(STAT_CreatureCore_SetActiveAnimation);
 	creature_manager->SetActiveAnimationName(name_in);
+	creature_manager->SetAutoBlending(false);
 }
 
 void 
@@ -1027,9 +1029,9 @@ CreatureCore::SetAutoBlendActiveAnimation(const FName& name_in, float factor)
 	if (smooth_transitions == false)
 	{
 		smooth_transitions = true;
-		creature_manager->SetAutoBlending(true);
 	}
 
+	creature_manager->SetAutoBlending(true);
 	creature_manager->AutoBlendTo(name_in, factor);
 }
 

@@ -1436,7 +1436,7 @@ void UCreatureMeshComponent::ResetFrameCallbacks()
 
 void UCreatureMeshComponent::ProcessFrameCallbacks()
 {
-	auto cur_runtime = creature_core.creature_manager->getRunTime();
+	auto cur_runtime = creature_core.creature_manager->getActualRunTime();
 	for (auto& frame_callback : frame_callbacks)
 	{
 		if (frame_callback.animClipName == creature_core.creature_manager->GetActiveAnimationName()) {
