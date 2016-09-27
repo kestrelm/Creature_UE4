@@ -916,7 +916,7 @@ CreatureCore::SetBluePrintAnimationResetToStart()
 		float cur_runtime = (creature_manager->getActualRunTime());
 		animation_frame = cur_runtime;
 
-		creature_manager->Update(0.001f);
+		creature_manager->Update(0.0f);
 	}
 
 	play_start_done = false;
@@ -932,7 +932,7 @@ void CreatureCore::SetBluePrintAnimationResetToEnd()
 		creature_manager->setRunTime(cur_runtime);
 		animation_frame = cur_runtime;
 
-		creature_manager->Update(0.001f);
+		creature_manager->Update(0.0f);
 	}
 
 	play_start_done = false;
