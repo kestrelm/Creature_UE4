@@ -452,6 +452,7 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 
 		float cur_runtime = (creature_core.GetCreatureManager()->getActualRunTime());
 		animation_frame = cur_runtime;
+		DoCreatureMeshUpdate();
 
 		if (announce_start)
 		{
@@ -462,8 +463,6 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 		{
 			CreatureAnimationEndEvent.Broadcast(cur_runtime);
 		}
-
-		DoCreatureMeshUpdate();
 	}
 
 }
