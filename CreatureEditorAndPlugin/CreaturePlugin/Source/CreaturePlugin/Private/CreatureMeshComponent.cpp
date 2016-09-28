@@ -140,8 +140,10 @@ UCreatureMeshComponent::SetBluePrintAnimationPlay(bool flag_in)
 void 
 UCreatureMeshComponent::SetBluePrintAnimationPlayFromStart()
 {
+	core_lock.Lock();
 	creature_core.SetBluePrintAnimationPlayFromStart();
-
+	core_lock.Unlock();
+	
 	if (enable_collection_playback && active_collection_clip)
 	{
 		SetBluePrintAnimationResetToStart();
@@ -151,6 +153,8 @@ UCreatureMeshComponent::SetBluePrintAnimationPlayFromStart()
 
 void UCreatureMeshComponent::SetBluePrintAnimationResetToStart()
 {
+	FScopeLock scope_lock(&core_lock);
+
 	creature_core.SetBluePrintAnimationResetToStart();
 
 	if (enable_collection_playback && active_collection_clip)
@@ -415,6 +419,7 @@ void UCreatureMeshComponent::InitializeComponent()
 
 void UCreatureMeshComponent::RunTick(float DeltaTime)
 {
+	FScopeLock scope_lock(&core_lock);
 	SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_Tick);
 
 	UpdateCoreValues();
