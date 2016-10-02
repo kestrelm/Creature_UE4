@@ -549,6 +549,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void ClearBluePrintFrameCallbacks();
 
+	// Blueprint function to load custom frame callbacks from the meta asset file authored from the Creature Editor
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void LoadBlueprintFramCallBacksAsset();
+
 	// Blueprint function that sets the custom repeated frame callbacks
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintRepeatFrameCallbacks(const TArray<FCreatureRepeatFrameCallback>& callbacks_in);

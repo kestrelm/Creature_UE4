@@ -1042,6 +1042,31 @@ void UCreatureMeshComponent::ClearBluePrintFrameCallbacks()
 	frame_callbacks.Empty();
 }
 
+void 
+UCreatureMeshComponent::LoadBlueprintFramCallBacksAsset()
+{
+	if (creature_meta_asset)
+	{
+		TArray<FCreatureFrameCallback> set_callbacks;
+		for (auto& cur_data : creature_meta_asset->GetMetaData()->anim_events_map)
+		{
+			FCreatureFrameCallback new_callback;
+			new_callback.animClipName = FName(*cur_data.Key);
+
+			auto& cur_value = cur_data.Value;
+			for (auto& event_data : cur_value)
+			{
+				new_callback.name = FName(*event_data.Value);
+				new_callback.frame = event_data.Key;
+
+				set_callbacks.Add(new_callback);
+			}
+		}
+
+		SetBluePrintFrameCallbacks(set_callbacks);
+	}
+}
+
 void UCreatureMeshComponent::SetBluePrintRepeatFrameCallbacks(const TArray<FCreatureRepeatFrameCallback>& callbacks_in)
 {
 	repeat_frame_callbacks = callbacks_in;

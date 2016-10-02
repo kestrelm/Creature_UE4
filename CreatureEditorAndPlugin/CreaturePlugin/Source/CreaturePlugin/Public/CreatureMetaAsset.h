@@ -27,7 +27,7 @@ public:
 		auto cur_order = sampleOrder(anim_name, time_in);
 		if(cur_order)
 		{
-			has_data = (cur_order->size() > 0);
+			has_data = (cur_order->Num() > 0);
 		}
 
 		if (has_data)
@@ -47,8 +47,8 @@ public:
 
 				// Write indices
 				auto& mesh_data = mesh_map[region_id];
-				auto num_write_indices = mesh_data.second - mesh_data.first + 1;
-				auto region_src_ptr = src_indices + mesh_data.first;
+				auto num_write_indices = mesh_data.Get<1>() - mesh_data.Get<0>() + 1;
+				auto region_src_ptr = src_indices + mesh_data.Get<0>();
 				total_num_write_indices += num_write_indices;
 
 				if (total_num_write_indices > num_indices)
@@ -64,8 +64,8 @@ public:
 
 				// Write points
 				{
-					int start_idx = mesh_data.first;
-					int end_idx = mesh_data.second;
+					int start_idx = mesh_data.Get<0>();
+					int end_idx = mesh_data.Get<1>();
 					
 					if ((int)src_indices[end_idx] < num_pts)
 					{
@@ -86,7 +86,7 @@ public:
 		}
 	}
 
-	std::vector<int> * sampleOrder(const FString& anim_name, int32 time_in)
+	TArray<int32> * sampleOrder(const FString& anim_name, int32 time_in)
 	{
 		if (anim_order_map.Contains(anim_name))
 		{
@@ -112,8 +112,9 @@ public:
 		return nullptr;
 	}
 
-	TMap<int, std::pair<int, int>> mesh_map;
-	TMap<FString, TMap<int, std::vector<int> >> anim_order_map;
+	TMap<int, TTuple<int32, int32>> mesh_map;
+	TMap<FString, TMap<int32, TArray<int32> >> anim_order_map;
+	TMap<FString, TMap<int32, FString> > anim_events_map;
 };
 
 UCLASS()
