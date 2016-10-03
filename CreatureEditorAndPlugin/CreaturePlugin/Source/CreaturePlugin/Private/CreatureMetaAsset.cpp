@@ -76,11 +76,11 @@ UCreatureMetaAsset::BuildMetaData()
 				auto cur_obj_array = cur_data.Value->AsArray();
 				for (auto cur_events_json : cur_obj_array)
 				{
-					auto events_obj = cur_events_json->AsObject();
-					auto event_name = events_obj->GetStringField(TEXT("event_name"));
-					auto switch_time = events_obj->GetIntegerField(TEXT("switch_time"));
+					auto cur_events_obj = cur_events_json->AsObject();
+					auto cur_event_name = cur_events_obj->GetStringField(TEXT("event_name"));
+					auto switch_time = cur_events_obj->GetIntegerField(TEXT("switch_time"));
 
-					cur_events_map.Add(switch_time, event_name);
+					cur_events_map.Add(switch_time, cur_event_name);
 				}
 
 				meta_data.anim_events_map.Add(cur_anim_name, cur_events_map);
