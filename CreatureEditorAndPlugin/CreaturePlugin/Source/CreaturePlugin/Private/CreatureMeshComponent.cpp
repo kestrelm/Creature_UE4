@@ -37,31 +37,37 @@ UCreatureMeshComponent::UCreatureMeshComponent(const FObjectInitializer& ObjectI
 void UCreatureMeshComponent::SetBluePrintActiveAnimation(FString name_in)
 {
 	creature_core.SetBluePrintActiveAnimation(FName(*name_in));
+	ResetFrameCallbacks();
 }
 
 void UCreatureMeshComponent::SetBluePrintActiveAnimation_Name(FName name_in)
 {
 	creature_core.SetBluePrintActiveAnimation(name_in);
+	ResetFrameCallbacks();
 }
 
 void UCreatureMeshComponent::SetBluePrintBlendActiveAnimation(FString name_in, float factor)
 {
 	creature_core.SetBluePrintBlendActiveAnimation(FName(*name_in), factor);
+	ResetFrameCallbacks();
 }
 
 void UCreatureMeshComponent::SetBluePrintBlendActiveAnimation_Name(FName name_in, float factor)
 {
 	creature_core.SetBluePrintBlendActiveAnimation(name_in, factor);
+	ResetFrameCallbacks();
 }
 
 void UCreatureMeshComponent::SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time)
 {
 	creature_core.SetBluePrintAnimationCustomTimeRange(FName(*name_in), start_time, end_time);
+	ResetFrameCallbacks();
 }
 
 void UCreatureMeshComponent::SetBluePrintAnimationCustomTimeRange_Name(FName name_in, int32 start_time, int32 end_time)
 {
 	creature_core.SetBluePrintAnimationCustomTimeRange(name_in, start_time, end_time);
+	ResetFrameCallbacks();
 }
 
 void UCreatureMeshComponent::MakeBluePrintPointCache(FString name_in, int32 approximation_level)
@@ -134,8 +140,10 @@ UCreatureMeshComponent::SetBluePrintAnimationPlay(bool flag_in)
 void 
 UCreatureMeshComponent::SetBluePrintAnimationPlayFromStart()
 {
+	core_lock.Lock();
 	creature_core.SetBluePrintAnimationPlayFromStart();
-
+	core_lock.Unlock();
+	
 	if (enable_collection_playback && active_collection_clip)
 	{
 		SetBluePrintAnimationResetToStart();
@@ -145,6 +153,8 @@ UCreatureMeshComponent::SetBluePrintAnimationPlayFromStart()
 
 void UCreatureMeshComponent::SetBluePrintAnimationResetToStart()
 {
+	FScopeLock scope_lock(&core_lock);
+
 	creature_core.SetBluePrintAnimationResetToStart();
 
 	if (enable_collection_playback && active_collection_clip)
@@ -153,6 +163,8 @@ void UCreatureMeshComponent::SetBluePrintAnimationResetToStart()
 		auto cur_data = GetCollectionDataFromClip(active_collection_clip);
 		cur_data->creature_core.SetBluePrintAnimationResetToStart();
 	}
+
+	ResetFrameCallbacks();
 }
 
 float 
@@ -390,7 +402,7 @@ void UCreatureMeshComponent::UpdateCoreValues()
 void UCreatureMeshComponent::PrepareRenderData(CreatureCore &forCore)
 {
 	RecreateRenderProxy(true);
-	SetProceduralMeshTriData(forCore.GetProcMeshData());
+	SetProceduralMeshTriData(forCore.GetProcMeshData(GetWorld()->WorldType));
 }
 
 void UCreatureMeshComponent::InitializeComponent()
@@ -407,6 +419,7 @@ void UCreatureMeshComponent::InitializeComponent()
 
 void UCreatureMeshComponent::RunTick(float DeltaTime)
 {
+	FScopeLock scope_lock(&core_lock);
 	SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_Tick);
 
 	UpdateCoreValues();
@@ -416,6 +429,25 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 		return;
 	}
 
+	// Frame Callback events, if any
+	if ((GetWorld()->WorldType != EWorldType::Type::Editor) &&
+		(GetWorld()->WorldType != EWorldType::Type::Preview))
+	{
+		if (CreatureFrameCallbackEvent.IsBound() || CreatureRepeatFrameCallbackEvent.IsBound()) {
+			const auto& cur_animation_name = creature_core.GetCreatureManager()->GetActiveAnimationName();
+			auto cur_animation = creature_core.GetCreatureManager()->GetAnimation(cur_animation_name);
+			auto diff_runtime = fabs(creature_core.GetCreatureManager()->getActualRunTime() - cur_animation->getStartTime());
+			const auto small_num = 0.0001f;
+			if (diff_runtime <= small_num)
+			{
+				ResetFrameCallbacks();
+			}
+
+			ProcessFrameCallbacks();
+		}
+	}
+
+	// Run the animation
 	bool can_tick = creature_core.RunTick(DeltaTime * animation_speed);
 
 	if (can_tick) {
@@ -425,6 +457,7 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 
 		float cur_runtime = (creature_core.GetCreatureManager()->getActualRunTime());
 		animation_frame = cur_runtime;
+		DoCreatureMeshUpdate();
 
 		if (announce_start)
 		{
@@ -435,8 +468,6 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 		{
 			CreatureAnimationEndEvent.Broadcast(cur_runtime);
 		}
-
-		DoCreatureMeshUpdate();
 	}
 
 }
@@ -838,7 +869,7 @@ FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
 	// Loop through and add in the collectionData
 	for (auto& cur_data : collectionData)
 	{
-		auto proc_mesh_data = cur_data.creature_core.GetProcMeshData();
+		auto proc_mesh_data = cur_data.creature_core.GetProcMeshData(GetWorld()->WorldType);
 		if (proc_mesh_data.point_num > 0) {
 			Proxy->AddRenderPacket(&proc_mesh_data);
 		}
@@ -894,7 +925,7 @@ void UCreatureMeshComponent::LoadAnimationFromStore()
 		// Loop through and add in the collectionData
 		for (auto& cur_data : collectionData)
 		{
-			auto proc_mesh_data = cur_data.creature_core.GetProcMeshData();
+			auto proc_mesh_data = cur_data.creature_core.GetProcMeshData(GetWorld()->WorldType);
 			if (proc_mesh_data.point_num > 0)
 			{
 				localRenderProxy->AddRenderPacket(&proc_mesh_data);
@@ -999,6 +1030,51 @@ UCreatureMeshComponent::RemoveBluePrintBonesIKConstraint(FCreatureBoneIK ik_data
 	if (internal_ik_map.Contains(cur_key)) {
 		internal_ik_map.Remove(cur_key);
 	}
+}
+
+void UCreatureMeshComponent::SetBluePrintFrameCallbacks(const TArray<FCreatureFrameCallback>& callbacks_in)
+{
+	frame_callbacks = callbacks_in;
+}
+
+void UCreatureMeshComponent::ClearBluePrintFrameCallbacks()
+{
+	frame_callbacks.Empty();
+}
+
+void 
+UCreatureMeshComponent::LoadBlueprintFramCallBacksAsset()
+{
+	if (creature_meta_asset)
+	{
+		TArray<FCreatureFrameCallback> set_callbacks;
+		for (auto& cur_data : creature_meta_asset->GetMetaData()->anim_events_map)
+		{
+			FCreatureFrameCallback new_callback;
+			new_callback.animClipName = FName(*cur_data.Key);
+
+			auto& cur_value = cur_data.Value;
+			for (auto& event_data : cur_value)
+			{
+				new_callback.name = FName(*event_data.Value);
+				new_callback.frame = event_data.Key;
+
+				set_callbacks.Add(new_callback);
+			}
+		}
+
+		SetBluePrintFrameCallbacks(set_callbacks);
+	}
+}
+
+void UCreatureMeshComponent::SetBluePrintRepeatFrameCallbacks(const TArray<FCreatureRepeatFrameCallback>& callbacks_in)
+{
+	repeat_frame_callbacks = callbacks_in;
+}
+
+void UCreatureMeshComponent::ClearBluePrintRepeatFrameCallbacks()
+{
+	repeat_frame_callbacks.Empty();
 }
 
 FName
@@ -1374,6 +1450,44 @@ void UCreatureMeshComponent::FreeBluePrintJSONMemory()
 	UE_LOG(LogTemp, Warning, TEXT("UCreatureMeshComponent::FreeBluePrintJSONMemory() - Freed up JSON Memory Data."));
 }
 
+void UCreatureMeshComponent::ResetFrameCallbacks()
+{
+	for (auto& frame_callback : frame_callbacks)
+	{
+		frame_callback.resetCallback();
+	}
+
+	for (auto& frame_callback : repeat_frame_callbacks)
+	{
+		frame_callback.resetCallback(creature_core.creature_manager->getRunTime());
+	}
+}
+
+void UCreatureMeshComponent::ProcessFrameCallbacks()
+{
+	auto cur_runtime = creature_core.creature_manager->getActualRunTime();
+	for (auto& frame_callback : frame_callbacks)
+	{
+		if (frame_callback.animClipName == creature_core.creature_manager->GetActiveAnimationName()) {
+			auto should_trigger = frame_callback.tryTrigger(cur_runtime);
+			if (should_trigger && CreatureFrameCallbackEvent.IsBound())
+			{
+				CreatureFrameCallbackEvent.Broadcast(frame_callback.name);
+			}
+		}
+	}
+
+	for (auto& frame_callback : repeat_frame_callbacks)
+	{
+		if (frame_callback.animClipName == creature_core.creature_manager->GetActiveAnimationName()) {
+			auto should_trigger = frame_callback.tryTrigger(cur_runtime);
+			if (should_trigger && CreatureRepeatFrameCallbackEvent.IsBound())
+			{
+				CreatureRepeatFrameCallbackEvent.Broadcast(frame_callback.name);
+			}
+		}
+	}
+}
 
 #if __clang__
 #pragma clang diagnostic pop

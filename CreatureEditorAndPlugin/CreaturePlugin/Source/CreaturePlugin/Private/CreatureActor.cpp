@@ -77,7 +77,7 @@ void ACreatureActor::UpdateCoreValues()
 void ACreatureActor::PrepareRenderData()
 {
 	creature_mesh->RecreateRenderProxy(true);
-	creature_mesh->SetProceduralMeshTriData(creature_core.GetProcMeshData());
+	creature_mesh->SetProceduralMeshTriData(creature_core.GetProcMeshData(GetWorld()->WorldType));
 }
 
 void ACreatureActor::OnConstruction(const FTransform & Transform)

@@ -37,6 +37,7 @@
 
 #include "CustomProceduralMeshComponent.h"
 #include "CreatureModule.h"
+#include <Runtime/Engine/Classes/Engine/EngineTypes.h>
 #include <vector>
 #include <mutex>
 #include <memory>
@@ -85,7 +86,7 @@ public:
 
 	void ProcessRenderRegions();
 
-	FProceduralMeshTriData GetProcMeshData();
+	FProceduralMeshTriData GetProcMeshData(EWorldType::Type world_type);
 
 	// Loads a data packet from a file
 	static bool LoadDataPacket(const FName& filename_in);

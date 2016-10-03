@@ -109,7 +109,7 @@ CreatureCore::GetAndClearShouldAnimEnd()
 }
 
 FProceduralMeshTriData 
-CreatureCore::GetProcMeshData()
+CreatureCore::GetProcMeshData(EWorldType::Type world_type)
 {
 	if (!creature_manager.Get())
 	{
@@ -135,6 +135,14 @@ CreatureCore::GetProcMeshData()
 	if (region_alphas.Num() != num_points)
 	{
 		region_alphas.SetNum(num_points);
+	}
+
+	if ((world_type == EWorldType::Type::Editor) || (world_type == EWorldType::Type::Preview))
+	{
+		for (auto i = 0; i < region_alphas.Num(); i++)
+		{
+			region_alphas[i] = 255;
+		}
 	}
 
 	FProceduralMeshTriData ret_data(copy_indices,
@@ -908,7 +916,7 @@ CreatureCore::SetBluePrintAnimationResetToStart()
 		float cur_runtime = (creature_manager->getActualRunTime());
 		animation_frame = cur_runtime;
 
-		creature_manager->Update(0.001f);
+		creature_manager->Update(0.0f);
 	}
 
 	play_start_done = false;
@@ -924,7 +932,7 @@ void CreatureCore::SetBluePrintAnimationResetToEnd()
 		creature_manager->setRunTime(cur_runtime);
 		animation_frame = cur_runtime;
 
-		creature_manager->Update(0.001f);
+		creature_manager->Update(0.0f);
 	}
 
 	play_start_done = false;
@@ -990,11 +998,13 @@ bool CreatureCore::GetUseAnchorPoints() const
 {
 	return creature_manager->GetCreature()->GetAnchorPointsActive();
 }
+
 void
 CreatureCore::SetActiveAnimation(const FName& name_in)
 {
 	SCOPE_CYCLE_COUNTER(STAT_CreatureCore_SetActiveAnimation);
 	creature_manager->SetActiveAnimationName(name_in);
+	creature_manager->SetAutoBlending(false);
 }
 
 void 
@@ -1019,9 +1029,9 @@ CreatureCore::SetAutoBlendActiveAnimation(const FName& name_in, float factor)
 	if (smooth_transitions == false)
 	{
 		smooth_transitions = true;
-		creature_manager->SetAutoBlending(true);
 	}
 
+	creature_manager->SetAutoBlending(true);
 	creature_manager->AutoBlendTo(name_in, factor);
 }
 
