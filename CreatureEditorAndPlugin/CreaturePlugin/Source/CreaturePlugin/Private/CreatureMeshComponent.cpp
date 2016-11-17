@@ -431,7 +431,7 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 
 	// Frame Callback events, if any
 	if ((GetWorld()->WorldType != EWorldType::Type::Editor) &&
-		(GetWorld()->WorldType != EWorldType::Type::Preview))
+		(GetWorld()->WorldType != EWorldType::Type::EditorPreview))
 	{
 		if (CreatureFrameCallbackEvent.IsBound() || CreatureRepeatFrameCallbackEvent.IsBound()) {
 			const auto& cur_animation_name = creature_core.GetCreatureManager()->GetActiveAnimationName();
