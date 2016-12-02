@@ -347,6 +347,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	float bones_override_blend_factor;
 
+	/** A boolean flag that completely disables tick execution on this component */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	bool completely_disable;
+
 	/** Event that is triggered when the animation starts */
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
 	FCreatureMeshAnimationStartEvent CreatureAnimationStartEvent;

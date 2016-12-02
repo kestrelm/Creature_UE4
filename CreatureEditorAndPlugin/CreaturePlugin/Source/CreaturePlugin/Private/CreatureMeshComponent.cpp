@@ -372,6 +372,7 @@ void UCreatureMeshComponent::InitStandardValues()
 	creature_meta_asset = nullptr;
 	can_use_point_cache = false;
 	bones_override_blend_factor = 1.0f;
+	completely_disable = false;
 
 	// Generate a single dummy triangle
 	/*
@@ -694,7 +695,7 @@ void UCreatureMeshComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if ((GetOwner() && GetOwner()->bHidden) || bHiddenInGame)
+	if ((GetOwner() && GetOwner()->bHidden) || bHiddenInGame || completely_disable)
 	{
 		return;
 	}
