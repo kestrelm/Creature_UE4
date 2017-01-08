@@ -7,6 +7,17 @@
 #include "CustomProceduralMeshComponent.h"
 #include "Runtime/Launch/Resources/Version.h"
 
+DECLARE_DWORD_COUNTER_STAT(TEXT("Creature Mesh Tris"), STAT_CreatureMeshTriangles, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("ProceduralMeshSceneProxy_GetDynamicMeshElements"), STAT_ProceduralMeshSceneProxy_GetDynamicMeshElements, STATGROUP_Creature);
+
+static TAutoConsoleVariable<int32> CVarShowCreatureMeshes(
+	TEXT("creature.ShowMeshes"),
+	1,
+	TEXT("Toggles a 'ShowFlag' for creature meshes.\n")
+	TEXT("0: hidden\n")
+	TEXT("1: rendered"),
+	ECVF_RenderThreadSafe);
+
 /** Vertex Buffer */
 class FProceduralMeshVertexBuffer : public FVertexBuffer
 {
@@ -401,6 +412,15 @@ void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScen
 	uint32 VisibilityMap,
 	FMeshElementCollector& Collector) const
 {
+	SCOPE_CYCLE_COUNTER(STAT_ProceduralMeshSceneProxy_GetDynamicMeshElements);
+
+	int32 showFlag = CVarShowCreatureMeshes.GetValueOnAnyThread();
+	if (showFlag == 0)
+	{
+		// creature mesh rendering is disabled
+		return;
+	}
+
 	if (active_render_packet_idx < 0)
 	{
 		return;
@@ -425,9 +445,7 @@ void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScen
 	}
 
 	(const_cast<FCProceduralMeshSceneProxy*>(this))->DoneUpdating();
-
-	QUICK_SCOPE_CYCLE_COUNTER(STAT_ProceduralMeshSceneProxy_GetDynamicMeshElements);
-
+	
 	const bool bWireframe = AllowDebugViewmodes() && ViewFamily.EngineShowFlags.Wireframe;
 
 	auto WireframeMaterialInstance = new FColoredMaterialRenderProxy(
@@ -470,6 +488,8 @@ void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScen
 			Mesh.DepthPriorityGroup = SDPG_World;
 			Mesh.bCanApplyViewModeOverrides = false;
 			Collector.AddMesh(ViewIndex, Mesh);
+
+			INC_DWORD_STAT_BY(STAT_CreatureMeshTriangles, Mesh.GetNumPrimitives());
 		}
 		
 		RenderBounds(Collector.GetPDI(ViewIndex), EngineShowFlags, GetBounds(), !parentComponent || !parentComponent->GetOwner() || IsSelected());
