@@ -372,6 +372,8 @@ void UCreatureMeshComponent::InitStandardValues()
 	creature_meta_asset = nullptr;
 	can_use_point_cache = false;
 	bones_override_blend_factor = 1.0f;
+	completely_disable = false;
+	fixed_timestep = 0.0f;
 
 	// Generate a single dummy triangle
 	/*
@@ -431,7 +433,7 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 
 	// Frame Callback events, if any
 	if ((GetWorld()->WorldType != EWorldType::Type::Editor) &&
-		(GetWorld()->WorldType != EWorldType::Type::Preview))
+		(GetWorld()->WorldType != EWorldType::Type::EditorPreview))
 	{
 		if (CreatureFrameCallbackEvent.IsBound() || CreatureRepeatFrameCallbackEvent.IsBound()) {
 			const auto& cur_animation_name = creature_core.GetCreatureManager()->GetActiveAnimationName();
@@ -448,7 +450,7 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 	}
 
 	// Run the animation
-	bool can_tick = creature_core.RunTick(DeltaTime * animation_speed);
+	bool can_tick = creature_core.RunTick(DeltaTime);
 
 	if (can_tick) {
 		// Events
@@ -694,7 +696,7 @@ void UCreatureMeshComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if ((GetOwner() && GetOwner()->bHidden) || bHiddenInGame)
+	if ((GetOwner() && GetOwner()->bHidden) || bHiddenInGame || completely_disable)
 	{
 		return;
 	}
@@ -713,7 +715,14 @@ void UCreatureMeshComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 	}
 	else {
 		if (creature_core.GetCreatureManager()) {
-			RunTick(DeltaTime);
+			auto real_delta_time = DeltaTime * animation_speed;
+			
+			if (fixed_timestep > 0.0f)
+			{
+				real_delta_time = fixed_timestep;
+			}
+			
+			RunTick(real_delta_time);
 		}
 	}
 }

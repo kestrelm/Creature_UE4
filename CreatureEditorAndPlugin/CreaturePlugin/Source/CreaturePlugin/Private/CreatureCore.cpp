@@ -137,7 +137,7 @@ CreatureCore::GetProcMeshData(EWorldType::Type world_type)
 		region_alphas.SetNum(num_points);
 	}
 
-	if ((world_type == EWorldType::Type::Editor) || (world_type == EWorldType::Type::Preview))
+	if ((world_type == EWorldType::Type::Editor) || (world_type == EWorldType::Type::EditorPreview))
 	{
 		for (auto i = 0; i < region_alphas.Num(); i++)
 		{
