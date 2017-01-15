@@ -28,6 +28,31 @@ std::string ConvertToString(FName name)
 	return t;
 }
 
+typedef std::chrono::high_resolution_clock Time;
+static auto profileTimeStart = Time::now();
+static auto profileTimeEnd = Time::now();
+
+static void StartProfileTimer()
+{
+	typedef std::chrono::milliseconds ms;
+	typedef std::chrono::duration<float> fsec;
+
+	profileTimeStart = Time::now();
+}
+
+static float StopProfileTimer()
+{
+	typedef std::chrono::milliseconds ms;
+	typedef std::chrono::duration<float> fsec;
+
+	profileTimeEnd = Time::now();
+
+	fsec fs = profileTimeEnd - profileTimeStart;
+	ms d = std::chrono::duration_cast<ms>(fs);
+	auto time_passed_fs = fs.count();
+	return time_passed_fs * 1000.0f;
+}
+
 CreatureCore::CreatureCore()
 {
 	pJsonData = nullptr;
@@ -48,7 +73,7 @@ CreatureCore::CreatureCore()
 	should_update_render_indices = false;
 	meta_data = nullptr;
 	global_indices_copy = nullptr;
-	update_lock = TSharedPtr<FCriticalSection, ESPMode::ThreadSafe>(new FCriticalSection());
+	update_lock = new std::mutex();
 }
 
 CreatureCore::~CreatureCore()
@@ -62,7 +87,6 @@ CreatureCore::ClearMemory()
 	if (global_indices_copy)
 	{
 		delete[] global_indices_copy;
-		global_indices_copy = nullptr;
 	}
 }
 
@@ -693,13 +717,6 @@ CreatureCore::SetBluePrintBlendActiveAnimation(FName name_in, float factor)
 void 
 CreatureCore::SetBluePrintAnimationCustomTimeRange(FName name_in, int32 start_time, int32 end_time)
 {
-	auto cur_creature_manager = GetCreatureManager();
-	if (!cur_creature_manager)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CreatureCore::SetBluePrintAnimationCustomTimeRange() - ERROR! no CreatureManager"), *name_in.ToString());
-		return;
-	}
-
 	auto cur_str = name_in;
 	auto all_animations = creature_manager->GetAllAnimations();
 	if (all_animations.Contains(cur_str))
@@ -715,7 +732,7 @@ CreatureCore::MakeBluePrintPointCache(FName name_in, int32 approximation_level)
 	auto cur_creature_manager = GetCreatureManager();
 	if (!cur_creature_manager)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("CreatureCore::MakeBluePrintPointCache - ERROR! Could not generate point cache for %s"), *name_in.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("ACreatureActor::MakeBluePrintPointCache() - ERROR! Could not generate point cache for %s"), *name_in.ToString());
 		return;
 	}
 
@@ -746,7 +763,7 @@ CreatureCore::ClearBluePrintPointCache(FName name_in, int32 approximation_level)
 }
 
 FTransform 
-CreatureCore::GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, FTransform base_transform) const
+CreatureCore::GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, FTransform base_transform)
 {
 	FTransform ret_xform;
 	for (size_t i = 0; i < bone_data.Num(); i++)
@@ -834,7 +851,7 @@ CreatureCore::RunTick(float delta_time)
 {
 	SCOPE_CYCLE_COUNTER(STAT_CreatureCore_RunTick);
 
-	FScopeLock scope_lock(update_lock.Get());
+	std::lock_guard<std::mutex> scope_lock(*update_lock);
 
 	if (is_driven)
 	{
@@ -887,8 +904,6 @@ CreatureCore::SetBluePrintAnimationPlay(bool flag_in)
 void 
 CreatureCore::SetBluePrintAnimationPlayFromStart()
 {
-	FScopeLock scope_lock(update_lock.Get());
-
 	SetBluePrintAnimationResetToStart();
 	SetBluePrintAnimationPlay(true);
 }
@@ -896,8 +911,6 @@ CreatureCore::SetBluePrintAnimationPlayFromStart()
 void 
 CreatureCore::SetBluePrintAnimationResetToStart()
 {
-	FScopeLock scope_lock(update_lock.Get());
-
 	if (creature_manager.Get()) {
 		creature_manager->ResetToStartTimes();
 		float cur_runtime = (creature_manager->getActualRunTime());

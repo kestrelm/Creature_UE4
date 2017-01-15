@@ -583,7 +583,7 @@ protected:
     int32 start_time, end_time;
     bool is_ready;
     
-    FCriticalSection data_lock;
+    std::mutex data_lock;
 };
 
 class meshDisplacementCacheManager {
@@ -650,7 +650,7 @@ protected:
     int32 start_time, end_time;
     bool is_ready;
     
-	FCriticalSection data_lock;
+    std::mutex data_lock;
 };
 
 class meshUVWarpCacheManager {
@@ -709,7 +709,7 @@ protected:
     int32 start_time, end_time;
     bool is_ready;
     
-	FCriticalSection data_lock;
+    std::mutex data_lock;
 };
 
 class meshOpacityCacheManager {
@@ -766,7 +766,7 @@ protected:
 	int32 start_time, end_time;
 	bool is_ready;
 
-	FCriticalSection data_lock;
+	std::mutex data_lock;
 };
 
 

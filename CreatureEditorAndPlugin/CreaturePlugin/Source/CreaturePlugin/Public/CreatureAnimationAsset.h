@@ -64,7 +64,6 @@ public:
 	virtual void Serialize(FArchive& Ar) override;
 
 #if WITH_EDITORONLY_DATA
-	FName UpdateAndGetCreatureFilename();
 	void SetCreatureFilename(const FName &newFilename);
 	void GetAssetRegistryTags(TArray<FAssetRegistryTag>& OutTags) const override;
 	void PostLoad() override;

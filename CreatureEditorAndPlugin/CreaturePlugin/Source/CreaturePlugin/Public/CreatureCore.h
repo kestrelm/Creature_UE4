@@ -39,6 +39,7 @@
 #include "CreatureModule.h"
 #include <Runtime/Engine/Classes/Engine/EngineTypes.h>
 #include <vector>
+#include <mutex>
 #include <memory>
 
 // Creature Core is a thin wrapper between the Creature Runtime and any UE4 Creature Object(s)
@@ -120,7 +121,7 @@ public:
 
 	void ClearBluePrintPointCache(FName name_in, int32 approximation_level);
 
-	FTransform GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, FTransform base_transform) const;
+	FTransform GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, FTransform base_transform);
 
 	bool IsBluePrintBonesCollide(FVector test_point, float bone_size, FTransform base_transform);
 
@@ -222,7 +223,7 @@ public:
 
 	bool should_update_render_indices;
 
-	TSharedPtr<FCriticalSection, ESPMode::ThreadSafe> update_lock;
+	std::mutex * update_lock;
 
 	//////////////////////////////////////////////////////////////////////////
 	//Add by God of Pen
