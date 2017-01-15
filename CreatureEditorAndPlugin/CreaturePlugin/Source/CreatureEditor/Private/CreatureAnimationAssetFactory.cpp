@@ -43,7 +43,7 @@ UObject* UCreatureAnimationAssetFactory::FactoryCreateNew(UClass* Class, UObject
 
 bool UCreatureAnimationAssetFactory::ImportSourceFile(UCreatureAnimationAsset *forAsset) const
 {
-	FString creatureFilename = forAsset->GetCreatureFilename().ToString();
+	FString creatureFilename = forAsset->UpdateAndGetCreatureFilename().ToString();
 	if (forAsset == nullptr || creatureFilename.IsEmpty())
 	{
 		return false;
@@ -93,7 +93,7 @@ bool UCreatureAnimationAssetFactory::CanReimport(UObject* Obj, TArray<FString>& 
 	UCreatureAnimationAsset* asset = Cast<UCreatureAnimationAsset>(Obj);
 	if (asset)
 	{
-		FString filename = asset->GetCreatureFilename().ToString();
+		FString filename = asset->UpdateAndGetCreatureFilename().ToString();
 		if (!filename.IsEmpty())
 		{
 			OutFilenames.Add(filename);

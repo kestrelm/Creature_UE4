@@ -38,7 +38,6 @@
 
 #pragma once
 
-#include <mutex>
 #include <vector>
 #include "CustomProceduralMeshComponent.h"
 #include "CreatureAnimationAsset.h"
@@ -438,7 +437,7 @@ public:
 	// determines how far left or right the transform is placed. The default value of 0 places it
 	// in the center of the bone, positve values places it to the right, negative to the left
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	FTransform GetBluePrintBoneXform_Name(FName name_in, bool world_transform, float position_slide_factor);
+	FTransform GetBluePrintBoneXform_Name(FName name_in, bool world_transform, float position_slide_factor) const;
 
 	// Blueprint function that decides whether the animation will loop or not
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
@@ -611,7 +610,6 @@ protected:
 	TMap<FName, std::pair<glm::vec4, glm::vec4> > internal_ik_bone_pts;
 	TArray<FCreatureFrameCallback> frame_callbacks;
 	TArray<FCreatureRepeatFrameCallback> repeat_frame_callbacks;
-	FCriticalSection core_lock;
 
 	void InitStandardValues();
 
@@ -657,4 +655,5 @@ protected:
 	//Change by God of Pen
 	//////////////////////////////////////////////////////////////////////////
 	void LoadAnimationFromStore();
+
 };
