@@ -23,6 +23,7 @@
 
 
 DECLARE_CYCLE_STAT(TEXT("CreatureMesh_Tick"), STAT_CreatureMesh_Tick, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("CreatureMesh_AsyncTick"), STAT_CreatureMesh_Tick_Async, STATGROUP_Creature);
 DECLARE_CYCLE_STAT(TEXT("CreatureMesh_UpdateCoreValues"), STAT_CreatureMesh_UpdateCoreValues, STATGROUP_Creature);
 DECLARE_CYCLE_STAT(TEXT("CreatureMesh_MeshUpdate"), STAT_CreatureMesh_MeshUpdate, STATGROUP_Creature);
 
@@ -105,7 +106,7 @@ FTransform UCreatureMeshComponent::GetBluePrintBoneXform(FString name_in, bool w
 	return creature_core.GetBluePrintBoneXform(FName(*name_in), world_transform, position_slide_factor, GetComponentToWorld());
 }
 
-FTransform UCreatureMeshComponent::GetBluePrintBoneXform_Name(FName name_in, bool world_transform, float position_slide_factor)
+FTransform UCreatureMeshComponent::GetBluePrintBoneXform_Name(FName name_in, bool world_transform, float position_slide_factor) const
 {
 	return creature_core.GetBluePrintBoneXform(name_in, world_transform, position_slide_factor, GetComponentToWorld());
 }
@@ -140,9 +141,7 @@ UCreatureMeshComponent::SetBluePrintAnimationPlay(bool flag_in)
 void 
 UCreatureMeshComponent::SetBluePrintAnimationPlayFromStart()
 {
-	core_lock.Lock();
 	creature_core.SetBluePrintAnimationPlayFromStart();
-	core_lock.Unlock();
 	
 	if (enable_collection_playback && active_collection_clip)
 	{
@@ -153,8 +152,6 @@ UCreatureMeshComponent::SetBluePrintAnimationPlayFromStart()
 
 void UCreatureMeshComponent::SetBluePrintAnimationResetToStart()
 {
-	FScopeLock scope_lock(&core_lock);
-
 	creature_core.SetBluePrintAnimationResetToStart();
 
 	if (enable_collection_playback && active_collection_clip)
@@ -387,9 +384,12 @@ void UCreatureMeshComponent::UpdateCoreValues()
 {
 	SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_UpdateCoreValues);
 
+	FScopeLock scope_lock(creature_core.update_lock.Get());
+
 	creature_core.creature_filename = creature_filename;
 
-	if (creature_animation_asset) {
+	if (creature_animation_asset && creature_core.creature_asset_filename != creature_animation_asset->GetCreatureFilename())
+	{
 		creature_core.pJsonData = &creature_animation_asset->GetJsonString();
 		creature_core.creature_asset_filename = creature_animation_asset->GetCreatureFilename();
 
@@ -421,7 +421,6 @@ void UCreatureMeshComponent::InitializeComponent()
 
 void UCreatureMeshComponent::RunTick(float DeltaTime)
 {
-	FScopeLock scope_lock(&core_lock);
 	SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_Tick);
 
 	UpdateCoreValues();
@@ -449,28 +448,39 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 		}
 	}
 
-	// Run the animation
-	bool can_tick = creature_core.RunTick(DeltaTime);
+	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [this, DeltaTime]()
+	{
+		SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_Tick_Async)
 
-	if (can_tick) {
-		// Events
-		bool announce_start = creature_core.GetAndClearShouldAnimStart();
-		bool announce_end = creature_core.GetAndClearShouldAnimEnd();
+		// Run the animation
+		bool can_tick = creature_core.RunTick(DeltaTime);
 
-		float cur_runtime = (creature_core.GetCreatureManager()->getActualRunTime());
-		animation_frame = cur_runtime;
-		DoCreatureMeshUpdate();
-
-		if (announce_start)
+		if (can_tick)
 		{
-			CreatureAnimationStartEvent.Broadcast(cur_runtime);
-		}
+			// Events
+			bool announce_start = creature_core.GetAndClearShouldAnimStart();
+			bool announce_end = creature_core.GetAndClearShouldAnimEnd();
 
-		if (announce_end)
-		{
-			CreatureAnimationEndEvent.Broadcast(cur_runtime);
+			float cur_runtime = (creature_core.GetCreatureManager()->getActualRunTime());
+
+			animation_frame = cur_runtime;
+			DoCreatureMeshUpdate();
+
+			AsyncTask(ENamedThreads::GameThread, [this, cur_runtime, announce_end, announce_start]()
+			{
+				if (announce_start)
+				{
+					CreatureAnimationStartEvent.Broadcast(cur_runtime);
+				}
+
+				if (announce_end)
+				{
+					CreatureAnimationEndEvent.Broadcast(cur_runtime);
+				}
+			});
+
 		}
-	}
+	});
 
 }
 
@@ -609,6 +619,8 @@ void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx)
 {
 	SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_MeshUpdate);
 
+	FScopeLock cur_lock(&local_lock);
+
 	FCProceduralMeshSceneProxy *localRenderProxy = GetLocalRenderProxy();
 	if (localRenderProxy)
 	{
@@ -621,6 +633,7 @@ void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx)
 
 	ForceAnUpdate(render_packet_idx);
 
+#if !UE_BUILD_SHIPPING
 	// Debug
 
 	if (creature_debug_draw) {
@@ -660,6 +673,7 @@ void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx)
 			DrawDebugString(GetWorld(), (world_pt1 + world_pt2) * 0.5f, cur_bone->getKey().ToString());
 		}
 	}
+#endif
 }
 
 int 
@@ -869,7 +883,7 @@ FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
 	}
 
 
-	std::lock_guard<std::mutex> cur_lock(local_lock);
+	FScopeLock cur_lock(&local_lock);
 
 	FCProceduralMeshSceneProxy* Proxy = NULL;
 	// Only if have enough triangles
