@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <mutex>
 #include  <glm/glm.hpp>
 #include "CustomProceduralMeshComponent.generated.h"
 
@@ -24,7 +25,7 @@ public:
 		int32 point_num_in,
 		int32 indices_num_in,
 		TArray<uint8> * region_alphas_in,
-		TSharedPtr<FCriticalSection, ESPMode::ThreadSafe> update_lock_in)
+		std::mutex * update_lock_in)
 	{
 		indices = indices_in;
 		points = points_in;
@@ -40,7 +41,7 @@ public:
 	glm::float32 * uvs;
 	int32 point_num, indices_num;
 	TArray<uint8> * region_alphas;
-	TSharedPtr<FCriticalSection, ESPMode::ThreadSafe> update_lock;
+	std::mutex * update_lock;
 };
 
 /** Scene proxy */
@@ -66,7 +67,9 @@ public:
 	void SetNeedsIndexUpdate(bool flag_in);
 
 	void UpdateMaterial();
-	
+
+	void DoneUpdating();
+
 	virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views,
 		const FSceneViewFamily& ViewFamily,
 		uint32 VisibilityMap,
@@ -83,8 +86,6 @@ public:
 
 	FProceduralMeshRenderPacket * GetActiveRenderPacket();
 
-	void SetDynamicData_RenderThread();
-
 private:
 	UCustomProceduralMeshComponent* parentComponent;
 	UMaterialInterface* Material;
@@ -92,10 +93,9 @@ private:
 	int active_render_packet_idx;
 
 	FMaterialRelevance MaterialRelevance;
+	bool needs_updating;
 	bool needs_index_updating;
 	bool needs_material_updating;
-
-	mutable FCriticalSection renderPacketsCS;
 };
 
 USTRUCT(BlueprintType)
@@ -179,8 +179,6 @@ public:
 
 	bool SetProceduralMeshTriData(const FProceduralMeshTriData& TriData);
 
-	/** Called to send dynamic data for this component to the rendering thread */
-	virtual void SendRenderDynamicData_Concurrent() override;
 
 protected:
 	FProceduralMeshTriData defaultTriData;
@@ -205,6 +203,6 @@ protected:
 		return (FCProceduralMeshSceneProxy*)SceneProxy;
 	}
 	bool render_proxy_ready;
-	FCriticalSection local_lock;
+	std::mutex local_lock;
 	bool recreate_render_proxy;
 };

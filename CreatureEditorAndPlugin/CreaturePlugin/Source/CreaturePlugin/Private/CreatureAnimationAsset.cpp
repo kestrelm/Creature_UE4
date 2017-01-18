@@ -3,9 +3,9 @@
 #include "CreatureAnimationAsset.h"
 #include "CreatureCore.h"
 
-#if WITH_EDITORONLY_DATA
-FName UCreatureAnimationAsset::UpdateAndGetCreatureFilename()
+FName UCreatureAnimationAsset::GetCreatureFilename() const
 {
+#if WITH_EDITORONLY_DATA
 	TArray<FString> filenames;
 	if (AssetImportData)
 	{
@@ -13,15 +13,15 @@ FName UCreatureAnimationAsset::UpdateAndGetCreatureFilename()
 	}
 	if (filenames.Num() > 0)
 	{
-		creature_filename = FName(*filenames[0]);
+		return FName(*filenames[0]);
 	}
+	else
+	{
+		return creature_filename;
+	}
+#else
 	return creature_filename;
-}
 #endif
-
-FName UCreatureAnimationAsset::GetCreatureFilename() const
-{
-	return creature_filename;
 }
 
 bool 
@@ -199,7 +199,7 @@ void UCreatureAnimationAsset::PostLoad()
 void UCreatureAnimationAsset::GatherAnimationData()
 {
 	// ensure the filenames are synced
-	creature_filename = UpdateAndGetCreatureFilename();
+	creature_filename = GetCreatureFilename();
 	
 	// load the JSON data into creature so we can extract the animation names and generate the point caches for the anims
 	CreatureCore creature_core;
