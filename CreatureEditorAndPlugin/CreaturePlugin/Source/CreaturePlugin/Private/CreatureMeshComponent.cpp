@@ -23,14 +23,22 @@
 
 
 DECLARE_CYCLE_STAT(TEXT("CreatureMesh_Tick"), STAT_CreatureMesh_Tick, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("CreatureMesh_AsyncTick"), STAT_CreatureMesh_Tick_Async, STATGROUP_Creature);
 DECLARE_CYCLE_STAT(TEXT("CreatureMesh_UpdateCoreValues"), STAT_CreatureMesh_UpdateCoreValues, STATGROUP_Creature);
 DECLARE_CYCLE_STAT(TEXT("CreatureMesh_MeshUpdate"), STAT_CreatureMesh_MeshUpdate, STATGROUP_Creature);
+DECLARE_CYCLE_STAT(TEXT("CreatureMesh_ProcessCreatureCoreResults"), STAT_CreatureMesh_ProcessCreatureCoreResults, STATGROUP_Creature);
 
 // UCreatureMeshComponent
 UCreatureMeshComponent::UCreatureMeshComponent(const FObjectInitializer& ObjectInitializer)
 	: UCustomProceduralMeshComponent(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = true;
+
+	EndPhysicsTickFunction.TickGroup = TG_PostPhysics;
+	EndPhysicsTickFunction.bCanEverTick = true;
+	EndPhysicsTickFunction.bStartWithTickEnabled = true;
+	EndPhysicsTickFunction.bTickEvenWhenPaused = false;
+
 	InitStandardValues();
 }
 
@@ -105,7 +113,7 @@ FTransform UCreatureMeshComponent::GetBluePrintBoneXform(FString name_in, bool w
 	return creature_core.GetBluePrintBoneXform(FName(*name_in), world_transform, position_slide_factor, GetComponentToWorld());
 }
 
-FTransform UCreatureMeshComponent::GetBluePrintBoneXform_Name(FName name_in, bool world_transform, float position_slide_factor)
+FTransform UCreatureMeshComponent::GetBluePrintBoneXform_Name(FName name_in, bool world_transform, float position_slide_factor) const
 {
 	return creature_core.GetBluePrintBoneXform(name_in, world_transform, position_slide_factor, GetComponentToWorld());
 }
@@ -140,9 +148,7 @@ UCreatureMeshComponent::SetBluePrintAnimationPlay(bool flag_in)
 void 
 UCreatureMeshComponent::SetBluePrintAnimationPlayFromStart()
 {
-	core_lock.Lock();
 	creature_core.SetBluePrintAnimationPlayFromStart();
-	core_lock.Unlock();
 	
 	if (enable_collection_playback && active_collection_clip)
 	{
@@ -153,8 +159,6 @@ UCreatureMeshComponent::SetBluePrintAnimationPlayFromStart()
 
 void UCreatureMeshComponent::SetBluePrintAnimationResetToStart()
 {
-	FScopeLock scope_lock(&core_lock);
-
 	creature_core.SetBluePrintAnimationResetToStart();
 
 	if (enable_collection_playback && active_collection_clip)
@@ -387,9 +391,12 @@ void UCreatureMeshComponent::UpdateCoreValues()
 {
 	SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_UpdateCoreValues);
 
+	FScopeLock scope_lock(creature_core.update_lock.Get());
+
 	creature_core.creature_filename = creature_filename;
 
-	if (creature_animation_asset) {
+	if (creature_animation_asset && creature_core.creature_asset_filename != creature_animation_asset->GetCreatureFilename())
+	{
 		creature_core.pJsonData = &creature_animation_asset->GetJsonString();
 		creature_core.creature_asset_filename = creature_animation_asset->GetCreatureFilename();
 
@@ -421,7 +428,6 @@ void UCreatureMeshComponent::InitializeComponent()
 
 void UCreatureMeshComponent::RunTick(float DeltaTime)
 {
-	FScopeLock scope_lock(&core_lock);
 	SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_Tick);
 
 	UpdateCoreValues();
@@ -449,29 +455,74 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 		}
 	}
 
-	// Run the animation
-	bool can_tick = creature_core.RunTick(DeltaTime);
+	creatureTickResult = Async<bool>(EAsyncExecution::TaskGraph, [this, DeltaTime]()
+	{
+		SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_Tick_Async);
+				
+		// Run the animation
+		bool can_tick = creature_core.RunTick(DeltaTime);
 
-	if (can_tick) {
-		// Events
+		if (can_tick)
+		{
+			FScopeLock cur_lock(&local_lock);
+
+			animation_frame = creature_core.GetCreatureManager()->getActualRunTime();
+			DoCreatureMeshUpdate(INDEX_NONE, false);
+		}
+
+		return can_tick;
+	});
+
+}
+
+void UCreatureMeshComponent::ProcessCreatureCoreResult(FCreatureCoreResultTickFunction& ThisTickFunction)
+{
+	if (ShouldSkipTick())
+	{
+		return;
+	}
+
+	SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_ProcessCreatureCoreResults);
+	
+	bool can_tick = creatureTickResult.IsValid() && creatureTickResult.Get();
+
+	if (can_tick)
+	{
+		FScopeLock cur_lock(&local_lock);
+
+		// mark the ActorComponent dirty flags based on the result of the creature update
+		// Need to recreate scene proxy to send it over
+		if (recreate_render_proxy)
+		{
+			MarkRenderStateDirty();
+			recreate_render_proxy = false;
+		}
+		else
+		{
+			FCProceduralMeshSceneProxy *localRenderProxy = GetLocalRenderProxy();
+			if (render_proxy_ready && localRenderProxy)
+			{
+				MarkRenderTransformDirty();
+
+				check(localRenderProxy->GetDoesActiveRenderPacketHaveVertices());
+				MarkRenderDynamicDataDirty();
+			}
+		}
+
+		// fire events
 		bool announce_start = creature_core.GetAndClearShouldAnimStart();
 		bool announce_end = creature_core.GetAndClearShouldAnimEnd();
-
-		float cur_runtime = (creature_core.GetCreatureManager()->getActualRunTime());
-		animation_frame = cur_runtime;
-		DoCreatureMeshUpdate();
-
+		
 		if (announce_start)
 		{
-			CreatureAnimationStartEvent.Broadcast(cur_runtime);
+			CreatureAnimationStartEvent.Broadcast(animation_frame);
 		}
 
 		if (announce_end)
 		{
-			CreatureAnimationEndEvent.Broadcast(cur_runtime);
+			CreatureAnimationEndEvent.Broadcast(animation_frame);
 		}
 	}
-
 }
 
 void 
@@ -605,9 +656,11 @@ UCreatureMeshComponent::RunCollectionTick(float DeltaTime)
 	}
 }
 
-void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx)
+void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx, bool markDirty /*= true*/)
 {
 	SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_MeshUpdate);
+
+	FScopeLock cur_lock(&local_lock);
 
 	FCProceduralMeshSceneProxy *localRenderProxy = GetLocalRenderProxy();
 	if (localRenderProxy)
@@ -619,8 +672,9 @@ void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx)
 	SetBoundsScale(creature_bounds_scale);
 	SetBoundsOffset(creature_bounds_offset);
 
-	ForceAnUpdate(render_packet_idx);
+	ForceAnUpdate(render_packet_idx, markDirty);
 
+#if !UE_BUILD_SHIPPING
 	// Debug
 
 	if (creature_debug_draw) {
@@ -660,6 +714,7 @@ void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx)
 			DrawDebugString(GetWorld(), (world_pt1 + world_pt2) * 0.5f, cur_bone->getKey().ToString());
 		}
 	}
+#endif
 }
 
 int 
@@ -692,11 +747,20 @@ UCreatureMeshComponent::GetCollectionDataFromClip(FCreatureMeshCollectionClip * 
 	return cur_data;
 }
 
+bool UCreatureMeshComponent::ShouldSkipTick() const
+{
+	return (GetOwner() && GetOwner()->bHidden) || bHiddenInGame || completely_disable || !bVisible;
+}
+
 void UCreatureMeshComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if ((GetOwner() && GetOwner()->bHidden) || bHiddenInGame || completely_disable)
+	bool shouldSkipTick = ShouldSkipTick();
+	
+	RegisterCoreResultsTickFunction(!shouldSkipTick && !enable_collection_playback);
+
+	if (shouldSkipTick)
 	{
 		return;
 	}
@@ -727,6 +791,20 @@ void UCreatureMeshComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 	}
 }
 
+void FCreatureCoreResultTickFunction::ExecuteTick(float DeltaTime, enum ELevelTick TickType, ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent)
+{
+	QUICK_SCOPE_CYCLE_COUNTER(FCreatureCoreResultTickFunction_ExecuteTick);
+	FActorComponentTickFunction::ExecuteTickHelper(Target, /*bTickInEditor=*/ false, DeltaTime, TickType, [this](float DilatedTime)
+	{
+		Target->ProcessCreatureCoreResult(*this);
+	});
+}
+
+FString FCreatureCoreResultTickFunction::DiagnosticMessage()
+{
+	return TEXT("FCreatureMeshComponentEndPhysicsTickFunction");
+}
+
 void UCreatureMeshComponent::OnRegister()
 {
 	Super::OnRegister();
@@ -738,6 +816,31 @@ void UCreatureMeshComponent::OnRegister()
 	}
 	else {
 		StandardInit();
+	}
+}
+
+void UCreatureMeshComponent::RegisterComponentTickFunctions(bool bRegister)
+{
+	Super::RegisterComponentTickFunctions(bRegister);
+
+	RegisterCoreResultsTickFunction(bRegister && !enable_collection_playback);
+}
+
+void UCreatureMeshComponent::RegisterCoreResultsTickFunction(bool bRegister)
+{
+	if (bRegister != EndPhysicsTickFunction.IsTickFunctionRegistered())
+	{
+		if (bRegister)
+		{
+			if (SetupActorComponentTickFunction(&EndPhysicsTickFunction))
+			{
+				EndPhysicsTickFunction.Target = this;
+			}
+		}
+		else
+		{
+			EndPhysicsTickFunction.UnRegisterTickFunction();
+		}
 	}
 }
 
@@ -869,7 +972,7 @@ FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
 	}
 
 
-	std::lock_guard<std::mutex> cur_lock(local_lock);
+	FScopeLock cur_lock(&local_lock);
 
 	FCProceduralMeshSceneProxy* Proxy = NULL;
 	// Only if have enough triangles
@@ -886,6 +989,15 @@ FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
 
 	render_proxy_ready = true;
 	ProcessCalcBounds(Proxy);
+
+	if (IsInRenderingThread())
+	{
+		Proxy->SetDynamicData_RenderThread();
+	}
+	else
+	{
+		MarkRenderDynamicDataDirty();
+	}
 
 	return Proxy;
 }
