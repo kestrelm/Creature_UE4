@@ -33,7 +33,7 @@ void FCreatureAnimationAssetTypeActions::GetResolvedSourceFilePaths(const TArray
 
 		if (animAsset != nullptr)
 		{
-			const FName &filename = animAsset->GetCreatureFilename();
+			const FName &filename = animAsset->UpdateAndGetCreatureFilename();
 			if (!filename.IsNone())
 			{
 				OutSourceFilePaths.Add(filename.ToString());

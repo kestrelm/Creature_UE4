@@ -38,7 +38,6 @@
 
 #pragma once
 
-#include <mutex>
 #include <vector>
 #include "CustomProceduralMeshComponent.h"
 #include "CreatureAnimationAsset.h"
@@ -262,6 +261,28 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCreatureMeshAnimationEndEvent, floa
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCreatureFrameCallbackEvent, FName, name);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCreatureRepeatFrameCallbackEvent, FName, name);
 
+/**
+* Tick function that processes the results of the creature core update
+**/
+USTRUCT()
+struct FCreatureCoreResultTickFunction : public FTickFunction
+{
+	GENERATED_USTRUCT_BODY()
+
+	class UCreatureMeshComponent*	Target;
+
+	/**
+	* Abstract function to execute the tick.
+	* @param DeltaTime - frame time to advance, in seconds.
+	* @param TickType - kind of tick for this frame.
+	* @param CurrentThread - thread we are executing on, useful to pass along as new tasks are created.
+	* @param MyCompletionGraphEvent - completion event for this task. Useful for holding the completetion of this task until certain child tasks are complete.
+	*/
+	virtual void ExecuteTick(float DeltaTime, enum ELevelTick TickType, ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent) override;
+	/** Abstract function to describe this tick. Used to print messages about illegal cycles in the dependency graph. */
+	virtual FString DiagnosticMessage() override;
+};
+
 /** Component that allows you to specify custom triangle mesh geometry */
 //////////////////////////////////////////////////////////////////////////
 //Changed by god of pen
@@ -438,7 +459,7 @@ public:
 	// determines how far left or right the transform is placed. The default value of 0 places it
 	// in the center of the bone, positve values places it to the right, negative to the left
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	FTransform GetBluePrintBoneXform_Name(FName name_in, bool world_transform, float position_slide_factor);
+	FTransform GetBluePrintBoneXform_Name(FName name_in, bool world_transform, float position_slide_factor) const;
 
 	// Blueprint function that decides whether the animation will loop or not
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
@@ -575,9 +596,13 @@ public:
 
 	CreatureCore& GetCore();
 
+	virtual bool ShouldSkipTick() const;
+
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 
 	virtual void OnRegister() override;
+	virtual void RegisterComponentTickFunctions(bool bRegister) override;
+	void RegisterCoreResultsTickFunction(bool bRegister);
 
 	virtual void InitializeComponent() override;
 
@@ -611,7 +636,6 @@ protected:
 	TMap<FName, std::pair<glm::vec4, glm::vec4> > internal_ik_bone_pts;
 	TArray<FCreatureFrameCallback> frame_callbacks;
 	TArray<FCreatureRepeatFrameCallback> repeat_frame_callbacks;
-	FCriticalSection core_lock;
 
 	void InitStandardValues();
 
@@ -622,6 +646,9 @@ protected:
 	void RunTick(float DeltaTime);
 
 	void RunCollectionTick(float DeltaTime);
+
+	/** Update systems */
+	void ProcessCreatureCoreResult(FCreatureCoreResultTickFunction& ThisTickFunction);
 
 	void StandardInit();
 
@@ -636,7 +663,7 @@ protected:
 
 	int GetCollectionDataIndexFromClip(FCreatureMeshCollectionClip * clip_in);
 
-	void DoCreatureMeshUpdate(int render_packet_idx = -1);
+	void DoCreatureMeshUpdate(int render_packet_idx = -1, bool markDirty = true);
 
 	void CoreBonesOverride(TMap<FName, meshBone *>& bones_map);
 
@@ -652,9 +679,12 @@ protected:
 
 	void ProcessFrameCallbacks();
 
-
-	//////////////////////////////////////////////////////////////////////////
-	//Change by God of Pen
-	//////////////////////////////////////////////////////////////////////////
 	void LoadAnimationFromStore();
+
+	// future used for async creature processing
+	TFuture<bool> creatureTickResult;
+
+	FCreatureCoreResultTickFunction EndPhysicsTickFunction;
+	friend struct FCreatureCoreResultTickFunction;
+
 };
