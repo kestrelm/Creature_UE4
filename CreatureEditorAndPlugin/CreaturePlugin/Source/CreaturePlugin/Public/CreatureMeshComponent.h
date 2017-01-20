@@ -376,6 +376,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	float fixed_timestep;
 
+	/** A value that determines if the Creature computation runs on multiple cores or not */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	bool run_multicore;
+
 	/** Event that is triggered when the animation starts */
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
 	FCreatureMeshAnimationStartEvent CreatureAnimationStartEvent;
@@ -650,6 +654,10 @@ protected:
 	void RunTick(float DeltaTime);
 
 	void RunCollectionTick(float DeltaTime);
+
+	void FireStartEndEvents();
+
+	bool RunTickProcessing(float DeltaTime, bool markDirty);
 
 	/** Update systems */
 	void ProcessCreatureCoreResult(FCreatureCoreResultTickFunction& ThisTickFunction);

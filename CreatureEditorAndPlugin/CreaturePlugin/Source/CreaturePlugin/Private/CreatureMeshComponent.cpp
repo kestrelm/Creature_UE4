@@ -384,6 +384,7 @@ void UCreatureMeshComponent::InitStandardValues()
 	bones_override_blend_factor = 1.0f;
 	completely_disable = false;
 	fixed_timestep = 0.0f;
+	run_multicore = true;
 
 	// Generate a single dummy triangle
 	/*
@@ -461,29 +462,42 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 		}
 	}
 
-	creatureTickResult = Async<bool>(EAsyncExecution::TaskGraph, [this, DeltaTime]()
-	{
-		SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_Tick_Async);
-				
-		// Run the animation
-		bool can_tick = creature_core.RunTick(DeltaTime);
-
-		if (can_tick)
+	// Run the animation
+	if (run_multicore) {
+		creatureTickResult = Async<bool>(EAsyncExecution::TaskGraph, [this, DeltaTime]()
 		{
-			FScopeLock cur_lock(&local_lock);
-
-			animation_frame = creature_core.GetCreatureManager()->getActualRunTime();
-			DoCreatureMeshUpdate(INDEX_NONE, false);
+			SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_Tick_Async);
+			return RunTickProcessing(DeltaTime, false);
+		});
+	}
+	else {
+		auto can_tick = RunTickProcessing(DeltaTime, true);
+		if (can_tick) {
+			// fire events
+			FireStartEndEvents();
 		}
+	}
+}
 
-		return can_tick;
-	});
+bool UCreatureMeshComponent::RunTickProcessing(float DeltaTime, bool markDirty)
+{
+	// Run the animation
+	bool can_tick = creature_core.RunTick(DeltaTime);
 
+	if (can_tick)
+	{
+		FScopeLock cur_lock(&local_lock);
+
+		animation_frame = creature_core.GetCreatureManager()->getActualRunTime();
+		DoCreatureMeshUpdate(INDEX_NONE, markDirty);
+	}
+
+	return can_tick;
 }
 
 void UCreatureMeshComponent::ProcessCreatureCoreResult(FCreatureCoreResultTickFunction& ThisTickFunction)
 {
-	if (ShouldSkipTick())
+	if (ShouldSkipTick() || (!run_multicore))
 	{
 		return;
 	}
@@ -516,18 +530,25 @@ void UCreatureMeshComponent::ProcessCreatureCoreResult(FCreatureCoreResultTickFu
 		}
 
 		// fire events
-		bool announce_start = creature_core.GetAndClearShouldAnimStart();
-		bool announce_end = creature_core.GetAndClearShouldAnimEnd();
-		
-		if (announce_start)
-		{
-			CreatureAnimationStartEvent.Broadcast(animation_frame);
-		}
+		FireStartEndEvents();
+	}
+}
 
-		if (announce_end)
-		{
-			CreatureAnimationEndEvent.Broadcast(animation_frame);
-		}
+void 
+UCreatureMeshComponent::FireStartEndEvents()
+{
+	// fire events
+	bool announce_start = creature_core.GetAndClearShouldAnimStart();
+	bool announce_end = creature_core.GetAndClearShouldAnimEnd();
+
+	if (announce_start)
+	{
+		CreatureAnimationStartEvent.Broadcast(animation_frame);
+	}
+
+	if (announce_end)
+	{
+		CreatureAnimationEndEvent.Broadcast(animation_frame);
 	}
 }
 
