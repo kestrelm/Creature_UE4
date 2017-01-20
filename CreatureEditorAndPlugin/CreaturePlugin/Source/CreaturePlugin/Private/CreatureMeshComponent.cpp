@@ -42,6 +42,12 @@ UCreatureMeshComponent::UCreatureMeshComponent(const FObjectInitializer& ObjectI
 	InitStandardValues();
 }
 
+void UCreatureMeshComponent::SetBluePrintAlwaysTick(bool flag_in)
+{
+	PrimaryComponentTick.bTickEvenWhenPaused = flag_in;
+	EndPhysicsTickFunction.bTickEvenWhenPaused = flag_in;
+}
+
 void UCreatureMeshComponent::SetBluePrintActiveAnimation(FString name_in)
 {
 	creature_core.SetBluePrintActiveAnimation(FName(*name_in));

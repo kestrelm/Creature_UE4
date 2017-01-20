@@ -594,6 +594,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void FreeBluePrintJSONMemory();
 
+	// Blueprint function that allows the character to tick regardless of whether the main thread is active or not
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintAlwaysTick(bool flag_in);
+
 	CreatureCore& GetCore();
 
 	virtual bool ShouldSkipTick() const;
