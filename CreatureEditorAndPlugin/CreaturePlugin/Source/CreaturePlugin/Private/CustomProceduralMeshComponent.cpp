@@ -236,8 +236,10 @@ public:
 
 /** Scene proxy */
 
-FCProceduralMeshSceneProxy::FCProceduralMeshSceneProxy(UCustomProceduralMeshComponent* Component,
-	FProceduralMeshTriData * targetTrisIn)
+FCProceduralMeshSceneProxy::FCProceduralMeshSceneProxy(
+	UCustomProceduralMeshComponent* Component,
+	FProceduralMeshTriData * targetTrisIn,
+	const FColor& startColorIn)
 	: FPrimitiveSceneProxy(Component),
 	MaterialRelevance(Component->GetMaterialRelevance(GetScene().GetFeatureLevel()))
 {
@@ -250,7 +252,7 @@ FCProceduralMeshSceneProxy::FCProceduralMeshSceneProxy(UCustomProceduralMeshComp
 	// Add each triangle to the vertex/index buffer
 	if (targetTrisIn)
 	{
-		AddRenderPacket(targetTrisIn);
+		AddRenderPacket(targetTrisIn, startColorIn);
 	}
 }
 
@@ -286,7 +288,7 @@ void FCProceduralMeshSceneProxy::UpdateMaterial()
 	needs_material_updating = false;
 }
 
-void FCProceduralMeshSceneProxy::AddRenderPacket(FProceduralMeshTriData * targetTrisIn)
+void FCProceduralMeshSceneProxy::AddRenderPacket(FProceduralMeshTriData * targetTrisIn, const FColor& startColorIn)
 {
 	FScopeLock packetLock(&renderPacketsCS);
 
@@ -319,7 +321,7 @@ void FCProceduralMeshSceneProxy::AddRenderPacket(FProceduralMeshTriData * target
 		int pos_idx = i * 3;
 		Vert0.Position = FVector(cur_packet.points[pos_idx + x_id], cur_packet.points[pos_idx + y_id], cur_packet.points[pos_idx + z_id]);
 
-		Vert0.Color = FColor::White;
+		Vert0.Color = startColorIn;
 		Vert0.SetTangents(FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
 
 		int uv_idx = i * 2;
@@ -682,7 +684,10 @@ FPrimitiveSceneProxy* UCustomProceduralMeshComponent::CreateSceneProxy()
 	// Only if have enough triangles
 	if(defaultTriData.point_num > 0)
 	{
-		Proxy = new FCProceduralMeshSceneProxy(this, &defaultTriData);
+		auto not_editor_mode = ((GetWorld()->WorldType != EWorldType::Type::Editor) &&
+			(GetWorld()->WorldType != EWorldType::Type::EditorPreview));
+		FColor start_color = not_editor_mode ? FColor(0, 0, 0, 0) : FColor::White;
+		Proxy = new FCProceduralMeshSceneProxy(this, &defaultTriData, start_color);
 
 		SendRenderDynamicData_Concurrent();
 

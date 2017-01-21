@@ -1001,16 +1001,20 @@ FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
 
 	FScopeLock cur_lock(&local_lock);
 
+	auto not_editor_mode = ((GetWorld()->WorldType != EWorldType::Type::Editor) &&
+		(GetWorld()->WorldType != EWorldType::Type::EditorPreview));
+	FColor start_color = not_editor_mode ? FColor(0, 0, 0, 0) : FColor::White;
 	FCProceduralMeshSceneProxy* Proxy = NULL;
 	// Only if have enough triangles
-	Proxy = new FCProceduralMeshSceneProxy(this, nullptr);
+	Proxy = new FCProceduralMeshSceneProxy(this, nullptr, start_color);
 
 	// Loop through and add in the collectionData
 	for (auto& cur_data : collectionData)
 	{
 		auto proc_mesh_data = cur_data.creature_core.GetProcMeshData(GetWorld()->WorldType);
 		if (proc_mesh_data.point_num > 0) {
-			Proxy->AddRenderPacket(&proc_mesh_data);
+
+			Proxy->AddRenderPacket(&proc_mesh_data, start_color);
 		}
 	}
 
@@ -1076,7 +1080,10 @@ void UCreatureMeshComponent::LoadAnimationFromStore()
 			auto proc_mesh_data = cur_data.creature_core.GetProcMeshData(GetWorld()->WorldType);
 			if (proc_mesh_data.point_num > 0)
 			{
-				localRenderProxy->AddRenderPacket(&proc_mesh_data);
+				auto not_editor_mode = ((GetWorld()->WorldType != EWorldType::Type::Editor) &&
+					(GetWorld()->WorldType != EWorldType::Type::EditorPreview));
+				FColor start_color = not_editor_mode ? FColor(0, 0, 0, 0) : FColor::White;
+				localRenderProxy->AddRenderPacket(&proc_mesh_data, start_color);
 			}
 		}
 
