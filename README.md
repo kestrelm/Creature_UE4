@@ -6,7 +6,21 @@ This is the runtime for Creature, the advanced 2D Skeletal and Mesh Animation To
 
 Trailer Video for the plugin is [**here**](https://youtu.be/S01sZY8mTz4).
 
-For more information on how to use the runtimes, please head over to this [site](http://www.kestrelmoon.com/creaturedocs/Game_Engine_Runtimes_And_Integration/Runtimes_Introduction.html)
+For more information on how to use the runtimes, please head over to this [site](http://www.kestrelmoon.com/creaturedocs/Game_Engine_Runtimes_And_Integration/Unreal_Engine_C++_Runtimes.html)
+
+### Features of the Creature UE4 Runtime
+
+- **High Performance with Multi-core Optimizations** Thanks to the amazing work of [Eyesiah](https://github.com/Eyesiah), the High Performance Creature UE4 runtime distributes animation + pose computation workloads on multi-core platforms
+
+- **Supports a Wide Variety of Devices** Ready for Console (PS4, XBox One), PC, Mac, Mobile
+
+- **Blueprint Enabled** All functionality exposed to UE4's powerful Blueprint Visual Scripting System
+
+- **IK Bone Posing** Supports in game IK Bone posing for custom gameplay situations
+
+- **Events & Triggers** Spawn custom gameplay events and triggers at specific frame intervals
+
+- **Lightning Fast Animation Pose Playback Cache** Even faster character animation playback performance when using the Point Cache playback feature
 
 ### Trying out the new fancy Creature Editor & Runtimes:
 The directory containing this is called **CreatureEditorAndPlugin**. Most of the concepts from the old runtimes apply to the new ones so it should not be too big of a change. However, you will get access to some fancy new features, including the CreatureAsset, CreatureMeshComponent, new UI and a state machine.
