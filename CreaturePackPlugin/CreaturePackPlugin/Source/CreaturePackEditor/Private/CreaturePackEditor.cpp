@@ -2,6 +2,7 @@
 #include "CreaturePackEditor.h"
 #include "CreaturePackAnimationAssetTypeActions.h"
 #include "CreaturePackMeshComponent.h"
+#include "PropertyEditorModule.h"
 #define LOCTEXT_NAMESPACE "CreaturePackEditor"
 
 class UCreaturePackMeshVisualizer : public FComponentVisualizer

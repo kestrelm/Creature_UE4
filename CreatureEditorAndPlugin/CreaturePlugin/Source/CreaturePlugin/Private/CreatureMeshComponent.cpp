@@ -42,6 +42,12 @@ UCreatureMeshComponent::UCreatureMeshComponent(const FObjectInitializer& ObjectI
 	InitStandardValues();
 }
 
+void UCreatureMeshComponent::SetBluePrintAlwaysTick(bool flag_in)
+{
+	PrimaryComponentTick.bTickEvenWhenPaused = flag_in;
+	EndPhysicsTickFunction.bTickEvenWhenPaused = flag_in;
+}
+
 void UCreatureMeshComponent::SetBluePrintActiveAnimation(FString name_in)
 {
 	creature_core.SetBluePrintActiveAnimation(FName(*name_in));
@@ -378,6 +384,7 @@ void UCreatureMeshComponent::InitStandardValues()
 	bones_override_blend_factor = 1.0f;
 	completely_disable = false;
 	fixed_timestep = 0.0f;
+	run_multicore = true;
 
 	// Generate a single dummy triangle
 	/*
@@ -455,29 +462,42 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 		}
 	}
 
-	creatureTickResult = Async<bool>(EAsyncExecution::TaskGraph, [this, DeltaTime]()
-	{
-		SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_Tick_Async);
-				
-		// Run the animation
-		bool can_tick = creature_core.RunTick(DeltaTime);
-
-		if (can_tick)
+	// Run the animation
+	if (run_multicore) {
+		creatureTickResult = Async<bool>(EAsyncExecution::TaskGraph, [this, DeltaTime]()
 		{
-			FScopeLock cur_lock(&local_lock);
-
-			animation_frame = creature_core.GetCreatureManager()->getActualRunTime();
-			DoCreatureMeshUpdate(INDEX_NONE, false);
+			SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_Tick_Async);
+			return RunTickProcessing(DeltaTime, false);
+		});
+	}
+	else {
+		auto can_tick = RunTickProcessing(DeltaTime, true);
+		if (can_tick) {
+			// fire events
+			FireStartEndEvents();
 		}
+	}
+}
 
-		return can_tick;
-	});
+bool UCreatureMeshComponent::RunTickProcessing(float DeltaTime, bool markDirty)
+{
+	// Run the animation
+	bool can_tick = creature_core.RunTick(DeltaTime);
 
+	if (can_tick)
+	{
+		FScopeLock cur_lock(&local_lock);
+
+		animation_frame = creature_core.GetCreatureManager()->getActualRunTime();
+		DoCreatureMeshUpdate(INDEX_NONE, markDirty);
+	}
+
+	return can_tick;
 }
 
 void UCreatureMeshComponent::ProcessCreatureCoreResult(FCreatureCoreResultTickFunction& ThisTickFunction)
 {
-	if (ShouldSkipTick())
+	if (ShouldSkipTick() || (!run_multicore))
 	{
 		return;
 	}
@@ -510,18 +530,25 @@ void UCreatureMeshComponent::ProcessCreatureCoreResult(FCreatureCoreResultTickFu
 		}
 
 		// fire events
-		bool announce_start = creature_core.GetAndClearShouldAnimStart();
-		bool announce_end = creature_core.GetAndClearShouldAnimEnd();
-		
-		if (announce_start)
-		{
-			CreatureAnimationStartEvent.Broadcast(animation_frame);
-		}
+		FireStartEndEvents();
+	}
+}
 
-		if (announce_end)
-		{
-			CreatureAnimationEndEvent.Broadcast(animation_frame);
-		}
+void 
+UCreatureMeshComponent::FireStartEndEvents()
+{
+	// fire events
+	bool announce_start = creature_core.GetAndClearShouldAnimStart();
+	bool announce_end = creature_core.GetAndClearShouldAnimEnd();
+
+	if (announce_start)
+	{
+		CreatureAnimationStartEvent.Broadcast(animation_frame);
+	}
+
+	if (announce_end)
+	{
+		CreatureAnimationEndEvent.Broadcast(animation_frame);
 	}
 }
 
@@ -974,16 +1001,20 @@ FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
 
 	FScopeLock cur_lock(&local_lock);
 
+	auto not_editor_mode = ((GetWorld()->WorldType != EWorldType::Type::Editor) &&
+		(GetWorld()->WorldType != EWorldType::Type::EditorPreview));
+	FColor start_color = not_editor_mode ? FColor(0, 0, 0, 0) : FColor::White;
 	FCProceduralMeshSceneProxy* Proxy = NULL;
 	// Only if have enough triangles
-	Proxy = new FCProceduralMeshSceneProxy(this, nullptr);
+	Proxy = new FCProceduralMeshSceneProxy(this, nullptr, start_color);
 
 	// Loop through and add in the collectionData
 	for (auto& cur_data : collectionData)
 	{
 		auto proc_mesh_data = cur_data.creature_core.GetProcMeshData(GetWorld()->WorldType);
 		if (proc_mesh_data.point_num > 0) {
-			Proxy->AddRenderPacket(&proc_mesh_data);
+
+			Proxy->AddRenderPacket(&proc_mesh_data, start_color);
 		}
 	}
 
@@ -1049,7 +1080,10 @@ void UCreatureMeshComponent::LoadAnimationFromStore()
 			auto proc_mesh_data = cur_data.creature_core.GetProcMeshData(GetWorld()->WorldType);
 			if (proc_mesh_data.point_num > 0)
 			{
-				localRenderProxy->AddRenderPacket(&proc_mesh_data);
+				auto not_editor_mode = ((GetWorld()->WorldType != EWorldType::Type::Editor) &&
+					(GetWorld()->WorldType != EWorldType::Type::EditorPreview));
+				FColor start_color = not_editor_mode ? FColor(0, 0, 0, 0) : FColor::White;
+				localRenderProxy->AddRenderPacket(&proc_mesh_data, start_color);
 			}
 		}
 

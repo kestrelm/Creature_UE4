@@ -48,12 +48,14 @@ class FCProceduralMeshSceneProxy : public FPrimitiveSceneProxy
 {
 public:
 
-	FCProceduralMeshSceneProxy(UCustomProceduralMeshComponent* Component,
-		FProceduralMeshTriData * targetTrisIn);
+	FCProceduralMeshSceneProxy(
+		UCustomProceduralMeshComponent* Component,
+		FProceduralMeshTriData * targetTrisIn,
+		const FColor& startColorIn);
 
 	virtual ~FCProceduralMeshSceneProxy();
 
-	void AddRenderPacket(FProceduralMeshTriData * targetTrisIn);
+	void AddRenderPacket(FProceduralMeshTriData * targetTrisIn, const FColor& startColorIn);
 
 	void ResetAllRenderPackets();
 	

@@ -1,4 +1,4 @@
-#include "Editor/DetailCustomizations/Private/DetailCustomizationsPrivatePCH.h"
+#include "IDetailCustomization.h"
 #include "Runtime/Engine/Classes/Components/SplineComponent.h"
  
 #pragma once

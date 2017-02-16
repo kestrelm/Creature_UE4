@@ -283,6 +283,16 @@ struct FCreatureCoreResultTickFunction : public FTickFunction
 	virtual FString DiagnosticMessage() override;
 };
 
+template<>
+struct TStructOpsTypeTraits<FCreatureCoreResultTickFunction> : public TStructOpsTypeTraitsBase
+{
+	enum
+	{
+		WithCopy = false
+	};
+};
+
+
 /** Component that allows you to specify custom triangle mesh geometry */
 //////////////////////////////////////////////////////////////////////////
 //Changed by god of pen
@@ -375,6 +385,10 @@ public:
 	/** A value that fixes the time to advance per component tick. Fixed timestep is active if fixed_timestep > 0, otherwise the default delta time of the component tick is used. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	float fixed_timestep;
+
+	/** A value that determines if the Creature computation runs on multiple cores or not */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	bool run_multicore;
 
 	/** Event that is triggered when the animation starts */
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
@@ -594,6 +608,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void FreeBluePrintJSONMemory();
 
+	// Blueprint function that allows the character to tick regardless of whether the main thread is active or not
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetBluePrintAlwaysTick(bool flag_in);
+
 	CreatureCore& GetCore();
 
 	virtual bool ShouldSkipTick() const;
@@ -611,7 +629,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	///ChangedBy God Of Pen
 	///存储一系列Clip的数据结构
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
+	UPROPERTY(BlueprintReadOnly, Category = "Components|Creature")
 	class UCreatureAnimationClipsStore* ClipStore;
 
 	virtual void BeginPlay() override;
@@ -646,6 +664,10 @@ protected:
 	void RunTick(float DeltaTime);
 
 	void RunCollectionTick(float DeltaTime);
+
+	void FireStartEndEvents();
+
+	bool RunTickProcessing(float DeltaTime, bool markDirty);
 
 	/** Update systems */
 	void ProcessCreatureCoreResult(FCreatureCoreResultTickFunction& ThisTickFunction);
