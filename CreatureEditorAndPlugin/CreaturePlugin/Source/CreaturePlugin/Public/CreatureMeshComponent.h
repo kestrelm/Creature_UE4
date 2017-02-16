@@ -283,6 +283,16 @@ struct FCreatureCoreResultTickFunction : public FTickFunction
 	virtual FString DiagnosticMessage() override;
 };
 
+template<>
+struct TStructOpsTypeTraits<FCreatureCoreResultTickFunction> : public TStructOpsTypeTraitsBase
+{
+	enum
+	{
+		WithCopy = false
+	};
+};
+
+
 /** Component that allows you to specify custom triangle mesh geometry */
 //////////////////////////////////////////////////////////////////////////
 //Changed by god of pen
