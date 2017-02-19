@@ -14,6 +14,7 @@
 // Put this in if you get: decorated name length exceeded, name was truncated 
 // for the Visual Studio Compiler
 #pragma warning(disable : 4503)
+#pragma warning(disable : 4668)
 #endif
 
 #if __clang__
@@ -538,8 +539,8 @@ void
 UCreatureMeshComponent::FireStartEndEvents()
 {
 	// fire events
-	bool announce_start = creature_core.GetAndClearShouldAnimStart();
-	bool announce_end = creature_core.GetAndClearShouldAnimEnd();
+	bool announce_start = creature_core.GetAndClearShouldAnimStart() && creature_core.should_play;
+	bool announce_end = creature_core.GetAndClearShouldAnimEnd() && creature_core.should_play;
 
 	if (announce_start)
 	{
