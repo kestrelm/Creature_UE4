@@ -629,7 +629,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	///ChangedBy God Of Pen
 	///存储一系列Clip的数据结构
-	UPROPERTY(BlueprintReadOnly, Category = "Components|Creature")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
 	class UCreatureAnimationClipsStore* ClipStore;
 
 	virtual void BeginPlay() override;

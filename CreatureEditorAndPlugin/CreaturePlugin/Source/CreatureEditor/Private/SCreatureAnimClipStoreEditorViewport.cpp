@@ -66,6 +66,10 @@ FText SCreatureAnimClipStoreEditorViewport::GetTitleText() const
 
 void SCreatureAnimClipStoreEditorViewport::ChangePreviewAnimation(FString AnimationName)
 {
+	if (AnimationName==TEXT("None"))
+	{
+		return;
+	}
 	PreviewClient->ChangePreviewAnimation(AnimationName);
 }
 

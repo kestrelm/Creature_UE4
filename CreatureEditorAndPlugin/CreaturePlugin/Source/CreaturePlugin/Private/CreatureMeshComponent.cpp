@@ -1026,6 +1026,10 @@ FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
 	{
 		Proxy->SetDynamicData_RenderThread();
 	}
+	else if(GetWorld()->bPostTickComponentUpdate)
+	{
+		SendRenderDynamicData_Concurrent();
+	}
 	else
 	{
 		MarkRenderDynamicDataDirty();

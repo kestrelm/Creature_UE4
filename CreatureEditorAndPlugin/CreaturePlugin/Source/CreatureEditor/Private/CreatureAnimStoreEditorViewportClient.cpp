@@ -7,10 +7,13 @@
 #include "CreatureMeshComponent.h"
 #include "CreatureAnimationClipsStore.h"
 FCreatureAnimStoreEditorViewportClient::FCreatureAnimStoreEditorViewportClient(const TWeakPtr<class SEditorViewport>& InEditorViewportWidget /*= nullptr*/, UCreatureAnimationClipsStore* EditingAnimStore)
-	:FEditorViewportClient(nullptr, &OwnerScene, InEditorViewportWidget)
-	, EditingStore(EditingAnimStore)
+	:FEditorViewportClient(nullptr,nullptr,InEditorViewportWidget)
 {
-	PreviewScene = &OwnerScene;
+	OwnerScene = MakeShareable(new FAdvancedPreviewScene(FPreviewScene::ConstructionValues()));
+	OwnerScene->SetFloorOffset(500);
+	FEditorViewportClient::FEditorViewportClient(nullptr, (OwnerScene.Get()), InEditorViewportWidget);
+	EditingStore=EditingAnimStore;
+	PreviewScene = (OwnerScene.Get());
 	((FAssetEditorModeManager*)ModeTools)->SetPreviewScene(PreviewScene);
 	DrawHelper.bDrawGrid = true;
 	DrawHelper.bDrawPivot = true;
@@ -35,6 +38,7 @@ FCreatureAnimStoreEditorViewportClient::FCreatureAnimStoreEditorViewportClient(c
 		//默认播放第一个Clip
 		EditingCreatureMesh->SetBluePrintActiveCollectionClip_Name(EditingStore->ClipList[0].ClipName);
 	}
+	OwnerScene->SetFloorVisibility(false);
 
 }
 
@@ -42,7 +46,7 @@ void FCreatureAnimStoreEditorViewportClient::Tick(float DeltaSeconds)
 {
 	
 	FEditorViewportClient::Tick(DeltaSeconds);
-	OwnerScene.GetWorld()->Tick(LEVELTICK_All, DeltaSeconds);
+	OwnerScene->GetWorld()->Tick(LEVELTICK_All, DeltaSeconds);
 	//EditingCreatureMesh->UpdateBounds();
 	//FBox Box = EditingCreatureMesh->Bounds.GetBox();
 	//
