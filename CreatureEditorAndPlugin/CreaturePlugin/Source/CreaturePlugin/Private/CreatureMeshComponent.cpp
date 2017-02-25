@@ -539,8 +539,8 @@ void
 UCreatureMeshComponent::FireStartEndEvents()
 {
 	// fire events
-	bool announce_start = creature_core.GetAndClearShouldAnimStart() && creature_core.should_play;
-	bool announce_end = creature_core.GetAndClearShouldAnimEnd() && creature_core.should_play;
+	bool announce_start = creature_core.GetAndClearShouldAnimStart();
+	bool announce_end = creature_core.GetAndClearShouldAnimEnd();
 
 	if (announce_start)
 	{
