@@ -616,6 +616,30 @@ CreatureCore::ClearAllDataPackets()
 	global_load_data_packets.Empty();
 }
 
+void CreatureCore::FreeDataPacket(const FName & filename_in)
+{
+	if (global_load_data_packets.Contains(filename_in))
+	{
+		TArray<FName> remove_keys;
+		for (auto anim_pair : global_animations)
+		{
+			auto key_str = anim_pair.Key.ToString();
+			if (key_str.StartsWith(filename_in.ToString() + FString("_")))
+			{
+				remove_keys.Add(anim_pair.Key);
+			}
+		}
+
+		for (auto cur_key : remove_keys)
+		{
+			global_animations.Remove(cur_key);
+		}
+
+		global_load_data_packets[filename_in]->allocator.deallocate();
+		global_load_data_packets.Remove(filename_in);
+	}
+}
+
 void 
 CreatureCore::LoadAnimation(const FName& filename_in, const FName& name_in)
 {

@@ -97,6 +97,10 @@ public:
 	// the asset is requested again
 	static void ClearAllDataPackets();
 
+	// Frees up memory for a specific data packet, this will force the reparsing of JSON strings if
+	// the asset is requested again
+	static void FreeDataPacket(const FName& filename_in);
+
 	//////////////////////////////////////////////////////////////////////////
 	// Loads an animation from a file
 	static void LoadAnimation(const FName& filename_in, const FName& name_in);

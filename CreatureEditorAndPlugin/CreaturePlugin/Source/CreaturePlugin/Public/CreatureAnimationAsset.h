@@ -48,6 +48,8 @@ public:
 	FString CreatureRawJSONString;
 
 	FString& GetJsonString();
+
+	void SetNewJsonString(FString& str_in);
 	
 	/** The approximation level to use when generating the point cache (range 0-20; 0=no approximation, -1=no cache generated) */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Creature)

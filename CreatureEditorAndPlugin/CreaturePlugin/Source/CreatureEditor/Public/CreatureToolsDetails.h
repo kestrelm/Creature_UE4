@@ -1,9 +1,10 @@
 #include "IDetailCustomization.h"
+#include "CreatureMeshComponent.h"
 #include "Runtime/Engine/Classes/Components/SplineComponent.h"
- 
+
 #pragma once
 
-class FCreatureCustomSplineDetails : public IDetailCustomization
+class FCreatureToolsDetails : public IDetailCustomization
 {
 public:
     /** Makes a new instance of this detail layout class for a specific detail view requesting it */
@@ -12,11 +13,16 @@ public:
 	/** IDetailCustomization interface */
 	virtual void CustomizeDetails( IDetailLayoutBuilder& DetailBuilder ) override;
 
-    FReply ExportPressed();
+    FReply LiveSyncPressed();
+
+	FReply ExportSplinePressed();
 
 protected:
 
-	void SaveCurveToFile(const FString& write_filename);
+	void InitFramework();
 
-	USplineComponent * active_spline;
+	void SaveCurveToFile(const FString& write_filename, USplineComponent * active_spline);
+
+	UCreatureMeshComponent * active_mesh;
+	void * client_dll;
 };
