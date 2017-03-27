@@ -124,13 +124,11 @@ FReply FCreatureToolsDetails::LiveSyncPressed()
 	}
 	
 	// Only refresh the actors with the animation asset in question
-	auto actor_parent =
-		active_mesh->GetOwner();
 	UCreatureAnimationAsset * refresh_anim_asset = active_mesh->creature_animation_asset;
 	active_mesh->GetCore().FreeDataPacket(refresh_anim_asset->GetCreatureFilename());
 	refresh_anim_asset->SetNewJsonString(raw_json);
 
-	auto cur_world = actor_parent->GetWorld();
+	auto cur_world = GEditor->GetEditorWorldContext().World();
 	for (TActorIterator<AActor> ActorItr(cur_world); ActorItr; ++ActorItr)
 	{
 		auto * cur_actor = *ActorItr;
