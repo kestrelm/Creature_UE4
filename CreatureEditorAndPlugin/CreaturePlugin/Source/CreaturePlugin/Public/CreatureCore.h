@@ -220,6 +220,8 @@ public:
 
 	bool is_ready_play;
 
+	bool is_animation_loaded;
+
 	bool should_process_animation_start, should_process_animation_end;
 
 	bool do_file_warning;

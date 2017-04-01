@@ -339,6 +339,8 @@ namespace CreatureModule {
         
     protected:
 
+		bool checkAnimationBlendValid() const;
+
 		float correctRunTime(float time_in, const FName& animation_name);
         
         FName ProcessContactBone(const glm::vec2& pt_in,

@@ -42,6 +42,7 @@ CreatureCore::CreatureCore()
 	is_disabled = false;
 	is_driven = false;
 	is_ready_play = false;
+	is_animation_loaded = false;
 	do_file_warning = true;
 	should_process_animation_start = false;
 	should_process_animation_end = false;
@@ -87,7 +88,7 @@ CreatureCore::GetAndClearShouldAnimEnd()
 FProceduralMeshTriData 
 CreatureCore::GetProcMeshData(EWorldType::Type world_type)
 {
-	if (!creature_manager.Get())
+	if (!is_animation_loaded)
 	{
 		FProceduralMeshTriData ret_data(nullptr,
 			nullptr, nullptr,
@@ -269,6 +270,7 @@ bool CreatureCore::InitCreatureRender()
 	FName cur_creature_filename = creature_filename;
 	bool init_success = false;
 	FName load_filename;
+	is_animation_loaded = false;
 
 	//////////////////////////////////////////////////////////////////////////
 	//Changed by God of Pen
@@ -347,6 +349,7 @@ bool CreatureCore::InitCreatureRender()
 		FillBoneData();
 	}
 
+	is_animation_loaded = true;
 
 	return init_success;
 }
@@ -857,6 +860,11 @@ bool
 CreatureCore::RunTick(float delta_time)
 {
 	SCOPE_CYCLE_COUNTER(STAT_CreatureCore_RunTick);
+
+	if (!is_animation_loaded)
+	{
+		return false;
+	}
 
 	FScopeLock scope_lock(update_lock.Get());
 

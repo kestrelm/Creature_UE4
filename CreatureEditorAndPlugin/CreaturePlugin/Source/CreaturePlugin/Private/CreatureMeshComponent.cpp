@@ -385,7 +385,7 @@ void UCreatureMeshComponent::InitStandardValues()
 	bones_override_blend_factor = 1.0f;
 	completely_disable = false;
 	fixed_timestep = 0.0f;
-	run_multicore = true;
+	run_multicore = false;
 
 	// Generate a single dummy triangle
 	/*

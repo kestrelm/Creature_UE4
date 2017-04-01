@@ -1621,7 +1621,7 @@ namespace CreatureModule {
 			increAutoBlendRuntimes(delta * time_scale);
         }
         
-        if(do_blending)
+        if(do_blending && checkAnimationBlendValid())
         {
             for(int32 i = 0; i < 2; i++) {
 				auto& cur_animation_name = active_blend_animation_names[i];
@@ -1759,7 +1759,21 @@ namespace CreatureModule {
 	}
 
  
-	float 
+	bool CreatureManager::checkAnimationBlendValid() const
+	{
+		for (int32 i = 0; i < 2; i++) {
+			auto& cur_animation_name = active_blend_animation_names[i];
+			if ((!animations.Contains(cur_animation_name)) || 
+				(!active_blend_run_times.Contains(cur_animation_name)))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	float
 	CreatureManager::correctRunTime(float time_in, const FName& animation_name)
 	{
 		float ret_time = time_in;
