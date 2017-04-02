@@ -36,6 +36,7 @@
 #include "CreaturePluginPCH.h"
 #include "MeshBone.h"
 #include <math.h>
+#include <Runtime/Core/Public/Async/ParallelFor.h>
 
 DECLARE_CYCLE_STAT(TEXT("MeshBoneCacheManager_retrieveValuesAtTime"), STAT_MeshBoneCacheManager_retrieveValuesAtTime, STATGROUP_Creature);
 DECLARE_CYCLE_STAT(TEXT("MeshOpacityCacheManager_retrieveValuesAtTime"), STAT_MeshOpacityCacheManager_retrieveValuesAtTime, STATGROUP_Creature);
@@ -936,18 +937,26 @@ meshRenderRegion::initUvWarp()
 void
 meshRenderRegion::runUvWarp()
 {
-    glm::float32 * cur_uvs = getUVs();
-    for(auto i = 0; i < uv_warp_ref_uvs.Num(); i++) {
-        glm::vec2 set_uv = uv_warp_ref_uvs[i];
-        set_uv -= uv_warp_local_offset;
-        set_uv *= uv_warp_scale;
-        set_uv += uv_warp_global_offset;
-        
-        cur_uvs[0] = set_uv.x;
-        cur_uvs[1] = set_uv.y;
-        
-        cur_uvs += 2;
+    glm::float32 * base_uvs = getUVs();
+#ifdef CREATURE_MULTICORE
+	ParallelFor(uv_warp_ref_uvs.Num(), [&](int32 i) {
+#else
+	for (auto i = 0; i < uv_warp_ref_uvs.Num(); i++) {
+#endif
+		glm::float32 * cur_uvs = base_uvs + (i * 2);
+
+		glm::vec2 set_uv = uv_warp_ref_uvs[i];
+		set_uv -= uv_warp_local_offset;
+		set_uv *= uv_warp_scale;
+		set_uv += uv_warp_global_offset;
+
+		cur_uvs[0] = set_uv.x;
+		cur_uvs[1] = set_uv.y;
+#ifdef CREATURE_MULTICORE
+	});
+#else
     }
+#endif
 }
 
 void
@@ -1001,11 +1010,18 @@ meshRenderRegion::getLocalIndex(int32 index_in) const
 void meshRenderRegion::poseFinalPts(glm::float32 * output_pts,
                                     TMap<FName, meshBone *>& bones_map)
 {
-    glm::float32 * read_pt = getRestPts();
-    glm::float32 * write_pt = output_pts;
+    glm::float32 * base_read_pt = getRestPts();
+    glm::float32 * base_write_pt = output_pts;
     
     // point posing
+#ifdef CREATURE_MULTICORE
+	ParallelFor(getNumPts(), [&](int32 i) {
+#else
     for(int32 i = 0; i < getNumPts(); i++) {
+#endif
+		glm::float32 * read_pt = base_read_pt + (i * 3);
+		glm::float32 * write_pt = base_write_pt + (i * 3);
+
         glm::vec4 cur_rest_pt(read_pt[0], read_pt[1], read_pt[2], 1);
         
         if(use_local_displacements) {
@@ -1060,11 +1076,12 @@ void meshRenderRegion::poseFinalPts(glm::float32 * output_pts,
         if(use_post_displacements) {
             write_pt[0] += post_displacements[i].x;
             write_pt[1] += post_displacements[i].y;
-        }
-        
-        read_pt += 3;
-        write_pt += 3;
+        }       
+#ifdef CREATURE_MULTICORE
+	});
+#else
     }
+#endif
     
     // uv warping
     if(use_uv_warp) {
@@ -1077,8 +1094,8 @@ void meshRenderRegion::poseFastFinalPts(glm::float32 * output_pts,
 										bool try_post_displacements,
 										bool try_uv_swap)
 {
-    glm::float32 * read_pt = getRestPts();
-    glm::float32 * write_pt = output_pts;
+	glm::float32 * base_read_pt = getRestPts();
+	glm::float32 * base_write_pt = output_pts;
     
     // fill up dqs
     for(auto i = 0; i < fill_dq_array.Num(); i++)
@@ -1087,7 +1104,13 @@ void meshRenderRegion::poseFastFinalPts(glm::float32 * output_pts,
     }
     
     // pose points
-    for(int32 i = 0; i < getNumPts(); i++) {
+#ifdef CREATURE_MULTICORE
+	ParallelFor(getNumPts(), [&](int32 i) {
+#else
+	for (int32 i = 0; i < getNumPts(); i++) {
+#endif
+		glm::float32 * read_pt = base_read_pt + (i * 3);
+		glm::float32 * write_pt = base_write_pt + (i * 3);
         glm::vec4 cur_rest_pt(read_pt[0], read_pt[1], read_pt[2], 1);
         
         if(use_local_displacements && try_local_displacements) {
@@ -1120,11 +1143,12 @@ void meshRenderRegion::poseFastFinalPts(glm::float32 * output_pts,
 		{
             write_pt[0] += post_displacements[i].x;
             write_pt[1] += post_displacements[i].y;
-        }
-        
-        read_pt += 3;
-        write_pt += 3;
-    }
+        }       
+#ifdef CREATURE_MULTICORE
+	});
+#else
+	}
+#endif
     
     // uv warping
 	if (use_uv_warp && try_uv_swap) {

@@ -385,7 +385,7 @@ void UCreatureMeshComponent::InitStandardValues()
 	bones_override_blend_factor = 1.0f;
 	completely_disable = false;
 	fixed_timestep = 0.0f;
-	run_multicore = false;
+	run_task_multicore = false;
 
 	// Generate a single dummy triangle
 	/*
@@ -464,7 +464,18 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 	}
 
 	// Run the animation
-	if (run_multicore) {
+
+	// We disable task async processing since it looks like it
+	// causes race conditions. Multithreading is done in the core posing and
+	// mesh processing portions at a finer granularity
+	auto can_tick = RunTickProcessing(DeltaTime, true);
+	if (can_tick) {
+		// fire events
+		FireStartEndEvents();
+	}
+
+	/*
+	if (run_task_multicore) {
 		creatureTickResult = Async<bool>(EAsyncExecution::TaskGraph, [this, DeltaTime]()
 		{
 			SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_Tick_Async);
@@ -478,6 +489,7 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 			FireStartEndEvents();
 		}
 	}
+	*/
 }
 
 bool UCreatureMeshComponent::RunTickProcessing(float DeltaTime, bool markDirty)
@@ -498,7 +510,10 @@ bool UCreatureMeshComponent::RunTickProcessing(float DeltaTime, bool markDirty)
 
 void UCreatureMeshComponent::ProcessCreatureCoreResult(FCreatureCoreResultTickFunction& ThisTickFunction)
 {
-	if (ShouldSkipTick() || (!run_multicore))
+	// Do Nothing for now since Async Tasks are Disabled
+
+	/*
+	if (ShouldSkipTick() || (!run_task_multicore))
 	{
 		return;
 	}
@@ -533,6 +548,7 @@ void UCreatureMeshComponent::ProcessCreatureCoreResult(FCreatureCoreResultTickFu
 		// fire events
 		FireStartEndEvents();
 	}
+	*/
 }
 
 void 

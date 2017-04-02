@@ -6,6 +6,7 @@
 #include "DynamicMeshBuilder.h"
 #include "CustomProceduralMeshComponent.h"
 #include "Runtime/Launch/Resources/Version.h"
+#include <Runtime/Core/Public/Async/ParallelFor.h>
 
 DECLARE_DWORD_COUNTER_STAT(TEXT("Creature Mesh Tris"), STAT_CreatureMeshTriangles, STATGROUP_Creature);
 DECLARE_CYCLE_STAT(TEXT("ProceduralMeshSceneProxy_GetDynamicMeshElements"), STAT_ProceduralMeshSceneProxy_GetDynamicMeshElements, STATGROUP_Creature);
@@ -156,8 +157,11 @@ public:
 			VertexCache.AddUninitialized(point_num);
 		}
 
-		for (int32 i = 0; i < this->point_num; i++)
-		{
+#ifdef CREATURE_MULTICORE
+		ParallelFor(this->point_num, [&](int32 i) {
+#else
+		for (int32 i = 0; i < this->point_num; i++) {
+#endif
 			FDynamicMeshVertex& curVert = VertexCache[i];
 
 			int pos_idx = i * 3;
@@ -170,14 +174,22 @@ public:
 
 			int uv_idx = i * 2;
 			curVert.TextureCoordinate.Set(this->uvs[uv_idx], this->uvs[uv_idx + 1]);
+#ifdef CREATURE_MULTICORE
+		});
+#else
 		}
+#endif
 
 		// Set Tangents
-		for (int cur_indice = 0; cur_indice < indices_num; cur_indice += 3)
-		{
+#ifdef CREATURE_MULTICORE
+		ParallelFor(indices_num / 3, [&](int32 ref_idx) {
+			int32 cur_indice = ref_idx * 3;
+#else
+		for (int32 cur_indice = 0; cur_indice < indices_num; cur_indice += 3) {
+#endif
 			FDynamicMeshVertex & vert0 = VertexCache[(indices[cur_indice])];
-			FDynamicMeshVertex & vert1 = VertexCache[(indices[cur_indice+1])];
-			FDynamicMeshVertex & vert2 = VertexCache[(indices[cur_indice+2])];
+			FDynamicMeshVertex & vert1 = VertexCache[(indices[cur_indice + 1])];
+			FDynamicMeshVertex & vert2 = VertexCache[(indices[cur_indice + 2])];
 
 			const FVector Edge01 = (vert1.Position - vert0.Position);
 			const FVector Edge02 = (vert2.Position - vert0.Position);
@@ -189,7 +201,11 @@ public:
 			vert0.SetTangents(TangentX, TangentY, TangentZ);
 			vert1.SetTangents(TangentX, TangentY, TangentZ);
 			vert2.SetTangents(TangentX, TangentY, TangentZ);
+#ifdef CREATURE_MULTICORE
+		});
+#else
 		}
+#endif
 
 	}
 

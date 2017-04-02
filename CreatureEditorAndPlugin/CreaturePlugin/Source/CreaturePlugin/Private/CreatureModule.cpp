@@ -34,6 +34,7 @@
  *****************************************************************************/
 #include "CreaturePluginPCH.h"
 #include "CreatureModule.h"
+#include <Runtime/Core/Public/Async/ParallelFor.h>
 
 DECLARE_CYCLE_STAT(TEXT("CreatureManager_Update"), STAT_CreatureManager_Update, STATGROUP_Creature);
 DECLARE_CYCLE_STAT(TEXT("CreatureManager_IncreRunTime"), STAT_CreatureManager_IncreRunTime, STATGROUP_Creature);
@@ -1043,24 +1044,25 @@ namespace CreatureModule {
     {
         int32 cur_floor_time = getIndexByTime((int32)floorf(time_in));
         int32 cur_ceil_time = getIndexByTime((int32)ceilf(time_in));
-        float cur_ratio = (time_in - (float)floorf(time_in));
+        float cur_ratio = (time_in - (float)floorf(time_in));       
         
-        glm::float32 * set_pt = target_pts;
-        glm::float32 * floor_pts = cache_pts[cur_floor_time];
-        glm::float32 * ceil_pts = cache_pts[cur_ceil_time];
-        
-        for(int32 i = 0; i < num_pts; i++)
-        {
+#ifdef CREATURE_MULTICORE
+		ParallelFor(num_pts, [&](int32 i) {
+#else
+		for (int32 i = 0; i < num_pts; i++) {
+#endif
+			glm::float32 * set_pt = target_pts + (i * 3);
+			glm::float32 * floor_pts = cache_pts[cur_floor_time] + (i * 3);
+			glm::float32 * ceil_pts = cache_pts[cur_ceil_time] + (i * 3);
 
-            
-            set_pt[0] = ((1.0f - cur_ratio) * floor_pts[0]) + (cur_ratio * ceil_pts[0]);
-            set_pt[1] = ((1.0f - cur_ratio) * floor_pts[1]) + (cur_ratio * ceil_pts[1]);
-            set_pt[2] = ((1.0f - cur_ratio) * floor_pts[2]) + (cur_ratio * ceil_pts[2]);
-
-            set_pt += 3;
-            floor_pts += 3;
-            ceil_pts += 3;
-        }
+			set_pt[0] = ((1.0f - cur_ratio) * floor_pts[0]) + (cur_ratio * ceil_pts[0]);
+			set_pt[1] = ((1.0f - cur_ratio) * floor_pts[1]) + (cur_ratio * ceil_pts[1]);
+			set_pt[2] = ((1.0f - cur_ratio) * floor_pts[2]) + (cur_ratio * ceil_pts[2]);
+#ifdef CREATURE_MULTICORE
+		});
+#else
+		}
+#endif
         
     }
     

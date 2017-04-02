@@ -386,10 +386,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	float fixed_timestep;
 
-	/** A value that determines if the Creature computation runs on multiple cores or not */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	bool run_multicore;
-
 	/** Event that is triggered when the animation starts */
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
 	FCreatureMeshAnimationStartEvent CreatureAnimationStartEvent;
@@ -654,6 +650,7 @@ protected:
 	TMap<FName, std::pair<glm::vec4, glm::vec4> > internal_ik_bone_pts;
 	TArray<FCreatureFrameCallback> frame_callbacks;
 	TArray<FCreatureRepeatFrameCallback> repeat_frame_callbacks;
+	bool run_task_multicore;
 
 	void InitStandardValues();
 
