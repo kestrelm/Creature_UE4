@@ -638,7 +638,6 @@ void CreatureCore::FreeDataPacket(const FName & filename_in)
 			global_animations.Remove(cur_key);
 		}
 
-		global_load_data_packets[filename_in]->allocator.deallocate();
 		global_load_data_packets.Remove(filename_in);
 	}
 }

@@ -64,8 +64,10 @@ FString& UCreatureAnimationAsset::GetJsonString()
 
 void UCreatureAnimationAsset::SetNewJsonString(FString & str_in)
 {
+	Modify();
 	CreatureFileJSonData.Empty();
 	CreatureRawJSONString = str_in;
+	GatherAnimationData();
 }
 
 const FCreatureAnimationDataCache * UCreatureAnimationAsset::GetDataCacheForClip(const FName & clipName) const

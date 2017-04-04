@@ -73,6 +73,11 @@ void UCreatureMeshComponent::SetBluePrintBlendActiveAnimation_Name(FName name_in
 	ResetFrameCallbacks();
 }
 
+FName UCreatureMeshComponent::GetBluePrintActiveAnimationName()
+{
+	return creature_core.creature_manager->GetActiveAnimationName();
+}
+
 void UCreatureMeshComponent::SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time)
 {
 	creature_core.SetBluePrintAnimationCustomTimeRange(FName(*name_in), start_time, end_time);

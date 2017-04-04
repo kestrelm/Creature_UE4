@@ -420,6 +420,10 @@ public:
 	// Blueprint version of setting the blended active animation name
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintBlendActiveAnimation_Name(FName name_in, float factor);
+
+	// Blueprint version of returning the curernt active animation name
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	FName GetBluePrintActiveAnimationName();
 	
 	// Blueprint version of setting a custom time range for a given animation
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature", meta=(DeprecatedFunction, DeprecationMessage = "Please replace with _Name version of this function to improve performance"))
@@ -562,7 +566,6 @@ public:
 	// Blueprint function that returns whether anchor points are active for the character
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	bool GetBluePrintUseAnchorPoints() const;
-
 
 	// Blueprint function that sets the list of bones you want to override positions for
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")

@@ -25,6 +25,14 @@ FCreatureToolsDetails::MakeInstance()
 	return MakeShareable(new FCreatureToolsDetails);
 }
  
+FCreatureToolsDetails::~FCreatureToolsDetails()
+{
+	if (creatureClient_isConnected())
+	{
+		creatureClient_stopConnection();
+	}
+}
+
 void FCreatureToolsDetails::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	InitFramework();
@@ -104,6 +112,7 @@ FReply FCreatureToolsDetails::LiveSyncPressed()
 	}
 
 	auto retrieve_filename = FString(creatureClient_retrieveRequestExportFilename("REQUEST_JSON"));
+
 	if (retrieve_filename.IsEmpty())
 	{
 		FMessageDialog::Open(
