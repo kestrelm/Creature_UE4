@@ -63,6 +63,8 @@ public:
 
 	bool UseCompressedData() const;
 
+	void forceRefreshJSONData();
+
 	virtual void Serialize(FArchive& Ar) override;
 
 #if WITH_EDITORONLY_DATA
@@ -72,6 +74,7 @@ public:
 	void PostLoad() override;
 	void PreSave(const class ITargetPlatform* TargetPlatform) override;
 	void PostInitProperties() override;
+	virtual void PostEditUndo() override;
 	
 	void GatherAnimationData();
 	

@@ -4,6 +4,7 @@
 #include "Developer/DesktopPlatform/Public/DesktopPlatformModule.h"
 #include "UnrealEd.h"
 #include "BusyCursor.h"
+#include "ScopedTransaction.h"
 
 #define LOCTEXT_NAMESPACE "CreatureToolsDetails"
 
@@ -132,24 +133,30 @@ FReply FCreatureToolsDetails::LiveSyncPressed()
 		return FReply::Handled();
 	}
 	
-	// Only refresh the actors with the animation asset in question
-	UCreatureAnimationAsset * refresh_anim_asset = active_mesh->creature_animation_asset;
-	active_mesh->GetCore().FreeDataPacket(refresh_anim_asset->GetCreatureFilename());
-	refresh_anim_asset->SetNewJsonString(raw_json);
-
-	auto cur_world = GEditor->GetEditorWorldContext().World();
-	for (TActorIterator<AActor> ActorItr(cur_world); ActorItr; ++ActorItr)
+	// Update data
 	{
-		auto * cur_actor = *ActorItr;
-		UCreatureMeshComponent * cur_mesh = cur_actor->FindComponentByClass<UCreatureMeshComponent>();
-		if (cur_mesh)
+		UCreatureAnimationAsset * refresh_anim_asset = active_mesh->creature_animation_asset;
+		const FScopedTransaction Transaction(NSLOCTEXT("Creature", "CreatureAsset", "Live Sync"));
+		refresh_anim_asset->SetFlags(RF_Transactional);
+		refresh_anim_asset->Modify();
+		refresh_anim_asset->SetNewJsonString(raw_json);
+
+		auto cur_world = GEditor->GetEditorWorldContext().World();
+		for (TActorIterator<AActor> ActorItr(cur_world); ActorItr; ++ActorItr)
 		{
-			if (cur_mesh->creature_animation_asset == refresh_anim_asset)
+			auto * cur_actor = *ActorItr;
+			UCreatureMeshComponent * cur_mesh = cur_actor->FindComponentByClass<UCreatureMeshComponent>();
+			if (cur_mesh)
 			{
-				cur_actor->ReregisterAllComponents();
+				if (cur_mesh->creature_animation_asset == refresh_anim_asset)
+				{
+					cur_actor->ReregisterAllComponents();
+				}
 			}
 		}
 	}
+
+
 
 	return FReply::Handled();
 }

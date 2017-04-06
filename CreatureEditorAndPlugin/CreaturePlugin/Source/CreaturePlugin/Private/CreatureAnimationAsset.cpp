@@ -30,6 +30,16 @@ UCreatureAnimationAsset::UseCompressedData() const
 	return (CreatureZipBinary.Num() > 0);
 }
 
+void UCreatureAnimationAsset::forceRefreshJSONData()
+{
+	CreatureFileJSonData.Empty();
+	CreatureCore::FreeDataPacket(GetCreatureFilename());
+
+#if WITH_EDITORONLY_DATA
+	GatherAnimationData();
+#endif
+}
+
 FString& UCreatureAnimationAsset::GetJsonString()
 {
 	// Decide if we should decompress or return the raw uncompressed string
@@ -64,12 +74,8 @@ FString& UCreatureAnimationAsset::GetJsonString()
 
 void UCreatureAnimationAsset::SetNewJsonString(FString & str_in)
 {
-	Modify();
-	CreatureFileJSonData.Empty();
 	CreatureRawJSONString = str_in;
-#if WITH_EDITORONLY_DATA
-	GatherAnimationData();
-#endif
+	forceRefreshJSONData();
 }
 
 const FCreatureAnimationDataCache * UCreatureAnimationAsset::GetDataCacheForClip(const FName & clipName) const
@@ -275,6 +281,12 @@ void UCreatureAnimationAsset::PostInitProperties()
 	}
 
 	Super::PostInitProperties();
+}
+
+void UCreatureAnimationAsset::PostEditUndo()
+{
+	Super::PostEditUndo();
+	forceRefreshJSONData();
 }
 
 #endif /*WITH_EDITORONLY_DATA*/
