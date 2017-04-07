@@ -469,18 +469,9 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 	}
 
 	// Run the animation
-
-	// We disable task async processing since it looks like it
-	// causes race conditions. Multithreading is done in the core posing and
-	// mesh processing portions at a finer granularity
-	auto can_tick = RunTickProcessing(DeltaTime, true);
-	if (can_tick) {
-		// fire events
-		FireStartEndEvents();
-	}
-
-	/*
 	if (run_task_multicore) {
+		// Make sure this only runs for characters that will not be removed from the scene
+		// otherwise it might not be safe
 		creatureTickResult = Async<bool>(EAsyncExecution::TaskGraph, [this, DeltaTime]()
 		{
 			SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_Tick_Async);
@@ -494,7 +485,6 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 			FireStartEndEvents();
 		}
 	}
-	*/
 }
 
 bool UCreatureMeshComponent::RunTickProcessing(float DeltaTime, bool markDirty)
@@ -515,9 +505,6 @@ bool UCreatureMeshComponent::RunTickProcessing(float DeltaTime, bool markDirty)
 
 void UCreatureMeshComponent::ProcessCreatureCoreResult(FCreatureCoreResultTickFunction& ThisTickFunction)
 {
-	// Do Nothing for now since Async Tasks are Disabled
-
-	/*
 	if (ShouldSkipTick() || (!run_task_multicore))
 	{
 		return;
@@ -553,7 +540,6 @@ void UCreatureMeshComponent::ProcessCreatureCoreResult(FCreatureCoreResultTickFu
 		// fire events
 		FireStartEndEvents();
 	}
-	*/
 }
 
 void 

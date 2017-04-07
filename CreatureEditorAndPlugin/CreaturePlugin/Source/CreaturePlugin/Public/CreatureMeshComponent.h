@@ -386,6 +386,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	float fixed_timestep;
 
+	// Decides whether to run parallel processing per whole character. Note this
+	// is not neccessarily safe to do if you are going to delete this character dynamically.
+	// It is safe to enable for characters that have more or less constant lifetimes and not deleted.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	bool run_task_multicore;
+
 	/** Event that is triggered when the animation starts */
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
 	FCreatureMeshAnimationStartEvent CreatureAnimationStartEvent;
@@ -653,7 +659,6 @@ protected:
 	TMap<FName, std::pair<glm::vec4, glm::vec4> > internal_ik_bone_pts;
 	TArray<FCreatureFrameCallback> frame_callbacks;
 	TArray<FCreatureRepeatFrameCallback> repeat_frame_callbacks;
-	bool run_task_multicore;
 
 	void InitStandardValues();
 
