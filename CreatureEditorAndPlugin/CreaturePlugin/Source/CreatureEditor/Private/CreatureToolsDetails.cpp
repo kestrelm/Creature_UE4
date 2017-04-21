@@ -112,7 +112,7 @@ FReply FCreatureToolsDetails::LiveSyncPressed()
 		}
 	}
 
-	auto retrieve_filename = FString(creatureClient_retrieveRequestExportFilename("REQUEST_JSON"));
+	auto retrieve_filename = FString(creatureClient_retrieveRequestExportFilename((char *)"REQUEST_JSON"));
 
 	if (retrieve_filename.IsEmpty())
 	{
