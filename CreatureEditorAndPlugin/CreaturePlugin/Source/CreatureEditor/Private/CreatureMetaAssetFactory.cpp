@@ -53,6 +53,7 @@ bool UCreatureMetaAssetFactory::ImportSourceFile(UCreatureMetaAsset *forAsset, F
 	}
 
     forAsset->jsonString = readString;
+	forAsset->BuildMetaData();
 	return true;
 }
 

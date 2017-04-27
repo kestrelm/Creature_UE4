@@ -280,6 +280,33 @@ void UCreatureMeshComponent::RemoveBluePrintRegionItemSwap_Name(FName region_nam
 	creature_core.RemoveBluePrintRegionItemSwap(region_name_in);
 }
 
+void UCreatureMeshComponent::CreateBluePrintBendPhysics(FString anim_clip)
+{
+	if (physics_data.IsValid())
+	{
+		physics_data->clearPhysicsChain();
+		physics_data.Reset();
+	}
+
+	if (creature_meta_asset && (!physics_data.IsValid()))
+	{
+		auto base_xform = GetComponentToWorld();
+		auto cur_anim_name = creature_core.creature_manager->GetActiveAnimationName();
+		creature_core.creature_manager->SetActiveAnimationName(FName(*anim_clip));
+		creature_core.creature_manager->ResetToStartTimes();
+		creature_core.creature_manager->Update(0.0f);
+		physics_data = creature_meta_asset->CreateBendPhysicsChain(
+			base_xform,
+			GetOwner()->GetRootComponent(),
+			GetOwner(),
+			creature_core.creature_manager->GetCreature()->GetRenderComposition(),
+			anim_clip
+		);
+
+		creature_core.creature_manager->SetActiveAnimationName(cur_anim_name);
+	}
+}
+
 CreatureCore& UCreatureMeshComponent::GetCore()
 {
 	return creature_core;
@@ -497,7 +524,7 @@ bool UCreatureMeshComponent::RunTickProcessing(float DeltaTime, bool markDirty)
 		FScopeLock cur_lock(&local_lock);
 
 		animation_frame = creature_core.GetCreatureManager()->getActualRunTime();
-		DoCreatureMeshUpdate(INDEX_NONE, markDirty);
+		DoCreatureMeshUpdate(INDEX_NONE, markDirty);		
 	}
 
 	return can_tick;
@@ -891,6 +918,7 @@ void UCreatureMeshComponent::StandardInit()
 
 	if (creature_meta_asset)
 	{
+		physics_data.Reset();
 		creature_meta_asset->BuildMetaData();
 		creature_core.meta_data = creature_meta_asset->GetMetaData();
 	}
@@ -1107,6 +1135,20 @@ void UCreatureMeshComponent::LoadAnimationFromStore()
 void 
 UCreatureMeshComponent::CoreBonesOverride(TMap<FName, meshBone *>& bones_map)
 {
+	// Update Live Physics
+	if (creature_meta_asset)
+	{
+		if (physics_data.IsValid())
+		{
+			physics_data->updateAllKinematicBones(GetComponentToWorld());
+			if (creature_debug_draw) {
+				physics_data->drawDebugBones(GetWorld());
+			}
+			physics_data->updateBonePositions(GetComponentToWorld());
+		}
+	}
+
+	// IK and Manual Overrides
 	if ((internal_ik_map.Num() == 0) && (bones_override_list.Num() == 0))
 	{
 		return;

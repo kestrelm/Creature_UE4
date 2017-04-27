@@ -617,6 +617,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAlwaysTick(bool flag_in);
 
+	// Create live bend physics motors from animation clip
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void CreateBluePrintBendPhysics(FString anim_clip);
+
 	CreatureCore& GetCore();
 
 	virtual bool ShouldSkipTick() const;
@@ -659,6 +663,7 @@ protected:
 	TMap<FName, std::pair<glm::vec4, glm::vec4> > internal_ik_bone_pts;
 	TArray<FCreatureFrameCallback> frame_callbacks;
 	TArray<FCreatureRepeatFrameCallback> repeat_frame_callbacks;
+	TSharedPtr<CreaturePhysicsData> physics_data;
 
 	void InitStandardValues();
 
