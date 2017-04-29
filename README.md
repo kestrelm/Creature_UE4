@@ -16,6 +16,8 @@ For more information on how to use the runtimes, please head over to this [site]
 
 - **Live Sync** Sync up changes **Live** between Creature Pro for Windows and the UE4 editor
 
+- **Real-time Bend Physics** Dangling Bones with **Bend Physics Motors** can be created and run live/real-time in UE4 for interactive Gameplay/Manipulation purposes. 
+
 - **Blueprint Enabled** All functionality exposed to UE4's powerful Blueprint Visual Scripting System
 
 - **IK Bone Posing** Supports in game IK Bone posing for custom gameplay situations
