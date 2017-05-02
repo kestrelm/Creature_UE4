@@ -27,6 +27,7 @@ namespace UnrealBuildTool.Rules
             Definitions.Add("GLM_FORCE_RADIANS");
             Definitions.Add("CREATURE_NO_USE_ZIP");
             Definitions.Add("CREATURE_NO_USE_EXCEPTIONS");
+            Definitions.Add("CREATURE_MULTICORE");
             PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "Includes"));
 
             return true;

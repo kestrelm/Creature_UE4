@@ -42,6 +42,7 @@ CreatureCore::CreatureCore()
 	is_disabled = false;
 	is_driven = false;
 	is_ready_play = false;
+	is_animation_loaded = false;
 	do_file_warning = true;
 	should_process_animation_start = false;
 	should_process_animation_end = false;
@@ -87,7 +88,7 @@ CreatureCore::GetAndClearShouldAnimEnd()
 FProceduralMeshTriData 
 CreatureCore::GetProcMeshData(EWorldType::Type world_type)
 {
-	if (!creature_manager.Get())
+	if (!is_animation_loaded)
 	{
 		FProceduralMeshTriData ret_data(nullptr,
 			nullptr, nullptr,
@@ -269,6 +270,7 @@ bool CreatureCore::InitCreatureRender()
 	FName cur_creature_filename = creature_filename;
 	bool init_success = false;
 	FName load_filename;
+	is_animation_loaded = false;
 
 	//////////////////////////////////////////////////////////////////////////
 	//Changed by God of Pen
@@ -347,6 +349,7 @@ bool CreatureCore::InitCreatureRender()
 		FillBoneData();
 	}
 
+	is_animation_loaded = true;
 
 	return init_success;
 }
@@ -616,6 +619,29 @@ CreatureCore::ClearAllDataPackets()
 	global_load_data_packets.Empty();
 }
 
+void CreatureCore::FreeDataPacket(const FName & filename_in)
+{
+	if (global_load_data_packets.Contains(filename_in))
+	{
+		TArray<FName> remove_keys;
+		for (auto anim_pair : global_animations)
+		{
+			auto key_str = anim_pair.Key.ToString();
+			if (key_str.StartsWith(filename_in.ToString() + FString("_")))
+			{
+				remove_keys.Add(anim_pair.Key);
+			}
+		}
+
+		for (auto cur_key : remove_keys)
+		{
+			global_animations.Remove(cur_key);
+		}
+
+		global_load_data_packets.Remove(filename_in);
+	}
+}
+
 void 
 CreatureCore::LoadAnimation(const FName& filename_in, const FName& name_in)
 {
@@ -833,6 +859,11 @@ bool
 CreatureCore::RunTick(float delta_time)
 {
 	SCOPE_CYCLE_COUNTER(STAT_CreatureCore_RunTick);
+
+	if (!is_animation_loaded)
+	{
+		return false;
+	}
 
 	FScopeLock scope_lock(update_lock.Get());
 

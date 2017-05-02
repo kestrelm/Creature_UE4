@@ -35,6 +35,13 @@
 #include <cassert>
 #include <cstddef>
 
+#ifdef _WIN32
+// Put this in if you get: decorated name length exceeded, name was truncated 
+// for the Visual Studio Compiler
+#pragma warning(disable : 4503)
+#pragma warning(disable : 4668)
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////////
 // Version
 

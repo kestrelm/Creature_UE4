@@ -386,9 +386,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	float fixed_timestep;
 
-	/** A value that determines if the Creature computation runs on multiple cores or not */
+	// Decides whether to run parallel processing per whole character. Note this
+	// is not neccessarily safe to do if you are going to delete this character dynamically.
+	// It is safe to enable for characters that have more or less constant lifetimes and not deleted.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
-	bool run_multicore;
+	bool run_task_multicore;
 
 	/** Event that is triggered when the animation starts */
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
@@ -424,6 +426,10 @@ public:
 	// Blueprint version of setting the blended active animation name
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintBlendActiveAnimation_Name(FName name_in, float factor);
+
+	// Blueprint version of returning the curernt active animation name
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	FName GetBluePrintActiveAnimationName();
 	
 	// Blueprint version of setting a custom time range for a given animation
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature", meta=(DeprecatedFunction, DeprecationMessage = "Please replace with _Name version of this function to improve performance"))
@@ -567,7 +573,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	bool GetBluePrintUseAnchorPoints() const;
 
-
 	// Blueprint function that sets the list of bones you want to override positions for
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintBonesOverride(const TArray<FCreatureBoneOverride>& bones_list_in);
@@ -612,6 +617,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAlwaysTick(bool flag_in);
 
+	// Create live bend physics motors from animation clip
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void CreateBluePrintBendPhysics(FString anim_clip);
+
 	CreatureCore& GetCore();
 
 	virtual bool ShouldSkipTick() const;
@@ -629,7 +638,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	///ChangedBy God Of Pen
 	///存储一系列Clip的数据结构
-	UPROPERTY(BlueprintReadOnly, Category = "Components|Creature")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
 	class UCreatureAnimationClipsStore* ClipStore;
 
 	virtual void BeginPlay() override;
@@ -654,6 +663,7 @@ protected:
 	TMap<FName, std::pair<glm::vec4, glm::vec4> > internal_ik_bone_pts;
 	TArray<FCreatureFrameCallback> frame_callbacks;
 	TArray<FCreatureRepeatFrameCallback> repeat_frame_callbacks;
+	TSharedPtr<CreaturePhysicsData> physics_data;
 
 	void InitStandardValues();
 

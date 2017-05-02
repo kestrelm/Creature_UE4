@@ -14,6 +14,7 @@
 // Put this in if you get: decorated name length exceeded, name was truncated 
 // for the Visual Studio Compiler
 #pragma warning(disable : 4503)
+#pragma warning(disable : 4668)
 #endif
 
 #if __clang__
@@ -70,6 +71,11 @@ void UCreatureMeshComponent::SetBluePrintBlendActiveAnimation_Name(FName name_in
 {
 	creature_core.SetBluePrintBlendActiveAnimation(name_in, factor);
 	ResetFrameCallbacks();
+}
+
+FName UCreatureMeshComponent::GetBluePrintActiveAnimationName()
+{
+	return creature_core.creature_manager->GetActiveAnimationName();
 }
 
 void UCreatureMeshComponent::SetBluePrintAnimationCustomTimeRange(FString name_in, int32 start_time, int32 end_time)
@@ -274,6 +280,33 @@ void UCreatureMeshComponent::RemoveBluePrintRegionItemSwap_Name(FName region_nam
 	creature_core.RemoveBluePrintRegionItemSwap(region_name_in);
 }
 
+void UCreatureMeshComponent::CreateBluePrintBendPhysics(FString anim_clip)
+{
+	if (physics_data.IsValid())
+	{
+		physics_data->clearPhysicsChain();
+		physics_data.Reset();
+	}
+
+	if (creature_meta_asset && (!physics_data.IsValid()))
+	{
+		auto base_xform = GetComponentToWorld();
+		auto cur_anim_name = creature_core.creature_manager->GetActiveAnimationName();
+		creature_core.creature_manager->SetActiveAnimationName(FName(*anim_clip));
+		creature_core.creature_manager->ResetToStartTimes();
+		creature_core.creature_manager->Update(0.0f);
+		physics_data = creature_meta_asset->CreateBendPhysicsChain(
+			base_xform,
+			GetOwner()->GetRootComponent(),
+			GetOwner(),
+			creature_core.creature_manager->GetCreature()->GetRenderComposition(),
+			anim_clip
+		);
+
+		creature_core.creature_manager->SetActiveAnimationName(cur_anim_name);
+	}
+}
+
 CreatureCore& UCreatureMeshComponent::GetCore()
 {
 	return creature_core;
@@ -384,7 +417,7 @@ void UCreatureMeshComponent::InitStandardValues()
 	bones_override_blend_factor = 1.0f;
 	completely_disable = false;
 	fixed_timestep = 0.0f;
-	run_multicore = true;
+	run_task_multicore = false;
 
 	// Generate a single dummy triangle
 	/*
@@ -463,7 +496,9 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 	}
 
 	// Run the animation
-	if (run_multicore) {
+	if (run_task_multicore) {
+		// Make sure this only runs for characters that will not be removed from the scene
+		// otherwise it might not be safe
 		creatureTickResult = Async<bool>(EAsyncExecution::TaskGraph, [this, DeltaTime]()
 		{
 			SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_Tick_Async);
@@ -489,7 +524,7 @@ bool UCreatureMeshComponent::RunTickProcessing(float DeltaTime, bool markDirty)
 		FScopeLock cur_lock(&local_lock);
 
 		animation_frame = creature_core.GetCreatureManager()->getActualRunTime();
-		DoCreatureMeshUpdate(INDEX_NONE, markDirty);
+		DoCreatureMeshUpdate(INDEX_NONE, markDirty);		
 	}
 
 	return can_tick;
@@ -497,7 +532,7 @@ bool UCreatureMeshComponent::RunTickProcessing(float DeltaTime, bool markDirty)
 
 void UCreatureMeshComponent::ProcessCreatureCoreResult(FCreatureCoreResultTickFunction& ThisTickFunction)
 {
-	if (ShouldSkipTick() || (!run_multicore))
+	if (ShouldSkipTick() || (!run_task_multicore))
 	{
 		return;
 	}
@@ -883,6 +918,7 @@ void UCreatureMeshComponent::StandardInit()
 
 	if (creature_meta_asset)
 	{
+		physics_data.Reset();
 		creature_meta_asset->BuildMetaData();
 		creature_core.meta_data = creature_meta_asset->GetMetaData();
 	}
@@ -1025,6 +1061,10 @@ FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
 	{
 		Proxy->SetDynamicData_RenderThread();
 	}
+	else if(GetWorld()->bPostTickComponentUpdate)
+	{
+		SendRenderDynamicData_Concurrent();
+	}
 	else
 	{
 		MarkRenderDynamicDataDirty();
@@ -1095,6 +1135,20 @@ void UCreatureMeshComponent::LoadAnimationFromStore()
 void 
 UCreatureMeshComponent::CoreBonesOverride(TMap<FName, meshBone *>& bones_map)
 {
+	// Update Live Physics
+	if (creature_meta_asset)
+	{
+		if (physics_data.IsValid())
+		{
+			physics_data->updateAllKinematicBones(GetComponentToWorld());
+			if (creature_debug_draw) {
+				physics_data->drawDebugBones(GetWorld());
+			}
+			physics_data->updateBonePositions(GetComponentToWorld());
+		}
+	}
+
+	// IK and Manual Overrides
 	if ((internal_ik_map.Num() == 0) && (bones_override_list.Num() == 0))
 	{
 		return;

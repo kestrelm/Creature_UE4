@@ -4,6 +4,9 @@
 #include <vector>
 #include "CreatureMetaAsset.generated.h"
 
+class meshBone;
+class meshRenderBoneComposition;
+
 class CreatureMetaData {
 public:
 
@@ -117,6 +120,109 @@ public:
 	TMap<FString, TMap<int32, FString> > anim_events_map;
 };
 
+class CreaturePhysicsData
+{
+public:
+
+	static FString getConstraintsKey(const FString& bone1, const FString& bone2)
+	{
+		return bone1 + FString("_") + bone2;
+	}
+
+	TArray<UPhysicsConstraintComponent *> * getConstraint(const FString& bone1, const FString& bone2)
+	{
+		auto test_name = getConstraintsKey(bone1, bone2);
+		if (constraints.Contains(test_name))
+		{
+			return &constraints[test_name];
+		}
+
+		test_name = getConstraintsKey(bone2, bone1);
+		if (constraints.Contains(test_name))
+		{
+			return &constraints[test_name];
+		}
+
+		return nullptr;
+	}
+
+	void createPhysicsChain(
+		const FTransform& base_xform,
+		USceneComponent * attach_root,
+		UObject * parent,
+		const TArray<meshBone *>& bones_in,
+		float stiffness,
+		float damping,
+		const FString& anim_clip_name_in);
+
+	void clearPhysicsChain();
+
+	void updateKinematicPos(const FTransform& base_xform, meshBone * bone_in);
+
+	void updateAllKinematicBones(const FTransform& base_xform);
+
+	void updateBonePositions(const FTransform& base_xform);
+	
+	void drawDebugBones(UWorld * world_in);
+
+	struct boxAndBone
+	{
+		boxAndBone(
+			UBoxComponent * box_in,
+			meshBone * bone_in,
+			meshBone * next_bone_in,
+			const FVector2D& basis_in)
+		{
+			box = box_in;
+			end_box = nullptr;
+			bone = bone_in;
+			next_bone = next_bone_in;
+			basis = basis_in;
+		}
+
+		UBoxComponent * box, *end_box;
+		meshBone * bone, *next_bone;
+		FVector2D basis;
+	};
+
+	TMap<FString, boxAndBone> bodies;
+	TMap<FString, TArray<UPhysicsConstraintComponent *> > constraints;
+	TArray<meshBone *> kinematic_bones;
+	FString anim_clip_name;
+};
+
+USTRUCT(BlueprintType)
+struct FBendPhysicsChain
+{
+	GENERATED_BODY()
+
+	// Name of this bend physics motor
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
+	FString motor_name;
+
+	// The animation clip name it is associated with
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
+	FString anim_clip_name;
+
+	// The animation clip name it is associated with
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Creature")
+	bool active = false;
+
+	// Number of bones associated with this chain
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
+	int32 num_bones = 0;
+
+	// Stiffness of this chain
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Creature")
+	float stiffness = 10.0f;
+
+	// Damping of this chain
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Creature")
+	float damping = 0.1f;
+
+	TArray<FString> bone_names;
+};
+
 UCLASS()
 class CREATUREPLUGIN_API UCreatureMetaAsset :public UObject{
 	GENERATED_BODY()
@@ -126,12 +232,26 @@ public:
 	UPROPERTY()
 	FString jsonString;
 
+	// The available bend physics chains
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Creature")
+	TArray<FBendPhysicsChain> bend_physics_chains;
+
 	FString& GetJsonString();
 
 	void BuildMetaData();
 
+	TSharedPtr<CreaturePhysicsData>
+	CreateBendPhysicsChain(
+		const FTransform& base_xform,
+		USceneComponent * attach_root,
+		UObject * parent,
+		meshRenderBoneComposition * bone_composition, 
+		const FString& anim_clip);
+
 	CreatureMetaData * GetMetaData();
-	
+
+	virtual void PostLoad() override;
+
 	virtual void Serialize(FArchive& Ar) override;
 	
 protected:

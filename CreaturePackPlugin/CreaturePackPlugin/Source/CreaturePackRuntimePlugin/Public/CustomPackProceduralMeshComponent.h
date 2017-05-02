@@ -98,7 +98,7 @@ private:
 };
 
 USTRUCT(BlueprintType)
-struct FProceduralMeshVertex
+struct FProceduralPackMeshVertex
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -116,18 +116,18 @@ struct FProceduralMeshVertex
 };
 
 USTRUCT(BlueprintType)
-struct FProceduralMeshTriangle
+struct FProceduralPackMeshTriangle
 {
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, Category=Triangle)
-	FProceduralMeshVertex Vertex0;
+	FProceduralPackMeshVertex Vertex0;
 
 	UPROPERTY(EditAnywhere, Category=Triangle)
-	FProceduralMeshVertex Vertex1;
+	FProceduralPackMeshVertex Vertex1;
 
 	UPROPERTY(EditAnywhere, Category=Triangle)
-	FProceduralMeshVertex Vertex2;
+	FProceduralPackMeshVertex Vertex2;
 };
 
 /** Component that allows you to specify custom triangle mesh geometry */

@@ -7,6 +7,7 @@
 #include "Engine.h"
 #include "EditorViewportClient.h"
 #include "PreviewScene.h"
+#include "AdvancedPreviewScene.h"
 class FCreatureAnimStoreEditorViewportClient : public FEditorViewportClient
 {
 public:
@@ -33,7 +34,9 @@ public:
 	void ReConstructMesh();
 private:
 	//”√”⁄‘§¿¿µƒScene
-	FPreviewScene OwnerScene;
+	//FPreviewScene OwnerScene;
+
+	TSharedPtr<FAdvancedPreviewScene> OwnerScene;
 
 	class UCreatureMeshComponent* EditingCreatureMesh;
 	class UCreatureAnimationClipsStore* EditingStore;

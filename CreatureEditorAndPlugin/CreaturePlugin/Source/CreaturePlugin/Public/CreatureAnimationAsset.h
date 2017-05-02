@@ -48,6 +48,8 @@ public:
 	FString CreatureRawJSONString;
 
 	FString& GetJsonString();
+
+	void SetNewJsonString(FString& str_in);
 	
 	/** The approximation level to use when generating the point cache (range 0-20; 0=no approximation, -1=no cache generated) */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Creature)
@@ -61,6 +63,8 @@ public:
 
 	bool UseCompressedData() const;
 
+	void forceRefreshJSONData();
+
 	virtual void Serialize(FArchive& Ar) override;
 
 #if WITH_EDITORONLY_DATA
@@ -70,6 +74,7 @@ public:
 	void PostLoad() override;
 	void PreSave(const class ITargetPlatform* TargetPlatform) override;
 	void PostInitProperties() override;
+	virtual void PostEditUndo() override;
 	
 	void GatherAnimationData();
 	
