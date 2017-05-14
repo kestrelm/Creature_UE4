@@ -413,9 +413,6 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
 	FCreatureRepeatFrameCallbackEvent CreatureRepeatFrameCallbackEvent;
 
-	// Returns the CreatureManager associated with this actor
-	CreatureModule::CreatureManager * GetCreatureManager();
-
 	// Blueprint version of setting the active animation name
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature", meta=(DeprecatedFunction, DeprecationMessage="Please replace with _Name version of this function to improve performance"))
 	void SetBluePrintActiveAnimation(FString name_in);
