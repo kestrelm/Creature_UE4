@@ -392,6 +392,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	bool run_task_multicore;
 
+	/** Activates/Deactivates anchor points in the character if it was setup in the Creature Animation Editor */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	bool use_anchor_points;
+
+
 	/** Event that is triggered when the animation starts */
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
 	FCreatureMeshAnimationStartEvent CreatureAnimationStartEvent;
