@@ -134,6 +134,7 @@ void CreaturePhysicsData::createPhysicsChain(
 		box_in->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 		box_in->SetEnableGravity(false);
 		box_in->SetAllMassScale(1.0f);
+		box_in->SetWorldScale3D(FVector(1, 1, 1));
 		box_in->SetAllPhysicsAngularVelocity(FVector::ZeroVector);
 		box_in->SetAllPhysicsLinearVelocity(FVector::ZeroVector);
 		box_in->SetAllPhysicsPosition(pt_in);
