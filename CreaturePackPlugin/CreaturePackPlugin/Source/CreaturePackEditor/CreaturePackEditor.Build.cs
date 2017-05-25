@@ -18,7 +18,8 @@ namespace UnrealBuildTool.Rules
         }
 
 
-        public CreaturePackEditor(TargetInfo Target)
+        public CreaturePackEditor(ReadOnlyTargetRules Target)
+            : base(Target)
         {
             PublicIncludePaths.AddRange(new string[] { "CreaturePackEditor/Public", "AssetTools/Public","GraphEditorActions/Public","AnimGraph/Public"});
             PrivateIncludePaths.AddRange(new string[] { "CreaturePackEditor/Public", "CreaturePackEditor/Private","UnrealEd/Private/Settings","Editor/AnimGraph/Private" });
