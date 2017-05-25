@@ -666,6 +666,7 @@ protected:
 	TArray<FCreatureFrameCallback> frame_callbacks;
 	TArray<FCreatureRepeatFrameCallback> repeat_frame_callbacks;
 	TSharedPtr<CreaturePhysicsData> physics_data;
+	FString delay_bendphysics_clip;
 
 	void InitStandardValues();
 
@@ -714,6 +715,8 @@ protected:
 	void ProcessFrameCallbacks();
 
 	void LoadAnimationFromStore();
+
+	void TryCreateBendPhysics();
 
 	// future used for async creature processing
 	TFuture<bool> creatureTickResult;

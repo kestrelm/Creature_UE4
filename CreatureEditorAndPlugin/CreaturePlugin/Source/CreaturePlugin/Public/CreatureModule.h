@@ -337,6 +337,8 @@ namespace CreatureModule {
 		// Returns whether to globally enable or disable point caching
 		bool GetDoPointCache() const;
         
+		// Just poses the bones of the character
+		void PoseJustBones(const FName& animation_name_in, float input_run_time);
     protected:
 
 		bool checkAnimationBlendValid() const;
@@ -361,10 +363,6 @@ namespace CreatureModule {
 		void ResetBlendTime(const FName& name_in);
 
 		void UpdateRegionSwitches(const FName& animation_name_in);
-
-		void PoseJustBones(const FName& animation_name_in,
-								glm::float32 * target_pts,
-								float input_run_time);
 
 		void JustRunUVWarps(const FName& animation_name_in, float input_run_time);
 

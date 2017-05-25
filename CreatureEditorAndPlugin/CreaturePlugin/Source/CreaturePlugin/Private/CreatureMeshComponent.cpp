@@ -282,6 +282,17 @@ void UCreatureMeshComponent::RemoveBluePrintRegionItemSwap_Name(FName region_nam
 
 void UCreatureMeshComponent::CreateBluePrintBendPhysics(FString anim_clip)
 {
+	FScopeLock cur_lock(&local_lock);
+	delay_bendphysics_clip = anim_clip;
+}
+
+void UCreatureMeshComponent::TryCreateBendPhysics()
+{
+	if (delay_bendphysics_clip.Len() == 0)
+	{
+		return;
+	}
+
 	if (physics_data.IsValid())
 	{
 		physics_data->clearPhysicsChain();
@@ -291,20 +302,17 @@ void UCreatureMeshComponent::CreateBluePrintBendPhysics(FString anim_clip)
 	if (creature_meta_asset && (!physics_data.IsValid()))
 	{
 		auto base_xform = GetComponentToWorld();
-		auto cur_anim_name = creature_core.creature_manager->GetActiveAnimationName();
-		creature_core.creature_manager->SetActiveAnimationName(FName(*anim_clip));
-		creature_core.creature_manager->ResetToStartTimes();
-		creature_core.creature_manager->Update(0.0f);
+		creature_core.creature_manager->PoseJustBones(FName(*delay_bendphysics_clip), 0.0f);
 		physics_data = creature_meta_asset->CreateBendPhysicsChain(
 			base_xform,
 			GetOwner()->GetRootComponent(),
 			GetOwner(),
 			creature_core.creature_manager->GetCreature()->GetRenderComposition(),
-			anim_clip
+			delay_bendphysics_clip
 		);
-
-		creature_core.creature_manager->SetActiveAnimationName(cur_anim_name);
 	}
+
+	delay_bendphysics_clip = FString("");
 }
 
 CreatureCore& UCreatureMeshComponent::GetCore()
@@ -526,6 +534,7 @@ bool UCreatureMeshComponent::RunTickProcessing(float DeltaTime, bool markDirty)
 
 		animation_frame = creature_core.GetCreatureManager()->getActualRunTime();
 		DoCreatureMeshUpdate(INDEX_NONE, markDirty);		
+		TryCreateBendPhysics();
 	}
 
 	return can_tick;
