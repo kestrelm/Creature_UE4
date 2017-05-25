@@ -123,6 +123,10 @@ public:
 class CreaturePhysicsData
 {
 public:
+	CreaturePhysicsData()
+	{
+		run_cnt = 0;
+	}
 
 	static FString getConstraintsKey(const FString& bone1, const FString& bone2)
 	{
@@ -189,6 +193,7 @@ public:
 	TMap<FString, TArray<UPhysicsConstraintComponent *> > constraints;
 	TArray<meshBone *> kinematic_bones;
 	FString anim_clip_name;
+	int run_cnt;
 };
 
 USTRUCT(BlueprintType)

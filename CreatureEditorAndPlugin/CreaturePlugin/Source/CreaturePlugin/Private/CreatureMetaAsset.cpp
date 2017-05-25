@@ -338,11 +338,18 @@ void CreaturePhysicsData::updateKinematicPos(
 		bone_in->getWorldStartPt().z,
 		bone_in->getWorldStartPt().y
 	);
-	set_body->SetWorldLocation(base_xform.TransformPosition(new_pos));
+	//set_body->SetWorldLocation(base_xform.TransformPosition(new_pos));
+	set_body->SetAllPhysicsPosition(base_xform.TransformPosition(new_pos));
 }
 
 void CreaturePhysicsData::updateAllKinematicBones(const FTransform & base_xform)
 {
+	if (run_cnt < 5)
+	{
+		run_cnt++;
+		return;
+	}
+
 	for (auto cur_bone : kinematic_bones)
 	{
 		updateKinematicPos(base_xform, cur_bone);
