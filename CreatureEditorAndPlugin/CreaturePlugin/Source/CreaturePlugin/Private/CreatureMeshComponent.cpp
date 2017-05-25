@@ -418,6 +418,7 @@ void UCreatureMeshComponent::InitStandardValues()
 	completely_disable = false;
 	fixed_timestep = 0.0f;
 	run_task_multicore = false;
+	use_anchor_points = false;
 
 	// Generate a single dummy triangle
 	/*
@@ -930,9 +931,10 @@ void UCreatureMeshComponent::StandardInit()
 			SetBluePrintActiveAnimation_Name(start_animation_name);
 		}
 
+		SetBluePrintUseAnchorPoints(use_anchor_points);
 		creature_core.SetBluePrintAnimationResetToStart();
 		PrepareRenderData(creature_core);
-		
+
 		// Register bone override callback
 		bones_override_list.Empty();
 		final_bones_override_list.Empty();

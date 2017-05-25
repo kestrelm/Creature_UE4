@@ -284,7 +284,7 @@ struct FCreatureCoreResultTickFunction : public FTickFunction
 };
 
 template<>
-struct TStructOpsTypeTraits<FCreatureCoreResultTickFunction> : public TStructOpsTypeTraitsBase
+struct TStructOpsTypeTraits<FCreatureCoreResultTickFunction> : public TStructOpsTypeTraitsBase2<FCreatureCoreResultTickFunction>
 {
 	enum
 	{
@@ -392,6 +392,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	bool run_task_multicore;
 
+	/** Activates/Deactivates anchor points in the character if it was setup in the Creature Animation Editor */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
+	bool use_anchor_points;
+
+
 	/** Event that is triggered when the animation starts */
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
 	FCreatureMeshAnimationStartEvent CreatureAnimationStartEvent;
@@ -407,9 +412,6 @@ public:
 	/** Event that is repeatedly triggered when custom repeated frame callbacks are assigned */
 	UPROPERTY(BlueprintAssignable, Category = "Components|Creature")
 	FCreatureRepeatFrameCallbackEvent CreatureRepeatFrameCallbackEvent;
-
-	// Returns the CreatureManager associated with this actor
-	CreatureModule::CreatureManager * GetCreatureManager();
 
 	// Blueprint version of setting the active animation name
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature", meta=(DeprecatedFunction, DeprecationMessage="Please replace with _Name version of this function to improve performance"))

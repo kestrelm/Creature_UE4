@@ -24,14 +24,15 @@ namespace UnrealBuildTool.Rules
 
 
 
-        public CreatureEditor(TargetInfo Target)
+        public CreatureEditor(ReadOnlyTargetRules Target)
+            : base(Target)
         {
             PublicIncludePaths.AddRange(new string[] { "CreatureEditor/Public", "AssetTools/Public","GraphEditorActions/Public","AnimGraph/Public"});
             PrivateIncludePaths.AddRange(new string[] { "CreatureEditor/Private","UnrealEd/Private/Settings","Editor/AnimGraph/Private" });
 
             PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "CreaturePlugin", "UnrealEd", "PropertyEditor", "AssetTools","EditorStyle","KismetWidgets","GraphEditor" });
 
-            PrivateDependencyModuleNames.AddRange(new string[] { "RHI", "RenderCore", "ShaderCore", "CreaturePlugin", "SlateCore", "Slate", "AssetTools", "GraphEditor", "Json", "JsonUtilities" });
+            PrivateDependencyModuleNames.AddRange(new string[] { "RHI", "RenderCore", "ShaderCore", "CreaturePlugin", "SlateCore", "Slate", "AssetTools", "GraphEditor", "Json", "JsonUtilities", "AdvancedPreviewScene" });
 
            // LoadCreatureLib(Target);
         }

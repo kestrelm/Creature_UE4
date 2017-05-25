@@ -1137,7 +1137,7 @@ void meshRenderRegion::poseFastFinalPts(glm::float32 * output_pts,
         
         write_pt[0] = final_pt.x;
         write_pt[1] = final_pt.y;
-        write_pt[2] = 1;
+        write_pt[2] = 0;
         
 		if (use_post_displacements && try_post_displacements)
 		{

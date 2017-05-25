@@ -133,6 +133,10 @@ void CreaturePhysicsData::createPhysicsChain(
 		box_in->SetWorldLocation(pt_in);
 		box_in->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 		box_in->SetEnableGravity(false);
+		box_in->SetAllMassScale(1.0f);
+		box_in->SetAllPhysicsAngularVelocity(FVector::ZeroVector);
+		box_in->SetAllPhysicsLinearVelocity(FVector::ZeroVector);
+		box_in->SetAllPhysicsPosition(pt_in);
 		box_in->RegisterComponent();
 	};
 
@@ -242,8 +246,10 @@ void CreaturePhysicsData::createPhysicsChain(
 			damping * 2.0f);
 
 		UPhysicsConstraintComponent* constraint_comp = NewObject<UPhysicsConstraintComponent>(parent);
-		constraint_comp->SetWorldLocation(body1->GetComponentLocation());
-		constraint_comp->AttachToComponent(attach_root, FAttachmentTransformRules::KeepWorldTransform);
+
+		auto body_pt = body1->GetComponentLocation();
+		constraint_comp->SetWorldLocation(body_pt);
+		constraint_comp->SetDisableCollision(true);
 		constraint_comp->SetConstrainedComponents(body1, NAME_None, body2, NAME_None);
 		constraint_comp->ConstraintInstance = constraint_inst;
 		constraint_comp->RegisterComponent();
@@ -258,6 +264,7 @@ void CreaturePhysicsData::createPhysicsChain(
 		auto bone_name_2 = bones_in[i + 1]->getKey().ToString();
 		auto body1 = bodies[bone_name_1].box;
 		auto body2 = bodies[bone_name_2].box;
+
 		auto main_constraint = 
 			makeChainConstraints(body1, body2, stiffness, damping, attach_root, parent);
 		if (getConstraint(bone_name_1, bone_name_2) == nullptr)
@@ -275,6 +282,7 @@ void CreaturePhysicsData::createPhysicsChain(
 		auto last_bone_name = bones_in[bones_in.Num() - 1]->getKey().ToString();
 		auto last_base_body = bodies[last_bone_name].box;
 		auto last_end_body = bodies[last_bone_name].end_box;
+
 		auto last_constraint =
 			makeChainConstraints(last_base_body, last_end_body, stiffness, damping, attach_root, parent);
 		constraints.Add(
@@ -600,11 +608,11 @@ UCreatureMetaAsset::CreateBendPhysicsChain(
 			}
 
 			physics_data->createPhysicsChain(
-				base_xform, 
-				attach_root, 
-				parent, 
+				base_xform,
+				attach_root,
+				parent,
 				chain_bones,
-				chain_data.stiffness, 
+				chain_data.stiffness,
 				chain_data.damping,
 				anim_clip);
 
