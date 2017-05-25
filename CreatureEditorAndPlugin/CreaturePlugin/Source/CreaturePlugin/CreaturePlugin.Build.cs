@@ -22,7 +22,7 @@ namespace UnrealBuildTool.Rules
             get { return Path.GetFullPath(Path.Combine(ModulePath, "../ThirdParty/")); }
         }
 
-        public bool LoadCreatureLib(TargetInfo Target)
+        public bool LoadCreatureLib(ReadOnlyTargetRules Target)
         {
             Definitions.Add("GLM_FORCE_RADIANS");
             Definitions.Add("CREATURE_NO_USE_ZIP");
@@ -33,7 +33,8 @@ namespace UnrealBuildTool.Rules
             return true;
         }
 
-        public CreaturePlugin(TargetInfo Target)
+        public CreaturePlugin(ReadOnlyTargetRules Target)
+            : base(Target)
         {
             PublicIncludePaths.AddRange(new string[] { "CreaturePlugin/Public", });
             PrivateIncludePaths.AddRange(new string[] { "CreaturePlugin/Private", });

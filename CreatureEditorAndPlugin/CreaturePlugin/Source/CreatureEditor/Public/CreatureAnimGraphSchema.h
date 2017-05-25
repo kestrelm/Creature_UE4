@@ -16,7 +16,7 @@ struct FEdGraphSchemaAction_NewCreatureStateNode : public FEdGraphSchemaAction
 		FEdGraphSchemaAction_NewCreatureStateNode()
 		: FEdGraphSchemaAction()
 	{}
-	FEdGraphSchemaAction_NewCreatureStateNode(const FText& InNodeCategory, const FText& InMenuDesc, const FString& InToolTip, const int32 InGrouping)
+	FEdGraphSchemaAction_NewCreatureStateNode(const FText& InNodeCategory, const FText& InMenuDesc, const FText& InToolTip, const int32 InGrouping)
 		:FEdGraphSchemaAction(InNodeCategory,InMenuDesc, InToolTip, InGrouping)
 	{
 	}
@@ -29,7 +29,7 @@ struct FEdGraphSchemaAction_NewCreatureAnimationEndTransition : public FEdGraphS
 		FEdGraphSchemaAction_NewCreatureAnimationEndTransition()
 		: FEdGraphSchemaAction()
 	{}
-	FEdGraphSchemaAction_NewCreatureAnimationEndTransition(const FText& InNodeCategory, const FText& InMenuDesc, const FString& InToolTip, const int32 InGrouping)
+	FEdGraphSchemaAction_NewCreatureAnimationEndTransition(const FText& InNodeCategory, const FText& InMenuDesc, const FText& InToolTip, const int32 InGrouping)
 		:FEdGraphSchemaAction(InNodeCategory, InMenuDesc, InToolTip, InGrouping)
 	{
 	}

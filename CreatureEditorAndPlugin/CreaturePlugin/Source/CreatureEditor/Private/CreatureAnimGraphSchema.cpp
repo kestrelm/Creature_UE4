@@ -6,7 +6,7 @@
 #include "CreatureAnimTransitionNode.h"
 #include "CreatureStateMachineGraph.h"
 #define LOCTEXT_NAMESPACE "CreatureStateMachineSchema"
-TSharedPtr<FEdGraphSchemaAction_NewCreatureStateNode> AddNewStateNodeAction(FGraphContextMenuBuilder& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FString& Tooltip, const int32 Grouping = 0)
+TSharedPtr<FEdGraphSchemaAction_NewCreatureStateNode> AddNewStateNodeAction(FGraphContextMenuBuilder& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip, const int32 Grouping = 0)
 {
 	TSharedPtr<FEdGraphSchemaAction_NewCreatureStateNode> NewStateNode(new FEdGraphSchemaAction_NewCreatureStateNode(Category, MenuDesc, Tooltip, Grouping));
 	ContextMenuBuilder.AddAction(NewStateNode);
@@ -72,13 +72,13 @@ bool UCreatureAnimGraphSchema::CreateAutomaticConversionNodeAndConnections(UEdGr
 void UCreatureAnimGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const
 {
 	{
-		TSharedPtr<FEdGraphSchemaAction_NewCreatureStateNode> Action = AddNewStateNodeAction(ContextMenuBuilder, FText::GetEmpty(), LOCTEXT("AddState", "Add State..."), TEXT("A new state"));
+		TSharedPtr<FEdGraphSchemaAction_NewCreatureStateNode> Action = AddNewStateNodeAction(ContextMenuBuilder, FText::GetEmpty(), LOCTEXT("AddState", "Add State..."), LOCTEXT("A new state", "A new state"));
 		//Action->NodeTemplate = NewObject<UCreatureAnimStateNode>(ContextMenuBuilder.OwnerOfTemporaries);
 	}
 
 	// Add Animation End Transition Node
 	{
-		TSharedPtr<FEdGraphSchemaAction_NewCreatureAnimationEndTransition> NewAnimationEndNode(new FEdGraphSchemaAction_NewCreatureAnimationEndTransition(FText::GetEmpty(), LOCTEXT("AddAnimEndTransition", "Add Animation End Tran..."),TEXT("Add a Animation End Transition Node"),0));
+		TSharedPtr<FEdGraphSchemaAction_NewCreatureAnimationEndTransition> NewAnimationEndNode(new FEdGraphSchemaAction_NewCreatureAnimationEndTransition(FText::GetEmpty(), LOCTEXT("AddAnimEndTransition", "Add Animation End Tran..."), LOCTEXT("Add a Animation End Transition Node", "Add a Animation End Transition Node"),0));
 		ContextMenuBuilder.AddAction(NewAnimationEndNode);
 
 	}
@@ -106,7 +106,7 @@ FLinearColor UCreatureAnimGraphSchema::GetPinTypeColor(const FEdGraphPinType& Pi
 void UCreatureAnimGraphSchema::GetGraphDisplayInformation(const UEdGraph& Graph, /*out*/ FGraphDisplayInfo& DisplayInfo) const
 {
 	DisplayInfo.DisplayName =LOCTEXT("State Name","Creature Anim Stat Node");
-	DisplayInfo.Tooltip = TEXT("Use to Play an Animation");
+	DisplayInfo.Tooltip = LOCTEXT("Use to Play an Animation", "Use to Play an Animation");
 }
 
 void UCreatureAnimGraphSchema::DroppedAssetsOnGraph(const TArray<FAssetData>& Assets, const FVector2D& GraphPosition, UEdGraph* Graph) const

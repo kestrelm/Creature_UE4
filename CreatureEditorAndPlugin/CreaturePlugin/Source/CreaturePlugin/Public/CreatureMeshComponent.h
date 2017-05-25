@@ -284,7 +284,7 @@ struct FCreatureCoreResultTickFunction : public FTickFunction
 };
 
 template<>
-struct TStructOpsTypeTraits<FCreatureCoreResultTickFunction> : public TStructOpsTypeTraitsBase
+struct TStructOpsTypeTraits<FCreatureCoreResultTickFunction> : public TStructOpsTypeTraitsBase2<FCreatureCoreResultTickFunction>
 {
 	enum
 	{
