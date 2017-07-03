@@ -24,6 +24,8 @@ For more information on how to use the runtimes, please head over to this [site]
 
 - **Events & Triggers** Spawn custom gameplay events and triggers at specific frame intervals
 
+- **Skin Swapping** Swap in different user defined skins or items. Useful for characters that have different clothing and/or items/weapons.
+
 - **Lightning Fast Animation Pose Playback Cache** Even faster character animation playback performance when using the Point Cache playback feature
 
 ### Trying out the new fancy Creature Editor & Runtimes:
