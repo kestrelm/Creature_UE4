@@ -6,6 +6,49 @@
 #include "Runtime/Engine/Classes/PhysicsEngine/ConstraintInstance.h"
 #include "Runtime/Engine/Classes/PhysicsEngine/PhysicsConstraintComponent.h"
 
+// CreatureMetaData
+void CreatureMetaData::buildSkinSwapIndices(
+	const FString & swap_name, 
+	meshRenderBoneComposition * bone_composition,
+	TArray<int32>& skin_swap_indices
+)
+{
+	if (!skin_swaps.Contains(swap_name))
+	{
+		skin_swap_indices.Empty();
+		return;
+	}
+
+	auto& swap_set = skin_swaps[swap_name];
+	int32 total_size = 0;
+	auto& regions_map = bone_composition->getRegionsMap();
+	for (auto& cur_data : regions_map)
+	{
+		if (swap_set.Contains(cur_data.Key.ToString()))
+		{
+			auto cur_region = cur_data.Value;
+			total_size += cur_region->getNumIndices();
+		}
+	}
+
+	skin_swap_indices.SetNum(total_size);
+
+	int32 offset = 0;
+	for (auto& cur_data : regions_map)
+	{
+		if (swap_set.Contains(cur_data.Key.ToString()))
+		{
+			auto cur_region = cur_data.Value;
+			std::copy(
+				cur_region->getIndices(),
+				cur_region->getIndices() + cur_region->getNumIndices(),
+				skin_swap_indices.GetData() + offset);
+			offset += cur_region->getNumIndices();
+		}
+	}
+}
+
+// Bend Physics
 static void SetLinearLimits(
 	FConstraintInstance& Constraint,
 	bool bDisableCollision,
@@ -543,6 +586,28 @@ UCreatureMetaAsset::BuildMetaData()
 				}
 
 				meta_data.anim_events_map.Add(cur_anim_name, cur_events_map);
+			}
+		}
+
+		// Fill Skin Swaps
+		skin_swap_names.Empty();
+		if (jsonObject->HasField(TEXT("skinSwapList")))
+		{
+			auto skin_swap_obj = jsonObject->GetObjectField(TEXT("skinSwapList"));
+			for (auto cur_data : skin_swap_obj->Values)
+			{
+				TSet<FString> new_swap_set;
+				auto swap_name = cur_data.Key;
+				auto swap_data = cur_data.Value->AsObject()->GetObjectField(TEXT("swap"));
+				auto swap_items = swap_data->GetArrayField("swap_items");
+				for (auto cur_item : swap_items)
+				{
+					auto item_name = cur_item->AsString();
+					new_swap_set.Add(item_name);
+				}
+
+				meta_data.skin_swaps.Add(swap_name, new_swap_set);
+				skin_swap_names.Add(swap_name);
 			}
 		}
 

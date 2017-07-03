@@ -113,6 +113,7 @@ public:
 		uvs = data_in->uvs;
 		point_num = data_in->point_num;
 		indices_num = data_in->indices_num;
+		real_indices_num = indices_num;
 		region_alphas = data_in->region_alphas;
 		update_lock = data_in->update_lock;
 		should_release = false;
@@ -128,6 +129,11 @@ public:
 			IndexBuffer.ReleaseResource();
 			VertexFactory.ReleaseResource();
 		}
+	}
+
+	void setRealIndicesNum(int32 num_in)
+	{
+		real_indices_num = (num_in > 0) ? num_in : indices_num;
 	}
 
 	void InitForRender()
@@ -244,7 +250,7 @@ public:
 	glm::uint32 * indices;
 	glm::float32 * points;
 	glm::float32 * uvs;
-	int32 point_num, indices_num;
+	int32 point_num, indices_num, real_indices_num;
 	TArray<uint8> * region_alphas;
 	TSharedPtr<FCriticalSection, ESPMode::ThreadSafe> update_lock;
 	bool should_release;
@@ -261,6 +267,7 @@ FCProceduralMeshSceneProxy::FCProceduralMeshSceneProxy(
 {
 	parentComponent = Component;
 	needs_index_updating = false;
+	needs_index_update_num = -1;
 	active_render_packet_idx = INDEX_NONE;
 
 	UpdateMaterial();
@@ -405,56 +412,7 @@ void FCProceduralMeshSceneProxy::UpdateDynamicComponentData()
 	FScopeLock packetLock(&renderPacketsCS);
 
 	auto& cur_packet = renderPackets[active_render_packet_idx];
-
 	cur_packet.CreateDirectVertexData();
-
-	/*
-	auto& cur_packet = renderPackets[active_render_packet_idx];
-	auto& VertexBuffer = cur_packet.VertexBuffer;
-	auto& targetTris = cur_packet.GetTargetTris();
-
-	if (VertexBuffer.Vertices.Num() != targetTris.Num() * 3)
-	{
-		return;
-	}
-
-	int cnter = 0;
-	FDynamicMeshVertex FillVert;
-
-	for (int TriIdx = 0; TriIdx<targetTris.Num(); TriIdx++)
-	{
-		FProceduralMeshTriangle& Tri = targetTris[TriIdx];
-
-		// Fill in data
-		const FVector Edge01 = (Tri.Vertex1.Position - Tri.Vertex0.Position);
-		const FVector Edge02 = (Tri.Vertex2.Position - Tri.Vertex0.Position);
-
-		const FVector TangentX = Edge01.GetSafeNormal();
-		const FVector TangentZ = (Edge02 ^ Edge01).GetSafeNormal();
-		const FVector TangentY = (TangentX ^ TangentZ).GetSafeNormal();
-
-		VertexBuffer.Vertices[cnter].Position = Tri.Vertex0.Position;
-		VertexBuffer.Vertices[cnter].Color = Tri.Vertex0.Color;
-		VertexBuffer.Vertices[cnter].SetTangents(TangentX, TangentY, TangentZ);
-		VertexBuffer.Vertices[cnter].TextureCoordinate.Set(Tri.Vertex0.U, Tri.Vertex0.V);
-
-		cnter++;
-
-		VertexBuffer.Vertices[cnter].Position = Tri.Vertex1.Position;
-		VertexBuffer.Vertices[cnter].Color = Tri.Vertex1.Color;
-		VertexBuffer.Vertices[cnter].SetTangents(TangentX, TangentY, TangentZ);
-		VertexBuffer.Vertices[cnter].TextureCoordinate.Set(Tri.Vertex1.U, Tri.Vertex1.V);
-
-		cnter++;
-
-		VertexBuffer.Vertices[cnter].Position = Tri.Vertex2.Position;
-		VertexBuffer.Vertices[cnter].Color = Tri.Vertex2.Color;
-		VertexBuffer.Vertices[cnter].SetTangents(TangentX, TangentY, TangentZ);
-		VertexBuffer.Vertices[cnter].TextureCoordinate.Set(Tri.Vertex2.U, Tri.Vertex2.V);
-
-		cnter++;
-	}
-	*/
 }
 
 void FCProceduralMeshSceneProxy::SetNeedsMaterialUpdate(bool flag_in)
@@ -462,9 +420,10 @@ void FCProceduralMeshSceneProxy::SetNeedsMaterialUpdate(bool flag_in)
 	needs_material_updating = flag_in;
 }
 
-void FCProceduralMeshSceneProxy::SetNeedsIndexUpdate(bool flag_in)
+void FCProceduralMeshSceneProxy::SetNeedsIndexUpdate(bool flag_in, int32 index_new_num)
 {
 	needs_index_updating = flag_in;
+	needs_index_update_num = index_new_num;
 }
 
 void FCProceduralMeshSceneProxy::SetDynamicData_RenderThread()
@@ -483,8 +442,10 @@ void FCProceduralMeshSceneProxy::SetDynamicData_RenderThread()
 	cur_packet.UpdateDirectVertexData();
 	if (needs_index_updating) 
 	{
+		cur_packet.setRealIndicesNum(needs_index_update_num);
 		cur_packet.UpdateDirectIndexData();
 		needs_index_updating = false;
+		needs_index_update_num = -1;
 	}
 }
 
@@ -554,7 +515,7 @@ void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScen
 			Mesh.MaterialRenderProxy = MaterialProxy;
 			BatchElement.PrimitiveUniformBuffer = CreatePrimitiveUniformBufferImmediate(GetLocalToWorld(), GetBounds(), GetLocalBounds(), true, UseEditorDepthTest());
 			BatchElement.FirstIndex = 0;
-			BatchElement.NumPrimitives = IndexBuffer.Indices.Num() / 3;
+			BatchElement.NumPrimitives = cur_packet.real_indices_num / 3;
 			BatchElement.MinVertexIndex = 0;
 			BatchElement.MaxVertexIndex = VertexBuffer.Vertices.Num() - 1;
 			Mesh.ReverseCulling = IsLocalToWorldDeterminantNegative();

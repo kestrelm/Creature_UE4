@@ -65,7 +65,7 @@ public:
 
 	void SetNeedsMaterialUpdate(bool flag_in);
 
-	void SetNeedsIndexUpdate(bool flag_in);
+	void SetNeedsIndexUpdate(bool flag_in, int32 index_new_num=-1);
 
 	void UpdateMaterial();
 	
@@ -96,6 +96,7 @@ private:
 
 	FMaterialRelevance MaterialRelevance;
 	bool needs_index_updating;
+	int32 needs_index_update_num;
 	bool needs_material_updating;
 
 	mutable FCriticalSection renderPacketsCS;

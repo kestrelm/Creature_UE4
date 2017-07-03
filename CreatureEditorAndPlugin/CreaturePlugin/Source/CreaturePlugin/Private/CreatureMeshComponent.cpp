@@ -286,6 +286,29 @@ void UCreatureMeshComponent::CreateBluePrintBendPhysics(FString anim_clip)
 	delay_bendphysics_clip = anim_clip;
 }
 
+void UCreatureMeshComponent::EnableSkinSwap(FString swap_name)
+{
+	creature_core.enableSkinSwap(swap_name, true);
+}
+
+void UCreatureMeshComponent::DisableSkinSwap()
+{
+	creature_core.enableSkinSwap("", true);
+}
+
+void UCreatureMeshComponent::AddSkinSwap(FString new_swap_name, TArray<FString> new_swap)
+{
+	if (creature_core.meta_data)
+	{
+		TSet<FString> new_set;
+		for (auto& cur_str : new_swap)
+		{
+			new_set.Add(cur_str);
+			creature_core.meta_data->addSkinSwap(new_swap_name, new_set);
+		}
+	}
+}
+
 void UCreatureMeshComponent::TryCreateBendPhysics()
 {
 	if (delay_bendphysics_clip.Len() == 0)
@@ -737,7 +760,8 @@ void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx, bool ma
 	FCProceduralMeshSceneProxy *localRenderProxy = GetLocalRenderProxy();
 	if (localRenderProxy)
 	{
-		localRenderProxy->SetNeedsIndexUpdate(creature_core.should_update_render_indices);
+		int32 draw_indices_num = creature_core.shouldSkinSwap() ? creature_core.GetRealTotalIndicesNum() : -1;
+		localRenderProxy->SetNeedsIndexUpdate(creature_core.should_update_render_indices, draw_indices_num);
 	}
 
 	// Update Mesh

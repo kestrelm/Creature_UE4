@@ -623,6 +623,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void CreateBluePrintBendPhysics(FString anim_clip);
 
+	// Enable Skin Swap for a particular Skin Swap Name
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void EnableSkinSwap(FString swap_name);
+
+	// Turns off Skin Swapping
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void DisableSkinSwap();
+
+	// Adds a new Skin Swap
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void AddSkinSwap(FString new_swap_name, TArray<FString> new_swap);
+
 	CreatureCore& GetCore();
 
 	virtual bool ShouldSkipTick() const;
