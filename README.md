@@ -41,14 +41,14 @@ Most of the new work will now be focused on the files in **CreatureEditorAndPlug
 ### Reporting Bugs/Feature Requests
 Feature requests regarding the core Creature UE4 Runtime can be sent directly to: creature@kestrelmoon.com . For bugs/requests with regard to the Creature UE4 Runtime Editor, please send them to:  [God of Pen](https://github.com/ldl19691031/CreatureUE4PluginWithEditor)
 
-##Dinosaur Parade
+## Dinosaur Parade
 A scene in the age of dinosaurs, with animation authored and exported from Creature into UE4. This shows 200+ Creature Characters in realtime running with the Creature UE4 Plugin.
 
 ![img](https://raw.githubusercontent.com/kestrelm/Creature_UE4/master/plugin_banner2.png)
 
 Video demo is [here](https://youtu.be/HWdnUODioko).
 
-##Elephant Stomp! | Game Tech Demo
+## Elephant Stomp! | Game Tech Demo
 Elephant Stomp! is a demo game showcasing the Creature Animation System and its UE4 Plugin. The entire game runs off the Creature UE4 Plugin and is written 100% in the BP system.
 
 Control the Elephant and its Magic Rider battling waves of soldiers. As you take out the soldiers, you gain spell powers enabling you to either summon in a rain drop of fish from the heavens or call in a flock of deadly stampeding ostriches!
@@ -59,7 +59,7 @@ The character art from the game is from the public domain [British Library Flick
 
 View the **Demo Video** [here](https://youtu.be/KbKBJdJn7bA).
 
-###Controls:
+### Controls:
 Movement - Click to the Left or Right of the Elephant to move
 
 Summon Fish Raindrop - 1
@@ -72,7 +72,7 @@ Stomp - Space
 Please head over the [CreatureDemos](https://github.com/kestrelm/CreatureDemos) repository to download this demo.
 
 
-##Creature British Library Art Project
+## Creature British Library Art Project
 A demo scene consisting of multiple characters with artwork all sourced from the public domain [British Library Flickr Archive](https://www.flickr.com/photos/britishlibrary/albums) is presented here. This demo is constructed in UE4 so you will need UE4.9 and above to open to run the project.
 
 The scene demonstrates multiple advanced features of the Creature Animation Tool, including the usage of ***Force Field Motors for Cloth Dynamics, Custom Cycle Motors for walking and the Creature UE4 Runtime.***
@@ -86,7 +86,7 @@ View the Demo Video [here](https://youtu.be/MQK1mVSXaAk).
 Please head over the [CreatureDemos](https://github.com/kestrelm/CreatureDemos) repository to download this demo.
 
 
-###Notes for Building on Platforms like the PS4 (Fixing compile errors)
+### Notes for Building on Platforms like the PS4 (Fixing compile errors)
 
 - If the compiler complains about errors having to do with miniz, #define the **CREATURE_NO_USE_ZIP** preprocessor definition in your build.
 
