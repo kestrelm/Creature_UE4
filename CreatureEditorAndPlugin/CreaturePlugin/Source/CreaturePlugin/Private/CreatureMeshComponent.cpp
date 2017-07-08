@@ -304,8 +304,9 @@ void UCreatureMeshComponent::AddSkinSwap(FString new_swap_name, TArray<FString> 
 		for (auto& cur_str : new_swap)
 		{
 			new_set.Add(cur_str);
-			creature_core.meta_data->addSkinSwap(new_swap_name, new_set);
 		}
+
+		creature_core.meta_data->addSkinSwap(new_swap_name, new_set);
 	}
 }
 
