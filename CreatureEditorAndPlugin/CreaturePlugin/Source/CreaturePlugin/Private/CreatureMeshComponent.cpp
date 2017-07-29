@@ -90,6 +90,28 @@ void UCreatureMeshComponent::SetBluePrintAnimationCustomTimeRange_Name(FName nam
 	ResetFrameCallbacks();
 }
 
+int32 UCreatureMeshComponent::GetBluePrintActiveAnimationStartTime(FName name_in)
+{
+	auto cur_anim = creature_core.creature_manager->GetAnimation(name_in);
+	if (cur_anim)
+	{
+		return cur_anim->getStartTime();
+	}
+
+	return 0;
+}
+
+int32 UCreatureMeshComponent::GetBluePrintActiveAnimationEndTime(FName name_in)
+{
+	auto cur_anim = creature_core.creature_manager->GetAnimation(name_in);
+	if (cur_anim)
+	{
+		return cur_anim->getEndTime();
+	}
+
+	return 0;
+}
+
 void UCreatureMeshComponent::MakeBluePrintPointCache(FString name_in, int32 approximation_level)
 {
 	creature_core.MakeBluePrintPointCache(FName(*name_in), approximation_level);

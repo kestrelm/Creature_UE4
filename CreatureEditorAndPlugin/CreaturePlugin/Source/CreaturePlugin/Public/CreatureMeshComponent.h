@@ -441,6 +441,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAnimationCustomTimeRange_Name(FName name_in, int32 start_time, int32 end_time);
 
+	// Blueprint function that returns the start frame of the animation
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	int32 GetBluePrintActiveAnimationStartTime(FName name_in);
+
+	// Blueprint function that returns the end frame of the animation
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	int32 GetBluePrintActiveAnimationEndTime(FName name_in);
+
 	// Blueprint function to create a point cache for the creature character. This speeds up the playback performance.
 	// A small amount of time will be spent precomputing the point cache. You can reduce this time by increasing the approximation level.
 	// name_in is the name of the animation to cache, approximation_level is the approximation level. The higher the approximation level
