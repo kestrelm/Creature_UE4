@@ -124,9 +124,9 @@ public:
 
 	void ClearBluePrintPointCache(FName name_in, int32 approximation_level);
 
-	FTransform GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, FTransform base_transform) const;
+	FTransform GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, const FTransform& base_transform) const;
 
-	bool IsBluePrintBonesCollide(FVector test_point, float bone_size, FTransform base_transform);
+	bool IsBluePrintBonesCollide(FVector test_point, float bone_size, const FTransform& base_transform);
 
 	void SetBluePrintAnimationLoop(bool flag_in);
 
