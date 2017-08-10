@@ -45,7 +45,7 @@
 #include "CreatureCore.h"
 #include "CreatureMeshComponent.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureMeshCollectionToken
 {
 	GENERATED_USTRUCT_BODY()
@@ -57,7 +57,7 @@ struct FCreatureMeshCollectionToken
 	int32 collection_data_index;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureMeshCollectionClip
 {
 	GENERATED_USTRUCT_BODY()
@@ -76,7 +76,7 @@ struct FCreatureMeshCollectionClip
 	}
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureMeshCollection
 {
 	GENERATED_USTRUCT_BODY()
@@ -113,7 +113,7 @@ struct FCreatureMeshCollection
 	}
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureBoneOverride {
 	GENERATED_USTRUCT_BODY()
 
@@ -130,7 +130,7 @@ struct FCreatureBoneOverride {
 	FVector end_pos;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureBoneIK  {
 	GENERATED_USTRUCT_BODY()
 	FCreatureBoneIK()
@@ -160,7 +160,7 @@ struct FCreatureBoneIK  {
 };
 
 // Frame/Time Event callback structs
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureFrameCallback {
 	GENERATED_USTRUCT_BODY()
 	FCreatureFrameCallback()
@@ -203,7 +203,7 @@ struct FCreatureFrameCallback {
 	bool triggered;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureRepeatFrameCallback {
 	GENERATED_USTRUCT_BODY()
 	FCreatureRepeatFrameCallback()
@@ -264,7 +264,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCreatureRepeatFrameCallbackEvent, F
 /**
 * Tick function that processes the results of the creature core update
 **/
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureCoreResultTickFunction : public FTickFunction
 {
 	GENERATED_USTRUCT_BODY()
