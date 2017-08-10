@@ -718,7 +718,7 @@ CreatureCore::ClearBluePrintPointCache(FName name_in, int32 approximation_level)
 }
 
 FTransform 
-CreatureCore::GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, FTransform base_transform) const
+CreatureCore::GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, const FTransform& base_transform) const
 {
 	FTransform ret_xform;
 	for (size_t i = 0; i < bone_data.Num(); i++)
@@ -756,7 +756,7 @@ CreatureCore::GetBluePrintBoneXform(FName name_in, bool world_transform, float p
 }
 
 bool 
-CreatureCore::IsBluePrintBonesCollide(FVector test_point, float bone_size, FTransform base_transform)
+CreatureCore::IsBluePrintBonesCollide(FVector test_point, float bone_size, const FTransform& base_transform)
 {
 	if (bone_size <= 0)
 	{
