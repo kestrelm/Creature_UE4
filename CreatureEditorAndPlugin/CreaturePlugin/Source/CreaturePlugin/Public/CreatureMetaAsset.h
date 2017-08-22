@@ -263,6 +263,10 @@ public:
 	// The available skin swaps
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
 	TArray<FString> skin_swap_names;
+	
+	// The available events
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
+	TArray<FString> event_names;
 
 	FString& GetJsonString();
 
@@ -281,7 +285,20 @@ public:
 	virtual void PostLoad() override;
 
 	virtual void Serialize(FArchive& Ar) override;
-	
+
 protected:
 	CreatureMetaData meta_data;
+	
+#if WITH_EDITORONLY_DATA
+public:
+	FString GetSourceFilename() const;
+	void SetSourceFilename(const FString &filename);
+	void PostInitProperties() override;
+
+protected:
+	// Denoting source filename using UE4's asset registry system
+	UPROPERTY(VisibleAnywhere, Instanced, Category = ImportSettings)
+	class UAssetImportData* AssetImportData;
+#endif
+
 };
