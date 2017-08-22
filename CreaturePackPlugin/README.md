@@ -1,4 +1,4 @@
-#Creature Pack UE4 Animation Plugin
+# Creature Pack UE4 Animation Plugin
 
 This document describes the **Creature Pack Animation Plugin** for **Unreal Engine**. The plugin allows you to playback and control characters exported by the [**Creature Animation Tool**](http://creature.kestrelmoon.com/).
 
@@ -6,7 +6,8 @@ This document describes the **Creature Pack Animation Plugin** for **Unreal Engi
 
 Trailer video is [here](https://youtu.be/S01sZY8mTz4).
 
-##Creature Pack File Format vs Creature JSON/Flat Data
+
+## Creature Pack File Format vs Creature JSON/Flat Data
 
 The **Creature Pack File Format** is a **lightweight version** of the **Creature JSON/Flat Data** format. It contains a bit less functionality than its original sibling but has faster playback and a much more compact representation.
 
@@ -21,12 +22,17 @@ You can see this file format handles most of the major functionality you will re
 
 This plugin **does not have bone/skeletal information** encoded in it. This results in a much more **compact representation and faster playback speed(s)**. If you require the full functionality of the **Creature Runtime**, please have a look at the [**Creature Plugin**](https://github.com/kestrelm/Creature_UE4) which uses the **Creature JSON/Flat Data** format.
 
-##Using the Plugin
 
-###Installation
+## Using the Plugin
+
+
+### Installation
+
 You need a **C++ UE4 Project** so set this up first. Make a **Plugins** folder in your project directory. Drop the **CreaturePackPlugin** folder into the **Plugins** folder. Now **Generate Project Files** to generate the appropriate project files to compile your project. Double click and open up your project to build and install the plugin.
 
-###Export Animation from Creature
+
+### Export Animation from Creature
+
 
 With your character's project open, go into the **Animation Mode** in **Creature**. Click on **Export Animation -> Game Engines**:
 
@@ -51,15 +57,22 @@ Click **Export** to export your project into a folder of your choice. The **expo
 
 - **YourCharacter_img.png** - Your character's texture atlas
 
-###Importing Animation Data into UE4
+
+### Importing Animation Data into UE4
+
 
 First, load up **UE4** and start a new project.
 
-####Import Character Texture Atlas & Create Material
+
+#### Import Character Texture Atlas & Create Material
+
+
 From the previous step, find your character's image atlas from the export folder and import it into **UE4**. **Create a Material** out of that image. The recommended **Material Type** is the **Mask** material. Remember to connect up the **Opacity** channel of your material from the **Texture Sampler**. Save this material.
 
 
-####Create Character Animation Asset
+#### Create Character Animation Asset
+
+
 In your assets panel, **right click** and create a new **Creature Pack Animation Asset**:
 
 ![Demo Scene](https://raw.githubusercontent.com/kestrelm/Creature_UE4/master/CreaturePackPlugin/pack_screen3.png)
@@ -67,7 +80,9 @@ In your assets panel, **right click** and create a new **Creature Pack Animation
 A new window will pop up allowing you to select the exported animation file from the export folder.
 
 
-###Creating a Character for Playback
+### Creating a Character for Playback
+
+
 First create a new **Empty Actor**. Convert that actor into a **Blueprint** object. Open it up and add a new **CreaturePackMesh** component:
 
 ![Demo Scene](https://raw.githubusercontent.com/kestrelm/Creature_UE4/master/CreaturePackPlugin/pack_screen4.png)
@@ -86,7 +101,8 @@ With both those 2 steps completed, you should see your character displayed in th
 
 When you play your level, the character should start animating with its default animation!
 
-###Controlling playback of your Character with Blueprints
+
+### Controlling playback of your Character with Blueprints
 
 ![Demo Scene](https://raw.githubusercontent.com/kestrelm/Creature_UE4/master/CreaturePackPlugin/pack_screen8.png)
 

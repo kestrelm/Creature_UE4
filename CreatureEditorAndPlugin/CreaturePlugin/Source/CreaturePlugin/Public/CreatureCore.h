@@ -124,9 +124,9 @@ public:
 
 	void ClearBluePrintPointCache(FName name_in, int32 approximation_level);
 
-	FTransform GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, FTransform base_transform) const;
+	FTransform GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, const FTransform& base_transform) const;
 
-	bool IsBluePrintBonesCollide(FVector test_point, float bone_size, FTransform base_transform);
+	bool IsBluePrintBonesCollide(FVector test_point, float bone_size, const FTransform& base_transform);
 
 	void SetBluePrintAnimationLoop(bool flag_in);
 
@@ -179,7 +179,13 @@ public:
 
 	glm::uint32 * GetIndicesCopy(int init_size);
 
+	int32 GetRealTotalIndicesNum() const;
+
 	std::vector<meshBone *> getAllChildrenWithIgnore(const FName& ignore_name, meshBone * base_bone = nullptr);
+
+	void enableSkinSwap(const FString& swap_name_in, bool active);
+
+	bool shouldSkinSwap() const;
 
 	// properties
 	FName creature_filename, creature_asset_filename;
@@ -234,11 +240,13 @@ public:
 	//Add by God of Pen
 	//////////////////////////////////////////////////////////////////////////
 
-	bool bUsingCreatureAnimatinAsset=false;//如果使用CreatureAnimationAsset的话，设置为真，不再从硬盘读取，直接从Asset读取动画信息
-	//当从AnimationAsset读取的时候，直接从pJsonData中载入，不再从硬盘中载入
+	bool bUsingCreatureAnimatinAsset=false;
 	FString* pJsonData;
 	CreatureMetaData * meta_data;
 	glm::uint32 * global_indices_copy;
+	bool skin_swap_active;
+	FString skin_swap_name;
+	TArray<int32> skin_swap_indices;
 };
 
 std::string ConvertToString(const FString &str);

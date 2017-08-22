@@ -6,6 +6,49 @@
 #include "Runtime/Engine/Classes/PhysicsEngine/ConstraintInstance.h"
 #include "Runtime/Engine/Classes/PhysicsEngine/PhysicsConstraintComponent.h"
 
+// CreatureMetaData
+void CreatureMetaData::buildSkinSwapIndices(
+	const FString & swap_name, 
+	meshRenderBoneComposition * bone_composition,
+	TArray<int32>& skin_swap_indices
+)
+{
+	if (!skin_swaps.Contains(swap_name))
+	{
+		skin_swap_indices.Empty();
+		return;
+	}
+
+	auto& swap_set = skin_swaps[swap_name];
+	int32 total_size = 0;
+	auto& regions_map = bone_composition->getRegionsMap();
+	for (auto& cur_data : regions_map)
+	{
+		if (swap_set.Contains(cur_data.Key.ToString()))
+		{
+			auto cur_region = cur_data.Value;
+			total_size += cur_region->getNumIndices();
+		}
+	}
+
+	skin_swap_indices.SetNum(total_size);
+
+	int32 offset = 0;
+	for (auto& cur_data : regions_map)
+	{
+		if (swap_set.Contains(cur_data.Key.ToString()))
+		{
+			auto cur_region = cur_data.Value;
+			std::copy(
+				cur_region->getIndices(),
+				cur_region->getIndices() + cur_region->getNumIndices(),
+				skin_swap_indices.GetData() + offset);
+			offset += cur_region->getNumIndices();
+		}
+	}
+}
+
+// Bend Physics
 static void SetLinearLimits(
 	FConstraintInstance& Constraint,
 	bool bDisableCollision,
@@ -134,6 +177,7 @@ void CreaturePhysicsData::createPhysicsChain(
 		box_in->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 		box_in->SetEnableGravity(false);
 		box_in->SetAllMassScale(1.0f);
+		box_in->SetWorldScale3D(FVector(1, 1, 1));
 		box_in->SetAllPhysicsAngularVelocity(FVector::ZeroVector);
 		box_in->SetAllPhysicsLinearVelocity(FVector::ZeroVector);
 		box_in->SetAllPhysicsPosition(pt_in);
@@ -141,6 +185,7 @@ void CreaturePhysicsData::createPhysicsChain(
 	};
 
 	// Create bodies
+	TArray<UBoxComponent *> created_bodies;
 	for (int i = 0; i < bones_in.Num(); i++)
 	{
 		auto cur_bone = bones_in[i];
@@ -176,11 +221,7 @@ void CreaturePhysicsData::createPhysicsChain(
 		}
 
 		auto new_body = NewObject<UBoxComponent>(parent);
-		bool sim_physics = false;
-		if (i > 0)
-		{
-			sim_physics = true;
-		}
+		created_bodies.Add(new_body);
 
 		// Flip y and z
 		auto bone_start_pt = FVector(
@@ -188,7 +229,7 @@ void CreaturePhysicsData::createPhysicsChain(
 			cur_bone->getWorldStartPt().z,
 			cur_bone->getWorldStartPt().y);
 		auto body_pt = base_xform.TransformPosition(bone_start_pt);
-		setupBoxSettings(new_body, body_pt, sim_physics);
+		setupBoxSettings(new_body, body_pt, false);
 
 		bodies.Add(cur_bone->getKey().ToString(), boxAndBone(new_body, cur_bone, next_bone, cur_basis));
 
@@ -196,7 +237,6 @@ void CreaturePhysicsData::createPhysicsChain(
 		if (i == (bones_in.Num() - 1))
 		{
 			new_body = NewObject<UBoxComponent>(parent);
-			new_body->SetSimulatePhysics(sim_physics);
 
 			// Flip y and z
 			auto bone_end_pt = FVector(
@@ -204,9 +244,10 @@ void CreaturePhysicsData::createPhysicsChain(
 				cur_bone->getWorldEndPt().z,
 				cur_bone->getWorldEndPt().y);
 			body_pt = base_xform.TransformPosition(bone_end_pt);
-			setupBoxSettings(new_body, body_pt, sim_physics);
+			setupBoxSettings(new_body, body_pt, false);
 
 			bodies[cur_bone->getKey().ToString()].end_box = new_body;
+			created_bodies.Add(new_body);
 		}
 	}
 	
@@ -241,18 +282,21 @@ void CreaturePhysicsData::createPhysicsChain(
 			2,
 			2,
 			2.0f,
-			true,
+			false,
 			stiffness * 2.0f,
 			damping * 2.0f);
 
 		UPhysicsConstraintComponent* constraint_comp = NewObject<UPhysicsConstraintComponent>(parent);
 
 		auto body_pt = body1->GetComponentLocation();
-		constraint_comp->SetWorldLocation(body_pt);
+		//constraint_comp->SetWorldLocation(body_pt);
+		//constraint_comp->AttachToComponent(attach_root, FAttachmentTransformRules::KeepWorldTransform);
+		constraint_comp->AttachToComponent(body1, FAttachmentTransformRules::KeepRelativeTransform);
+		constraint_comp->SetRelativeLocation(FVector::ZeroVector);
 		constraint_comp->SetDisableCollision(true);
-		constraint_comp->SetConstrainedComponents(body1, NAME_None, body2, NAME_None);
 		constraint_comp->ConstraintInstance = constraint_inst;
-		constraint_comp->RegisterComponent();
+		constraint_comp->SetConstrainedComponents(body1, FName(*body1->GetName()), body2, FName(*body2->GetName()));
+		//constraint_comp->RegisterComponent();
 
 		return constraint_comp;
 	};
@@ -290,6 +334,11 @@ void CreaturePhysicsData::createPhysicsChain(
 			TArray<UPhysicsConstraintComponent *>());
 		auto cur_list = getConstraint(last_bone_name, last_bone_name);
 		cur_list->Add(last_constraint);
+	}
+
+	for (int i = 0; i < created_bodies.Num(); i++)
+	{
+		created_bodies[i]->SetSimulatePhysics((i == 0) ? false : true);
 	}
 }
 
@@ -338,7 +387,8 @@ void CreaturePhysicsData::updateKinematicPos(
 		bone_in->getWorldStartPt().z,
 		bone_in->getWorldStartPt().y
 	);
-	set_body->SetWorldLocation(base_xform.TransformPosition(new_pos));
+	//set_body->SetWorldLocation(base_xform.TransformPosition(new_pos));
+	set_body->SetAllPhysicsPosition(base_xform.TransformPosition(new_pos));
 }
 
 void CreaturePhysicsData::updateAllKinematicBones(const FTransform & base_xform)
@@ -536,6 +586,28 @@ UCreatureMetaAsset::BuildMetaData()
 				}
 
 				meta_data.anim_events_map.Add(cur_anim_name, cur_events_map);
+			}
+		}
+
+		// Fill Skin Swaps
+		skin_swap_names.Empty();
+		if (jsonObject->HasField(TEXT("skinSwapList")))
+		{
+			auto skin_swap_obj = jsonObject->GetObjectField(TEXT("skinSwapList"));
+			for (auto cur_data : skin_swap_obj->Values)
+			{
+				TSet<FString> new_swap_set;
+				auto swap_name = cur_data.Key;
+				auto swap_data = cur_data.Value->AsObject()->GetObjectField(TEXT("swap"));
+				auto swap_items = swap_data->GetArrayField("swap_items");
+				for (auto cur_item : swap_items)
+				{
+					auto item_name = cur_item->AsString();
+					new_swap_set.Add(item_name);
+				}
+
+				meta_data.skin_swaps.Add(swap_name, new_swap_set);
+				skin_swap_names.Add(swap_name);
 			}
 		}
 

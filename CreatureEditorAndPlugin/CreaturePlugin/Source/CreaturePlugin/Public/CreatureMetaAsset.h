@@ -14,7 +14,14 @@ public:
 	{
 		mesh_map.Empty();
 		anim_order_map.Empty();
+		skin_swaps.Empty();
 	}
+
+	void buildSkinSwapIndices(
+		const FString& swap_name, 
+		meshRenderBoneComposition * bone_composition,
+		TArray<int32>& skin_swap_indices
+	);
 
 	void updateIndicesAndPoints(
 		glm::uint32 * dst_indices,
@@ -115,14 +122,30 @@ public:
 		return nullptr;
 	}
 
+	bool addSkinSwap(const FString& swap_name, const TSet<FString>& set_in)
+	{
+		if (skin_swaps.Contains(swap_name))
+		{
+			return false;
+		}
+
+		skin_swaps.Add(swap_name, set_in);
+		return true;
+	}
+
 	TMap<int, TTuple<int32, int32>> mesh_map;
 	TMap<FString, TMap<int32, TArray<int32> >> anim_order_map;
 	TMap<FString, TMap<int32, FString> > anim_events_map;
+	TMap<FString, TSet<FString>> skin_swaps;
 };
 
 class CreaturePhysicsData
 {
 public:
+	CreaturePhysicsData()
+	{
+		run_cnt = 0;
+	}
 
 	static FString getConstraintsKey(const FString& bone1, const FString& bone2)
 	{
@@ -189,6 +212,7 @@ public:
 	TMap<FString, TArray<UPhysicsConstraintComponent *> > constraints;
 	TArray<meshBone *> kinematic_bones;
 	FString anim_clip_name;
+	int run_cnt;
 };
 
 USTRUCT(BlueprintType)
@@ -235,6 +259,10 @@ public:
 	// The available bend physics chains
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Creature")
 	TArray<FBendPhysicsChain> bend_physics_chains;
+
+	// The available skin swaps
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
+	TArray<FString> skin_swap_names;
 
 	FString& GetJsonString();
 

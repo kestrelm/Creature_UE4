@@ -90,6 +90,28 @@ void UCreatureMeshComponent::SetBluePrintAnimationCustomTimeRange_Name(FName nam
 	ResetFrameCallbacks();
 }
 
+int32 UCreatureMeshComponent::GetBluePrintActiveAnimationStartTime(FName name_in)
+{
+	auto cur_anim = creature_core.creature_manager->GetAnimation(name_in);
+	if (cur_anim)
+	{
+		return cur_anim->getStartTime();
+	}
+
+	return 0;
+}
+
+int32 UCreatureMeshComponent::GetBluePrintActiveAnimationEndTime(FName name_in)
+{
+	auto cur_anim = creature_core.creature_manager->GetAnimation(name_in);
+	if (cur_anim)
+	{
+		return cur_anim->getEndTime();
+	}
+
+	return 0;
+}
+
 void UCreatureMeshComponent::MakeBluePrintPointCache(FString name_in, int32 approximation_level)
 {
 	creature_core.MakeBluePrintPointCache(FName(*name_in), approximation_level);
@@ -282,6 +304,41 @@ void UCreatureMeshComponent::RemoveBluePrintRegionItemSwap_Name(FName region_nam
 
 void UCreatureMeshComponent::CreateBluePrintBendPhysics(FString anim_clip)
 {
+	FScopeLock cur_lock(&local_lock);
+	delay_bendphysics_clip = anim_clip;
+}
+
+void UCreatureMeshComponent::EnableSkinSwap(FString swap_name)
+{
+	creature_core.enableSkinSwap(swap_name, true);
+}
+
+void UCreatureMeshComponent::DisableSkinSwap()
+{
+	creature_core.enableSkinSwap("", true);
+}
+
+void UCreatureMeshComponent::AddSkinSwap(FString new_swap_name, TArray<FString> new_swap)
+{
+	if (creature_core.meta_data)
+	{
+		TSet<FString> new_set;
+		for (auto& cur_str : new_swap)
+		{
+			new_set.Add(cur_str);
+		}
+
+		creature_core.meta_data->addSkinSwap(new_swap_name, new_set);
+	}
+}
+
+void UCreatureMeshComponent::TryCreateBendPhysics()
+{
+	if (delay_bendphysics_clip.Len() == 0)
+	{
+		return;
+	}
+
 	if (physics_data.IsValid())
 	{
 		physics_data->clearPhysicsChain();
@@ -291,20 +348,17 @@ void UCreatureMeshComponent::CreateBluePrintBendPhysics(FString anim_clip)
 	if (creature_meta_asset && (!physics_data.IsValid()))
 	{
 		auto base_xform = GetComponentToWorld();
-		auto cur_anim_name = creature_core.creature_manager->GetActiveAnimationName();
-		creature_core.creature_manager->SetActiveAnimationName(FName(*anim_clip));
-		creature_core.creature_manager->ResetToStartTimes();
-		creature_core.creature_manager->Update(0.0f);
+		creature_core.creature_manager->PoseJustBones(FName(*delay_bendphysics_clip), 0.0f);
 		physics_data = creature_meta_asset->CreateBendPhysicsChain(
 			base_xform,
 			GetOwner()->GetRootComponent(),
 			GetOwner(),
 			creature_core.creature_manager->GetCreature()->GetRenderComposition(),
-			anim_clip
+			delay_bendphysics_clip
 		);
-
-		creature_core.creature_manager->SetActiveAnimationName(cur_anim_name);
 	}
+
+	delay_bendphysics_clip = FString("");
 }
 
 CreatureCore& UCreatureMeshComponent::GetCore()
@@ -526,6 +580,7 @@ bool UCreatureMeshComponent::RunTickProcessing(float DeltaTime, bool markDirty)
 
 		animation_frame = creature_core.GetCreatureManager()->getActualRunTime();
 		DoCreatureMeshUpdate(INDEX_NONE, markDirty);		
+		TryCreateBendPhysics();
 	}
 
 	return can_tick;
@@ -728,7 +783,8 @@ void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx, bool ma
 	FCProceduralMeshSceneProxy *localRenderProxy = GetLocalRenderProxy();
 	if (localRenderProxy)
 	{
-		localRenderProxy->SetNeedsIndexUpdate(creature_core.should_update_render_indices);
+		int32 draw_indices_num = creature_core.shouldSkinSwap() ? creature_core.GetRealTotalIndicesNum() : -1;
+		localRenderProxy->SetNeedsIndexUpdate(creature_core.should_update_render_indices, draw_indices_num);
 	}
 
 	// Update Mesh

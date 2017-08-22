@@ -1471,9 +1471,7 @@ namespace CreatureModule {
     }
 
 	void 
-		CreatureManager::PoseJustBones(const FName& animation_name_in,
-											glm::float32 * target_pts,
-											float input_run_time)
+	CreatureManager::PoseJustBones(const FName& animation_name_in, float input_run_time)
 	{
 		SCOPE_CYCLE_COUNTER(STAT_CreatureManager_PoseJustBones);
 
@@ -1634,7 +1632,7 @@ namespace CreatureModule {
                 {
 					UpdateRegionSwitches(cur_animation_name);
 					cur_animation->poseFromCachePts(cur_animation_run_time, blend_render_pts[i], target_creature->GetTotalNumPoints());
-					PoseJustBones(cur_animation_name, blend_render_pts[i], cur_animation_run_time);
+					PoseJustBones(cur_animation_name, cur_animation_run_time);
                 }
                 else {
 					UpdateRegionSwitches(active_blend_animation_names[i]);
@@ -1657,7 +1655,7 @@ namespace CreatureModule {
             if(cur_animation->hasCachePts() && do_point_caching)
             {
 				cur_animation->poseFromCachePts(getRunTime(), target_creature->GetRenderPts(), target_creature->GetTotalNumPoints());
-				PoseJustBones(active_animation_name, target_creature->GetRenderPts(), getRunTime());
+				PoseJustBones(active_animation_name, getRunTime());
             }
             else {
 				PoseCreature(active_animation_name, target_creature->GetRenderPts(), getRunTime());

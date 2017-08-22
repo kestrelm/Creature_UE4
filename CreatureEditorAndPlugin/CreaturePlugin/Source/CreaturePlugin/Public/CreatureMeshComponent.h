@@ -45,7 +45,7 @@
 #include "CreatureCore.h"
 #include "CreatureMeshComponent.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureMeshCollectionToken
 {
 	GENERATED_USTRUCT_BODY()
@@ -57,7 +57,7 @@ struct FCreatureMeshCollectionToken
 	int32 collection_data_index;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureMeshCollectionClip
 {
 	GENERATED_USTRUCT_BODY()
@@ -76,7 +76,7 @@ struct FCreatureMeshCollectionClip
 	}
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureMeshCollection
 {
 	GENERATED_USTRUCT_BODY()
@@ -113,7 +113,7 @@ struct FCreatureMeshCollection
 	}
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureBoneOverride {
 	GENERATED_USTRUCT_BODY()
 
@@ -130,7 +130,7 @@ struct FCreatureBoneOverride {
 	FVector end_pos;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureBoneIK  {
 	GENERATED_USTRUCT_BODY()
 	FCreatureBoneIK()
@@ -160,7 +160,7 @@ struct FCreatureBoneIK  {
 };
 
 // Frame/Time Event callback structs
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureFrameCallback {
 	GENERATED_USTRUCT_BODY()
 	FCreatureFrameCallback()
@@ -203,7 +203,7 @@ struct FCreatureFrameCallback {
 	bool triggered;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureRepeatFrameCallback {
 	GENERATED_USTRUCT_BODY()
 	FCreatureRepeatFrameCallback()
@@ -264,7 +264,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCreatureRepeatFrameCallbackEvent, F
 /**
 * Tick function that processes the results of the creature core update
 **/
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureCoreResultTickFunction : public FTickFunction
 {
 	GENERATED_USTRUCT_BODY()
@@ -440,6 +440,14 @@ public:
 	// Blueprint version of setting a custom time range for a given animation
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetBluePrintAnimationCustomTimeRange_Name(FName name_in, int32 start_time, int32 end_time);
+
+	// Blueprint function that returns the start frame of the animation
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	int32 GetBluePrintActiveAnimationStartTime(FName name_in);
+
+	// Blueprint function that returns the end frame of the animation
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	int32 GetBluePrintActiveAnimationEndTime(FName name_in);
 
 	// Blueprint function to create a point cache for the creature character. This speeds up the playback performance.
 	// A small amount of time will be spent precomputing the point cache. You can reduce this time by increasing the approximation level.
@@ -623,6 +631,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void CreateBluePrintBendPhysics(FString anim_clip);
 
+	// Enable Skin Swap for a particular Skin Swap Name
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void EnableSkinSwap(FString swap_name);
+
+	// Turns off Skin Swapping
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void DisableSkinSwap();
+
+	// Adds a new Skin Swap
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void AddSkinSwap(FString new_swap_name, TArray<FString> new_swap);
+
 	CreatureCore& GetCore();
 
 	virtual bool ShouldSkipTick() const;
@@ -666,6 +686,7 @@ protected:
 	TArray<FCreatureFrameCallback> frame_callbacks;
 	TArray<FCreatureRepeatFrameCallback> repeat_frame_callbacks;
 	TSharedPtr<CreaturePhysicsData> physics_data;
+	FString delay_bendphysics_clip;
 
 	void InitStandardValues();
 
@@ -714,6 +735,8 @@ protected:
 	void ProcessFrameCallbacks();
 
 	void LoadAnimationFromStore();
+
+	void TryCreateBendPhysics();
 
 	// future used for async creature processing
 	TFuture<bool> creatureTickResult;

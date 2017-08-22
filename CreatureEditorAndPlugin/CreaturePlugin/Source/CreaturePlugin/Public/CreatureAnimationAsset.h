@@ -8,7 +8,7 @@
 #include "CreatureAnimationAsset.generated.h"
 
 /** Container used to cache useful data about an animation, including it's point cache */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCreatureAnimationDataCache
 {
 	GENERATED_BODY()

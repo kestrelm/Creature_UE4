@@ -49,6 +49,7 @@ CreatureCore::CreatureCore()
 	should_update_render_indices = false;
 	meta_data = nullptr;
 	global_indices_copy = nullptr;
+	skin_swap_active = false;
 	update_lock = TSharedPtr<FCriticalSection, ESPMode::ThreadSafe>(new FCriticalSection());
 }
 
@@ -167,15 +168,27 @@ void CreatureCore::UpdateCreatureRender()
 		if (meta_data)
 		{
 			auto dst_indices = GetIndicesCopy(cur_num_indices);
-			int cur_runtime = (int)(creature_manager->getActualRunTime());
-			meta_data->updateIndicesAndPoints(dst_indices,
-				cur_creature->GetGlobalIndices(),
-				cur_pts,
-				delta_z,
-				cur_creature->GetTotalNumIndices(),
-				cur_creature->GetTotalNumPoints(),
-				creature_manager->GetActiveAnimationName().ToString(),
-				cur_runtime);
+			if (shouldSkinSwap())
+			{
+				// Skin Swap
+				std::copy(
+					skin_swap_indices.GetData(),
+					skin_swap_indices.GetData() + skin_swap_indices.Num(),
+					dst_indices);
+			}
+			else {
+				// Region Layer Ordering Animation
+				int cur_runtime = (int)(creature_manager->getActualRunTime());
+				meta_data->updateIndicesAndPoints(dst_indices,
+					cur_creature->GetGlobalIndices(),
+					cur_pts,
+					delta_z,
+					cur_creature->GetTotalNumIndices(),
+					cur_creature->GetTotalNumPoints(),
+					creature_manager->GetActiveAnimationName().ToString(),
+					cur_runtime);
+			}
+
 			should_update_render_indices = true;
 		}
 	}
@@ -215,51 +228,6 @@ void CreatureCore::UpdateCreatureRender()
 
 		should_update_render_indices = true;
 	}
-
-	// Build render triangles
-	/*
-	TArray<FProceduralMeshTriangle>& write_triangles = draw_tris;
-
-	static const FColor White(255, 255, 255, 255);
-	int cur_pt_idx = 0, cur_uv_idx = 0;
-	const int x_id = 0;
-	const int y_id = 2;
-	const int z_id = 1;
-
-	for (int i = 0; i < num_triangles; i++)
-	{
-		int real_idx_1 = cur_idx[0];
-		int real_idx_2 = cur_idx[1];
-		int real_idx_3 = cur_idx[2];
-
-		FProceduralMeshTriangle triangle;
-
-		cur_pt_idx = real_idx_1 * 3;
-		cur_uv_idx = real_idx_1 * 2;
-		triangle.Vertex0.Position.Set(cur_pts[cur_pt_idx + x_id], cur_pts[cur_pt_idx + y_id], cur_pts[cur_pt_idx + z_id]);
-		triangle.Vertex0.Color = White;
-		triangle.Vertex0.U = cur_uvs[cur_uv_idx];
-		triangle.Vertex0.V = cur_uvs[cur_uv_idx + 1];
-
-		cur_pt_idx = real_idx_2 * 3;
-		cur_uv_idx = real_idx_2 * 2;
-		triangle.Vertex1.Position.Set(cur_pts[cur_pt_idx + x_id], cur_pts[cur_pt_idx + y_id], cur_pts[cur_pt_idx + z_id]);
-		triangle.Vertex1.Color = White;
-		triangle.Vertex1.U = cur_uvs[cur_uv_idx];
-		triangle.Vertex1.V = cur_uvs[cur_uv_idx + 1];
-
-		cur_pt_idx = real_idx_3 * 3;
-		cur_uv_idx = real_idx_3 * 2;
-		triangle.Vertex2.Position.Set(cur_pts[cur_pt_idx + x_id], cur_pts[cur_pt_idx + y_id], cur_pts[cur_pt_idx + z_id]);
-		triangle.Vertex2.Color = White;
-		triangle.Vertex2.U = cur_uvs[cur_uv_idx];
-		triangle.Vertex2.V = cur_uvs[cur_uv_idx + 1];
-
-		write_triangles[i] = triangle;
-
-		cur_idx += 3;
-	}
-	*/
 
 	// process the render regions
 	ProcessRenderRegions();
@@ -533,28 +501,6 @@ void CreatureCore::ProcessRenderRegions()
 			}
 		}
 	}
-
-	// now write out alphas into render triangles
-	/*
-	glm::uint32 * cur_idx = cur_creature->GetGlobalIndices();
-	for (int i = 0; i < num_triangles; i++)
-	{
-		int real_idx_1 = cur_idx[0];
-		int real_idx_2 = cur_idx[1];
-		int real_idx_3 = cur_idx[2];
-
-		auto& cur_tri = draw_tris[i];
-		auto set_alpha_1 = region_alphas[real_idx_1];
-		auto set_alpha_2 = region_alphas[real_idx_2];
-		auto set_alpha_3 = region_alphas[real_idx_3];
-
-		cur_tri.Vertex0.Color = FColor(set_alpha_1, set_alpha_1, set_alpha_1, set_alpha_1);
-		cur_tri.Vertex1.Color = FColor(set_alpha_2, set_alpha_2, set_alpha_1, set_alpha_2);
-		cur_tri.Vertex2.Color = FColor(set_alpha_3, set_alpha_3, set_alpha_1, set_alpha_3);
-
-		cur_idx += 3;
-	}
-	*/
 }
 
 bool 
@@ -772,7 +718,7 @@ CreatureCore::ClearBluePrintPointCache(FName name_in, int32 approximation_level)
 }
 
 FTransform 
-CreatureCore::GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, FTransform base_transform) const
+CreatureCore::GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, const FTransform& base_transform) const
 {
 	FTransform ret_xform;
 	for (size_t i = 0; i < bone_data.Num(); i++)
@@ -810,7 +756,7 @@ CreatureCore::GetBluePrintBoneXform(FName name_in, bool world_transform, float p
 }
 
 bool 
-CreatureCore::IsBluePrintBonesCollide(FVector test_point, float bone_size, FTransform base_transform)
+CreatureCore::IsBluePrintBonesCollide(FVector test_point, float bone_size, const FTransform& base_transform)
 {
 	if (bone_size <= 0)
 	{
@@ -1096,6 +1042,18 @@ glm::uint32 * CreatureCore::GetIndicesCopy(int init_size)
 	return global_indices_copy;
 }
 
+int32 CreatureCore::GetRealTotalIndicesNum() const
+{
+	auto cur_creature = creature_manager->GetCreature();
+	int32 num_indices = cur_creature->GetTotalNumIndices();
+	if (shouldSkinSwap())
+	{
+		num_indices = skin_swap_indices.Num();
+	}
+
+	return num_indices;
+}
+
 std::vector<meshBone *> 
 CreatureCore::getAllChildrenWithIgnore(const FName& ignore_name, meshBone * base_bone)
 {
@@ -1118,6 +1076,32 @@ CreatureCore::getAllChildrenWithIgnore(const FName& ignore_name, meshBone * base
 	}
 
 	return ret_data;
+}
+
+void CreatureCore::enableSkinSwap(const FString & swap_name_in, bool active)
+{
+	skin_swap_active = active;
+	if (!skin_swap_active)
+	{
+		skin_swap_indices.Empty();
+		skin_swap_name = "";
+	}
+	else {
+		skin_swap_name = swap_name_in;
+		if (meta_data)
+		{
+			auto cur_creature = creature_manager->GetCreature();
+			meta_data->buildSkinSwapIndices(
+				skin_swap_name,
+				cur_creature->GetRenderComposition(),
+				skin_swap_indices);
+		}
+	}
+}
+
+bool CreatureCore::shouldSkinSwap() const
+{
+	return meta_data && skin_swap_active && (skin_swap_indices.Num() > 0);
 }
 
 void 
