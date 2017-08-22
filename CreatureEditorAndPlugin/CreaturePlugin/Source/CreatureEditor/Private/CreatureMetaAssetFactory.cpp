@@ -54,7 +54,6 @@ bool UCreatureMetaAssetFactory::ImportSourceFile(UCreatureMetaAsset *forAsset, F
 
     forAsset->jsonString = readString;
 	forAsset->BuildMetaData();
-	forAsset->SetSourceFilename(importFilename);
 	return true;
 }
 
@@ -65,50 +64,18 @@ bool UCreatureMetaAssetFactory::FactoryCanImport(const FString& Filename)
 
 bool UCreatureMetaAssetFactory::CanReimport(UObject* Obj, TArray<FString>& OutFilenames)
 {
-	UCreatureMetaAsset* asset = Cast<UCreatureMetaAsset>(Obj);
-	if (asset)
-	{
-		FString filename = asset->GetSourceFilename();
-		if (!filename.IsEmpty())
-		{
-			OutFilenames.Add(filename);
-		}
-
-		return true;
-	}
 	return false;
 }
 
 void UCreatureMetaAssetFactory::SetReimportPaths(UObject* Obj, const TArray<FString>& NewReimportPaths) 
 {
-	UCreatureMetaAsset* asset = Cast<UCreatureMetaAsset>(Obj);
-	if (asset && ensure(NewReimportPaths.Num() == 1))
-	{
-		asset->SetSourceFilename(*NewReimportPaths[0]);
-	}
+
 }
 
 EReimportResult::Type 
 UCreatureMetaAssetFactory::Reimport(UObject* Obj) 
 {
-	UCreatureMetaAsset *metaAsset = Cast<UCreatureMetaAsset>(Obj);
-	if (metaAsset && ImportSourceFile(metaAsset, metaAsset->GetSourceFilename()))
-	{
-		// Try to find the outer package so we can dirty it up
-		if (Obj->GetOuter())
-		{
-			Obj->GetOuter()->MarkPackageDirty();
-		}
-		else
-		{
-			Obj->MarkPackageDirty();
-		}
-		return EReimportResult::Succeeded;
-	}
-	else
-	{
-		return EReimportResult::Failed;
-	}
+    return EReimportResult::Succeeded;
 }
 
 int32 UCreatureMetaAssetFactory::GetPriority() const

@@ -4,8 +4,6 @@
 #include "Developer/DesktopPlatform/Public/IDesktopPlatform.h"
 #include "Developer/DesktopPlatform/Public/DesktopPlatformModule.h"
 #include <string>
-#include "CreatureCore.h"
-
 #define LOCTEXT_NAMESPACE "CreatureAnimationAssetFactory"
 
 UCreatureAnimationAssetFactory::UCreatureAnimationAssetFactory(const FObjectInitializer& ObjectInitializer)
@@ -80,8 +78,6 @@ bool UCreatureAnimationAssetFactory::ImportSourceFile(UCreatureAnimationAsset *f
 	forAsset->CreatureRawJSONString = readString;
 #endif
 
-	// remove the data from the static creature core as it will now be out of date
-	CreatureCore::FreeDataPacket(forAsset->UpdateAndGetCreatureFilename());
 	forAsset->GatherAnimationData();
 
 	return true;

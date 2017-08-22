@@ -507,38 +507,9 @@ void UCreatureMetaAsset::PostLoad()
 	BuildMetaData();
 }
 
-void UCreatureMetaAsset::PostInitProperties()
-{
-	if (!HasAnyFlags(RF_ClassDefaultObject))
-	{
-		AssetImportData = NewObject<UAssetImportData>(this, TEXT("AssetImportData"));
-	}
-
-	Super::PostInitProperties();
-}
-
 void UCreatureMetaAsset::Serialize(FArchive& Ar)
 {
 	Super::Serialize(Ar);
-}
-
-FString UCreatureMetaAsset::GetSourceFilename() const
-{
-	TArray<FString> filenames;
-	if (AssetImportData)
-	{
-		AssetImportData->ExtractFilenames(filenames);
-	}
-	return (filenames.Num() > 0) ? filenames[0] : FString();
-}
-
-void UCreatureMetaAsset::SetSourceFilename(const FString &filename)
-{
-	if (!AssetImportData)
-	{
-		AssetImportData = NewObject<UAssetImportData>(this, TEXT("AssetImportData"));
-	}
-	AssetImportData->UpdateFilenameOnly(filename);
 }
 
 void 
@@ -598,7 +569,6 @@ UCreatureMetaAsset::BuildMetaData()
 		}
 
 		// Fill event triggers
-		event_names.Empty();
 		if (jsonObject->HasField(TEXT("eventTriggers"))) {
 			auto events_obj = jsonObject->GetObjectField(TEXT("eventTriggers"));
 			for (auto cur_data : events_obj->Values)
@@ -616,10 +586,6 @@ UCreatureMetaAsset::BuildMetaData()
 				}
 
 				meta_data.anim_events_map.Add(cur_anim_name, cur_events_map);
-				for (const auto &eventIt : cur_events_map)
-				{
-					event_names.Add(FString::Printf(TEXT("%s.%s"), *cur_anim_name, *eventIt.Value));
-				}
 			}
 		}
 
