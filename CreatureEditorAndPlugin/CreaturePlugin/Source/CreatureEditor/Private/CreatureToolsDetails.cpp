@@ -5,6 +5,9 @@
 #include "UnrealEd.h"
 #include "BusyCursor.h"
 #include "ScopedTransaction.h"
+#include "DetailCategoryBuilder.h"
+#include "DetailLayoutBuilder.h"
+#include "DetailWidgetRow.h"
 
 #define LOCTEXT_NAMESPACE "CreatureToolsDetails"
 
