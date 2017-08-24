@@ -507,6 +507,7 @@ void UCreatureMetaAsset::PostLoad()
 	BuildMetaData();
 }
 
+#if WITH_EDITORONLY_DATA
 void UCreatureMetaAsset::PostInitProperties()
 {
 	if (!HasAnyFlags(RF_ClassDefaultObject))
@@ -516,12 +517,14 @@ void UCreatureMetaAsset::PostInitProperties()
 
 	Super::PostInitProperties();
 }
+#endif /*WITH_EDITORONLY_DATA*/
 
 void UCreatureMetaAsset::Serialize(FArchive& Ar)
 {
 	Super::Serialize(Ar);
 }
 
+#if WITH_EDITORONLY_DATA
 FString UCreatureMetaAsset::GetSourceFilename() const
 {
 	TArray<FString> filenames;
@@ -540,6 +543,7 @@ void UCreatureMetaAsset::SetSourceFilename(const FString &filename)
 	}
 	AssetImportData->UpdateFilenameOnly(filename);
 }
+#endif /*WITH_EDITORONLY_DATA*/
 
 void 
 UCreatureMetaAsset::BuildMetaData()
