@@ -424,6 +424,7 @@ static void FillBoneCache(JsonNode& json_obj,
 
     cache_manager.init(start_time, end_time);
     
+	int32 prev_time = start_time;
     for (JsonIterator it = JsonBegin(base_obj->value);
          it != JsonEnd(base_obj->value);
          ++it)
@@ -452,7 +453,41 @@ static void FillBoneCache(JsonNode& json_obj,
         
         int32 set_index = cache_manager.getIndexByTime(cur_time);
         cache_manager.getCacheTable()[set_index] = cache_list;
-    }
+
+		int32 gap_diff = cur_time - prev_time;
+		if (gap_diff > 1)
+		{
+			auto ptInterp = [&](const glm::vec4& src_pt, const glm::vec4& target_pt, float fraction)
+			{
+				return ((1.0f - fraction) * src_pt) + (fraction * target_pt);
+			};
+
+			// Gap Step
+			auto prev_index = cache_manager.getIndexByTime(prev_time);
+			for (int32 j = 1; j < gap_diff; j++)
+			{
+				auto gap_fraction = (float)j / (float)gap_diff;
+				TArray<meshBoneCache> gap_cache_list;
+				
+				for (int32 k = 0; k < cache_list.Num(); k++)
+				{
+					auto& cur_data = cache_manager.getCacheTable()[set_index][k];
+					auto& prev_data = cache_manager.getCacheTable()[prev_index][k];
+					meshBoneCache gap_cache_data(cur_data.getKey());
+					gap_cache_data.setWorldStartPt(
+						ptInterp(prev_data.getWorldStartPt(), cur_data.getWorldStartPt(), gap_fraction));
+					gap_cache_data.setWorldEndPt(
+						ptInterp(prev_data.getWorldEndPt(), cur_data.getWorldEndPt(), gap_fraction));
+
+					gap_cache_list.Add(gap_cache_data);
+				}
+
+				cache_manager.getCacheTable()[prev_index + j] = gap_cache_list;
+			}
+		}
+
+		prev_time = cur_time;
+	}
     
     cache_manager.makeAllReady();
 }
@@ -467,7 +502,8 @@ static void FillDeformationCache(JsonNode& json_obj,
 
     cache_manager.init(start_time, end_time);
     
-    for (JsonIterator it = JsonBegin(base_obj->value);
+	int prev_time = start_time;
+	for (JsonIterator it = JsonBegin(base_obj->value);
          it != JsonEnd(base_obj->value);
          ++it)
     {
@@ -504,6 +540,52 @@ static void FillDeformationCache(JsonNode& json_obj,
         
         int32 set_index = cache_manager.getIndexByTime(cur_time);
         cache_manager.getCacheTable()[set_index] = cache_list;
+
+		auto gap_diff = cur_time - prev_time;
+		if (gap_diff > 1)
+		{
+			auto ptsInterp = [&](const TArray<glm::vec2> src_pts, const TArray<glm::vec2> target_pts, float fraction)
+			{
+				TArray<glm::vec2> ret_pts;
+				ret_pts.SetNum(src_pts.Num());
+				for (int32 i = 0; i < src_pts.Num(); i++)
+				{
+					ret_pts[i] = ((1.0f - fraction) * src_pts[i]) + (fraction * target_pts[i]);
+				}
+
+				return ret_pts;
+			};
+
+			// Gap Step
+			int32 prev_index = cache_manager.getIndexByTime(prev_time);
+			for (int32 j = 1; j < gap_diff; j++)
+			{
+				auto gap_fraction = (float)j / (float)gap_diff;
+				TArray<meshDisplacementCache> gap_cache_list;
+				
+				for (size_t k = 0; k < cache_list.Num(); k++)
+				{
+					auto& cur_data = cache_manager.getCacheTable()[set_index][k];
+					auto& prev_data = cache_manager.getCacheTable()[prev_index][k];
+					meshDisplacementCache gap_cache_data(cur_data.getKey());
+					if (cur_data.getLocalDisplacements().Num() > 0)
+					{
+						gap_cache_data.setLocalDisplacements(
+							ptsInterp(prev_data.getLocalDisplacements(), cur_data.getLocalDisplacements(), gap_fraction));
+					}
+					else {
+						gap_cache_data.setPostDisplacements(
+							ptsInterp(prev_data.getPostDisplacements(), cur_data.getPostDisplacements(), gap_fraction));
+					}
+
+					gap_cache_list.Add(gap_cache_data);
+				}
+
+				cache_manager.getCacheTable()[prev_index + j] = gap_cache_list;
+			}
+		}
+
+		prev_time = cur_time;
     }
     
     cache_manager.makeAllReady();
@@ -574,6 +656,7 @@ static void FillOpacityCache(JsonNode& json_obj,
 		return;
 	}
 
+	int prev_time = start_time;
 	for (JsonIterator it = JsonBegin(base_obj->value);
 		it != JsonEnd(base_obj->value);
 		++it)
@@ -600,6 +683,37 @@ static void FillOpacityCache(JsonNode& json_obj,
 
 		int32 set_index = cache_manager.getIndexByTime(cur_time);
 		cache_manager.getCacheTable()[set_index] = cache_list;
+
+		int32 gap_diff = cur_time - prev_time;
+		if (gap_diff > 1)
+		{
+			auto scalarInterp = [&](const float& src_val, const float& target_val, float fraction)
+			{
+				return ((1.0f - fraction) * src_val) + (fraction * target_val);
+			};
+
+			// Gap Step
+			int32 prev_index = cache_manager.getIndexByTime(prev_time);
+			for (int32 j = 1; j < gap_diff; j++)
+			{
+				auto gap_fraction = (float)j / (float)gap_diff;
+				TArray<meshOpacityCache> gap_cache_list;
+				
+				for (int32 k = 0; k < cache_list.Num(); k++)
+				{
+					auto& cur_data = cache_manager.getCacheTable()[set_index][k];
+					auto& prev_data = cache_manager.getCacheTable()[prev_index][k];
+					meshOpacityCache gap_cache_data(cur_data.getKey());
+					gap_cache_data.setOpacity(scalarInterp(prev_data.getOpacity(), cur_data.getOpacity(), gap_fraction));
+
+					gap_cache_list.Add(gap_cache_data);
+				}
+
+				cache_manager.getCacheTable()[prev_index + j] = gap_cache_list;
+			}
+		}
+
+		prev_time = cur_time;
 	}
 
 	cache_manager.makeAllReady();
