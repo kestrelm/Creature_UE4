@@ -1319,6 +1319,12 @@ namespace CreatureModule {
     {
         time_scale = scale_in;
     }
+
+	float
+	CreatureManager::GetTimeScale() const
+	{
+		return time_scale;
+	}
     
     void
     CreatureManager::SetBlending(bool flag_in)

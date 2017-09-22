@@ -442,7 +442,8 @@ void CreatureCore::ParseEvents(float deltaTime)
 		if ((cur_runtime + 1.0f >= cur_end_time)
 			&& !is_looping
 			&& !play_end_done
-			&& should_play)
+			&& should_play
+			&& deltaTime > 0.0f)
 		{
 			play_end_done = true;
 			should_play = false;
@@ -681,6 +682,18 @@ CreatureCore::SetBluePrintAnimationCustomTimeRange(FName name_in, int32 start_ti
 	}
 }
 
+void CreatureCore::SetTimeScale(float timeScale)
+{
+	auto cur_creature_manager = GetCreatureManager();
+	if (!cur_creature_manager)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CreatureCore::SetTimeScale() - ERROR! no CreatureManager"));
+		return;
+	}
+
+	cur_creature_manager->SetTimeScale(timeScale);
+}
+
 void 
 CreatureCore::MakeBluePrintPointCache(FName name_in, int32 approximation_level)
 {
@@ -911,8 +924,9 @@ CreatureCore::GetBluePrintAnimationFrame()
 
 void CreatureCore::SetBluePrintAnimationFrame(float time_in)
 {
-	auto cur_delta = (time_in - creature_manager->getActualRunTime()) / 30.0f;
+	auto cur_delta = (time_in - creature_manager->getActualRunTime()) / creature_manager->GetTimeScale();
 	creature_manager->Update(cur_delta);
+	animation_frame = creature_manager->getActualRunTime();
 }
 
 void 

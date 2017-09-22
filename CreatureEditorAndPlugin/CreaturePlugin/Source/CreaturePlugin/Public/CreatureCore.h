@@ -120,6 +120,8 @@ public:
 
 	void SetBluePrintAnimationCustomTimeRange(FName name_in, int32 start_time, int32 end_time);
 
+	void SetTimeScale(float timeScale);
+
 	void MakeBluePrintPointCache(FName name_in, int32 approximation_level);
 
 	void ClearBluePrintPointCache(FName name_in, int32 approximation_level);

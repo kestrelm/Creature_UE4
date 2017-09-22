@@ -287,6 +287,9 @@ namespace CreatureModule {
         
         // Sets scaling for time
         void SetTimeScale(float scale_in);
+
+		// Gets scaling for time
+		float GetTimeScale() const;
         
         // Enables/Disables blending
         void SetBlending(bool flag_in);
