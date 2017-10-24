@@ -21,12 +21,11 @@ void CreatureMetaData::buildSkinSwapIndices(
 
 	auto& swap_set = skin_swaps[swap_name];
 	int32 total_size = 0;
-	auto& regions_map = bone_composition->getRegionsMap();
-	for (auto& cur_data : regions_map)
+	auto& regions = bone_composition->getRegions();
+	for (auto cur_region : regions)
 	{
-		if (swap_set.Contains(cur_data.Key.ToString()))
+		if (swap_set.Contains(cur_region->getName().ToString()))
 		{
-			auto cur_region = cur_data.Value;
 			total_size += cur_region->getNumIndices();
 		}
 	}
@@ -34,11 +33,10 @@ void CreatureMetaData::buildSkinSwapIndices(
 	skin_swap_indices.SetNum(total_size);
 
 	int32 offset = 0;
-	for (auto& cur_data : regions_map)
+	for (auto cur_region : regions)
 	{
-		if (swap_set.Contains(cur_data.Key.ToString()))
+		if (swap_set.Contains(cur_region->getName().ToString()))
 		{
-			auto cur_region = cur_data.Value;
 			std::copy(
 				cur_region->getIndices(),
 				cur_region->getIndices() + cur_region->getNumIndices(),
