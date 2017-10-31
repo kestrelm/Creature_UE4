@@ -47,7 +47,7 @@ bool UCreatureMetaAssetFactory::ImportSourceFile(UCreatureMetaAsset *forAsset, F
 	}
 
 	FString readString;
-	if (!FFileHelper::LoadFileToString(readString, *importFilename, 0))
+	if (!FFileHelper::LoadFileToString(readString, *importFilename))
 	{
 		return false;
 	}

@@ -52,7 +52,7 @@ bool UCreatureAnimationAssetFactory::ImportSourceFile(UCreatureAnimationAsset *f
 	}
 
 	FString readString;
-	if (!FFileHelper::LoadFileToString(readString, *creatureFilename, 0))
+	if (!FFileHelper::LoadFileToString(readString, *creatureFilename))
 	{
 		return false;
 	}

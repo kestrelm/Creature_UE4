@@ -127,7 +127,7 @@ FReply FCreatureToolsDetails::LiveSyncPressed()
 	}
 
 	FString raw_json;
-	if (!FFileHelper::LoadFileToString(raw_json, *retrieve_filename, 0))
+	if (!FFileHelper::LoadFileToString(raw_json, *retrieve_filename))
 	{
 		FMessageDialog::Open(
 			EAppMsgType::Ok,
@@ -170,7 +170,7 @@ void FCreatureToolsDetails::InitFramework()
 	auto cur_platform = UGameplayStatics::GetPlatformName();
 	if (cur_platform == "Windows")
 	{
-		FString filePath = *FPaths::GamePluginsDir() + FString("/CreaturePlugin/Source/ThirdParty/CreatureClientDLL.dll");
+		FString filePath = *FPaths::ProjectPluginsDir() + FString("/CreaturePlugin/Source/ThirdParty/CreatureClientDLL.dll");
 		client_dll = FPlatformProcess::GetDllHandle(*filePath);
 
 		if (client_dll)
