@@ -1,10 +1,9 @@
-#include "CreaturePackRuntimePluginPCH.h"
+#include "mp.h"
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#include "mp.h"
 
 namespace mpMini {
 	enum {

@@ -7,6 +7,7 @@ namespace UnrealBuildTool.Rules
         public CreaturePackRuntimePlugin(ReadOnlyTargetRules Target)
             : base(Target)
         {
+            PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
             PublicIncludePaths.AddRange(new string[] { "CreaturePackRuntimePlugin/Public", });
             PrivateIncludePaths.AddRange(new string[] { "CreaturePackRuntimePlugin/Private", "CreaturePackRuntimePlugin/Public",});
 

@@ -1,5 +1,4 @@
 
-#include "CreaturePackRuntimePluginPCH.h"
 #include "CreaturePackAnimationAsset.h"
 
 FString UCreaturePackAnimationAsset::GetCreatureFilename() const

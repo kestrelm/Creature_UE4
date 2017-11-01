@@ -21,6 +21,7 @@ namespace UnrealBuildTool.Rules
         public CreaturePackEditor(ReadOnlyTargetRules Target)
             : base(Target)
         {
+            PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
             PublicIncludePaths.AddRange(new string[] { "CreaturePackEditor/Public", "AssetTools/Public","GraphEditorActions/Public","AnimGraph/Public"});
             PrivateIncludePaths.AddRange(new string[] { "CreaturePackEditor/Public", "CreaturePackEditor/Private","UnrealEd/Private/Settings","Editor/AnimGraph/Private" });
 

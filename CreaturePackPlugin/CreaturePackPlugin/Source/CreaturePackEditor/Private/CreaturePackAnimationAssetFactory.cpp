@@ -1,4 +1,3 @@
-#include "CreaturePackEditorPCH.h"
 #include "CreaturePackAnimationAssetFactory.h"
 #include "CreaturePackAnimationAsset.h"
 #include "Developer/DesktopPlatform/Public/IDesktopPlatform.h"

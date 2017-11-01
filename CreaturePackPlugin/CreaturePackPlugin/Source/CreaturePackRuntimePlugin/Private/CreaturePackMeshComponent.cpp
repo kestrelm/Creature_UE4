@@ -33,7 +33,6 @@
 * RUNTIMES.
 *****************************************************************************/
 
-#include "CreaturePackRuntimePluginPCH.h"
 #include "CreaturePackMeshComponent.h"
 
 static TMap<FString, CreaturePackLoader *> globalCreaturePackLoaders;

@@ -2,9 +2,8 @@
 //
 // forked from "Engine/Plugins/Runtime/CustomMeshComponent/Source/CustomMeshComponent/Private/CustomMeshComponent.cpp"
 
-#include "CreaturePackRuntimePluginPCH.h"
-#include "DynamicMeshBuilder.h"
 #include "CustomPackProceduralMeshComponent.h"
+#include "DynamicMeshBuilder.h"
 #include "Runtime/Launch/Resources/Version.h"
 
 /** Vertex Buffer */
