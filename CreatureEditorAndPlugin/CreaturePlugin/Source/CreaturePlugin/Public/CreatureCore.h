@@ -249,6 +249,8 @@ public:
 	bool skin_swap_active;
 	FString skin_swap_name;
 	TArray<int32> skin_swap_indices;
+	TSet<int32> skin_swap_region_ids;
+	int32 region_order_indices_num;
 };
 
 std::string ConvertToString(const FString &str);

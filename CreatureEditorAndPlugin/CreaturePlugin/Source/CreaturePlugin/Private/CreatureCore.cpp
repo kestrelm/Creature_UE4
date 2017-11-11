@@ -50,6 +50,7 @@ CreatureCore::CreatureCore()
 	meta_data = nullptr;
 	global_indices_copy = nullptr;
 	skin_swap_active = false;
+	region_order_indices_num = 0;
 	update_lock = TSharedPtr<FCriticalSection, ESPMode::ThreadSafe>(new FCriticalSection());
 }
 
@@ -143,6 +144,7 @@ void CreatureCore::UpdateCreatureRender()
 	glm::float32 * cur_pts = cur_creature->GetRenderPts();
 	glm::float32 * cur_uvs = cur_creature->GetGlobalUvs();
 	should_update_render_indices = false;
+	region_order_indices_num = 0;
 
 	// Update depth per region
 	TArray<meshRenderRegion *>& cur_regions =
@@ -179,13 +181,16 @@ void CreatureCore::UpdateCreatureRender()
 			else {
 				// Region Layer Ordering Animation
 				int cur_runtime = (int)(creature_manager->getActualRunTime());
-				meta_data->updateIndicesAndPoints(dst_indices,
+				region_order_indices_num = meta_data->updateIndicesAndPoints(
+					dst_indices,
 					cur_creature->GetGlobalIndices(),
 					cur_pts,
 					delta_z,
 					cur_creature->GetTotalNumIndices(),
 					cur_creature->GetTotalNumPoints(),
 					creature_manager->GetActiveAnimationName().ToString(),
+					shouldSkinSwap(),
+					skin_swap_region_ids,
 					cur_runtime);
 			}
 
@@ -262,7 +267,7 @@ bool CreatureCore::InitCreatureRender()
 		if (!does_exist)
 		{
 			// see if it is in the content directory
-			cur_creature_filename = FName(*(FPaths::GameContentDir() + FString(TEXT("/")) + curCreatureFilenameString));
+			cur_creature_filename = FName(*(FPaths::ProjectContentDir() + FString(TEXT("/")) + curCreatureFilenameString));
 			does_exist = FPlatformFileManager::Get().GetPlatformFile().FileExists(*curCreatureFilenameString);
 		}
 
@@ -1060,9 +1065,16 @@ int32 CreatureCore::GetRealTotalIndicesNum() const
 {
 	auto cur_creature = creature_manager->GetCreature();
 	int32 num_indices = cur_creature->GetTotalNumIndices();
-	if (shouldSkinSwap())
+
+	if (region_order_indices_num > 0)
 	{
-		num_indices = skin_swap_indices.Num();
+		num_indices = region_order_indices_num;
+	}
+	else {
+		if (shouldSkinSwap())
+		{
+			num_indices = skin_swap_indices.Num();
+		}
 	}
 
 	return num_indices;
@@ -1108,7 +1120,8 @@ void CreatureCore::enableSkinSwap(const FString & swap_name_in, bool active)
 			meta_data->buildSkinSwapIndices(
 				skin_swap_name,
 				cur_creature->GetRenderComposition(),
-				skin_swap_indices);
+				skin_swap_indices,
+				skin_swap_region_ids);
 		}
 	}
 }

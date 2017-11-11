@@ -18,12 +18,18 @@ public:
 	}
 
 	void buildSkinSwapIndices(
-		const FString& swap_name, 
+		const FString& swap_name,
 		meshRenderBoneComposition * bone_composition,
-		TArray<int32>& skin_swap_indices
+		TArray<int32>& skin_swap_indices,
+		TSet<int32>& skin_swap_region_ids
 	);
 
-	void updateIndicesAndPoints(
+	bool hasRegionOrder(const FString& anim_name, int time_in)
+	{
+		return (sampleOrder(anim_name, time_in) != nullptr);
+	}
+
+	int updateIndicesAndPoints(
 		glm::uint32 * dst_indices,
 		glm::uint32 * src_indices, 
 		glm::float32 * dst_pts,
@@ -31,6 +37,8 @@ public:
 		int num_indices,
 		int num_pts,
 		const FString& anim_name,
+		bool skin_swap_active,
+		const TSet<int32>& skin_swap_region_ids,
 		int time_in)
 	{
 		bool has_data = false;
@@ -40,37 +48,43 @@ public:
 			has_data = (cur_order->Num() > 0);
 		}
 
+		int total_num_write_indices = 0;
 		if (has_data)
 		{
 			float cur_z = 0;
 			// Copy new ordering to destination
 			glm::uint32 * write_ptr = dst_indices;
-			int total_num_write_indices = 0;
 			for (auto region_id : (*cur_order))
 			{
 				if (mesh_map.Contains(region_id) == false)
 				{
 					// region not found, just copy and return
 					std::memcpy(dst_indices, src_indices, num_indices * sizeof(glm::uint32));
-					return;
+					return num_indices;
 				}
 
 				// Write indices
 				auto& mesh_data = mesh_map[region_id];
 				auto num_write_indices = mesh_data.Get<1>() - mesh_data.Get<0>() + 1;
 				auto region_src_ptr = src_indices + mesh_data.Get<0>();
-				total_num_write_indices += num_write_indices;
-
-				if (total_num_write_indices > num_indices)
+				bool valid_region = true;
+				if (skin_swap_active)
 				{
-					// overwriting boundaries of array, regions do not match so copy and return
-					std::memcpy(dst_indices, src_indices, num_indices * sizeof(glm::uint32));
-					return;
+					valid_region = skin_swap_region_ids.Contains(region_id);
 				}
 
-				std::memcpy(write_ptr, region_src_ptr, num_write_indices * sizeof(glm::uint32));
+				if (valid_region) {
+					total_num_write_indices += num_write_indices;
+					if (total_num_write_indices > num_indices)
+					{
+						// overwriting boundaries of array, regions do not match so copy and return
+						std::memcpy(dst_indices, src_indices, num_indices * sizeof(glm::uint32));
+						return num_indices;
+					}
 
-				write_ptr += num_write_indices;
+					std::memcpy(write_ptr, region_src_ptr, num_write_indices * sizeof(glm::uint32));
+					write_ptr += num_write_indices;
+				}
 
 				// Write points
 				{
@@ -92,8 +106,12 @@ public:
 		}
 		else {
 			// Nothing changded, just copy from source
+			total_num_write_indices = num_indices;
 			std::memcpy(dst_indices, src_indices, num_indices * sizeof(glm::uint32));
+			return num_indices;
 		}
+
+		return total_num_write_indices;
 	}
 
 	TArray<int32> * sampleOrder(const FString& anim_name, int32 time_in)

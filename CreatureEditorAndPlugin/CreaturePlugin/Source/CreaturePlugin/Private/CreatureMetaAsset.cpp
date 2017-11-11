@@ -10,7 +10,8 @@
 void CreatureMetaData::buildSkinSwapIndices(
 	const FString & swap_name, 
 	meshRenderBoneComposition * bone_composition,
-	TArray<int32>& skin_swap_indices
+	TArray<int32>& skin_swap_indices,
+	TSet<int32>& skin_swap_region_ids
 )
 {
 	if (!skin_swaps.Contains(swap_name))
@@ -22,11 +23,14 @@ void CreatureMetaData::buildSkinSwapIndices(
 	auto& swap_set = skin_swaps[swap_name];
 	int32 total_size = 0;
 	auto& regions = bone_composition->getRegions();
+	skin_swap_region_ids.Empty(100);
+
 	for (auto cur_region : regions)
 	{
 		if (swap_set.Contains(cur_region->getName().ToString()))
 		{
 			total_size += cur_region->getNumIndices();
+			skin_swap_region_ids.Add(cur_region->getTagId());
 		}
 	}
 
@@ -176,7 +180,7 @@ void CreaturePhysicsData::createPhysicsChain(
 		box_in->SetEnableGravity(false);
 		box_in->SetAllMassScale(1.0f);
 		box_in->SetWorldScale3D(FVector(1, 1, 1));
-		box_in->SetAllPhysicsAngularVelocity(FVector::ZeroVector);
+		box_in->SetAllPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
 		box_in->SetAllPhysicsLinearVelocity(FVector::ZeroVector);
 		box_in->SetAllPhysicsPosition(pt_in);
 		box_in->RegisterComponent();
