@@ -28,6 +28,8 @@ For more information on how to use the runtimes, please head over to this [site]
 
 - **Lightning Fast Animation Pose Playback Cache** Even faster character animation playback performance when using the Point Cache playback feature
 
+- **UMG Slate UI Support** Render and display your Creature Character Animations together with UE4's powerful UMG Slate UI Widget Framework
+
 ### Trying out the new fancy Creature Editor & Runtimes:
 The directory containing this is called **CreatureEditorAndPlugin**. Most of the concepts from the old runtimes apply to the new ones so it should not be too big of a change. However, you will get access to some fancy new features, including the CreatureAsset, CreatureMeshComponent, new UI and a state machine.
 
