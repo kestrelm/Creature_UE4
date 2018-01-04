@@ -30,6 +30,13 @@ For more information on how to use the runtimes, please head over to this [site]
 
 - **UMG Slate UI Support** Render and display your Creature Character Animations together with UE4's powerful UMG Slate UI Widget Framework
 
+### Sample Creature Character Animation Files
+
+You can find a list of different character JSONs and their associated PNG texture/character atlases to test out the runtime [here](https://github.com/kestrelm/Creature_UE4/CharacterSamples).
+
+ In it, you should be able to download an animated Fox, Bat, Girl with Skin Swapping etc. from the provided [folder.](https://github.com/kestrelm/Creature_UE4/CharacterSamples).
+ 
+
 ### Trying out the new fancy Creature Editor & Runtimes:
 The directory containing this is called **CreatureEditorAndPlugin**. Most of the concepts from the old runtimes apply to the new ones so it should not be too big of a change. However, you will get access to some fancy new features, including the CreatureAsset, CreatureMeshComponent, new UI and a state machine.
 
