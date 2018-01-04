@@ -32,9 +32,9 @@ For more information on how to use the runtimes, please head over to this [site]
 
 ### Sample Creature Character Animation Files
 
-You can find a list of different character JSONs and their associated PNG texture/character atlases to test out the runtime [here](https://github.com/kestrelm/Creature_UE4/CharacterSamples).
+You can find a list of different character JSONs and their associated PNG texture/character atlases to test out the runtime [here](https://github.com/kestrelm/Creature_UE4/tree/master/CharacterSamples).
 
- In it, you should be able to download an animated Fox, Bat, Girl with Skin Swapping etc. from the provided [folder.](https://github.com/kestrelm/Creature_UE4/CharacterSamples).
+ In it, you should be able to download an animated Fox, Bat, Girl with Skin Swapping etc. from the provided [folder.](https://github.com/kestrelm/Creature_UE4/tree/master/CharacterSamples).
  
 
 ### Trying out the new fancy Creature Editor & Runtimes:
