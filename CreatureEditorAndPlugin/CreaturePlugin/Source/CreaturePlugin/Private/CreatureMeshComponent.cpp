@@ -1108,7 +1108,7 @@ FPrimitiveSceneProxy* UCreatureMeshComponent::CreateSceneProxy()
 		auto proc_mesh_data = cur_data.creature_core.GetProcMeshData(GetWorld()->WorldType);
 		if (proc_mesh_data.point_num > 0) {
 
-			Proxy->AddRenderPacket(&proc_mesh_data, start_color);
+			Proxy->AddRenderPacket(&proc_mesh_data, start_color, GetScene()->GetFeatureLevel());
 		}
 	}
 
@@ -1181,7 +1181,7 @@ void UCreatureMeshComponent::LoadAnimationFromStore()
 				auto not_editor_mode = ((GetWorld()->WorldType != EWorldType::Type::Editor) &&
 					(GetWorld()->WorldType != EWorldType::Type::EditorPreview));
 				FColor start_color = not_editor_mode ? FColor(0, 0, 0, 0) : FColor::White;
-				localRenderProxy->AddRenderPacket(&proc_mesh_data, start_color);
+				localRenderProxy->AddRenderPacket(&proc_mesh_data, start_color, GetScene()->GetFeatureLevel());
 			}
 		}
 
