@@ -170,7 +170,10 @@ void CreatureCore::UpdateCreatureRender()
 		if (meta_data)
 		{
 			auto dst_indices = GetIndicesCopy(cur_num_indices);
-			if (shouldSkinSwap())
+			auto has_region_order = meta_data->hasRegionOrder(
+				creature_manager->GetActiveAnimationName().ToString(),
+				(int)creature_manager->getActualRunTime());
+			if (shouldSkinSwap() && (has_region_order == false))
 			{
 				// Skin Swap
 				std::copy(
