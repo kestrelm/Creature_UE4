@@ -125,7 +125,6 @@ public:
 			}
 
 			int32 sample_time = 0;
-
 			for(auto& order_data : order_table)
 			{
 				if (time_in >= order_data.Key)

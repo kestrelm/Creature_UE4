@@ -598,6 +598,10 @@ UCreatureMetaAsset::BuildMetaData()
 					cur_switch_order_map.Add(cur_switch_time, cur_switch_ints);
 				}
 
+				cur_switch_order_map.KeySort([](int32 A, int32 B)
+				{
+					return A < B;
+				});
 
 				meta_data.anim_order_map.Add(cur_anim_name, cur_switch_order_map);
 			}
