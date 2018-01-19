@@ -6,6 +6,7 @@
 #include <cstring>
 #include <sstream>
 #include <iostream>
+#include <functional>
 
 // BareBones MessagePack Reader, only handles ints, floats, arrays and strings
 
@@ -109,6 +110,24 @@ namespace mpMini {
 			return true;
 		}
 
+		bool readBytesChunk(size_t limit, std::function<void(int, uint8_t)> readCB)
+		{
+			if (is_at_end())
+			{
+				// end of buffer
+				return false;
+			}
+
+			uint8_t * base_ptr = &buf[read_idx];
+			for (size_t i = 0; i < limit; i++)
+			{
+				readCB(i, base_ptr[i]);
+				read_idx++;
+			}
+
+			return true;
+		}
+
 		bool is_at_end() const {
 			return read_idx >= buf.size();
 		}
@@ -141,6 +160,8 @@ namespace mpMini {
 		bool msg_mini_read_str_size(uint32_t *size);
 
 		bool msg_mini_read_str(std::string& data);
+
+		bool msg_mini_read_bin(uint32_t *size);
 
 		bool msg_mini_read_array(uint32_t *size);
 
@@ -185,6 +206,7 @@ namespace mpMini {
 		bool msg_mini_object_is_nil(msg_mini_object *obj);
 		bool msg_mini_object_is_bool(msg_mini_object *obj);
 		bool msg_mini_object_is_str(msg_mini_object *obj);
+		bool msg_mini_object_is_bin(msg_mini_object *obj);
 		bool msg_mini_object_is_array(msg_mini_object *obj);
 		bool msg_mini_object_is_map(msg_mini_object *obj);
 
