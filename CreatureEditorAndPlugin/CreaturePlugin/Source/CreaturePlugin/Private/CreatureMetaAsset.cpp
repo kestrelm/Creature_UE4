@@ -6,6 +6,64 @@
 #include "Runtime/Engine/Classes/PhysicsEngine/ConstraintInstance.h"
 #include "Runtime/Engine/Classes/PhysicsEngine/PhysicsConstraintComponent.h"
 
+namespace Base64Lib {
+	static const FString base64_chars =
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz"
+		"0123456789+/";
+
+	static inline bool is_base64(uint8_t c) {
+		return (isalnum(c) || (c == '+') || (c == '/'));
+	}
+
+	TArray<uint8_t> base64_decode(FString const& encoded_string) {
+		int in_len = static_cast<int>(encoded_string.Len());
+		int i = 0;
+		int j = 0;
+		int in_ = 0;
+		uint8_t char_array_4[4], char_array_3[3];
+		TArray<uint8_t> ret;
+
+		while (in_len-- && (encoded_string[in_] != '=') && is_base64(encoded_string[in_])) {
+			char_array_4[i++] = encoded_string[in_]; in_++;
+			if (i == 4) {
+				for (i = 0; i < 4; i++) {
+					int32 find_idx = -1;
+					base64_chars.FindChar(char_array_4[i], find_idx);
+					char_array_4[i] = (uint8_t)find_idx;
+				}
+
+				char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+				char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+				char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+				for (i = 0; (i < 3); i++)
+					ret.Add(char_array_3[i]);
+				i = 0;
+			}
+		}
+
+		if (i) {
+			for (j = i; j <4; j++)
+				char_array_4[j] = 0;
+
+			for (j = 0; j < 4; j++) {
+				int32 find_idx = -1;
+				base64_chars.FindChar(char_array_4[j], find_idx);
+				char_array_4[j] = (uint8_t)find_idx;
+			}
+
+			char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+			char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+			char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+			for (j = 0; (j < i - 1); j++) ret.Add(char_array_3[j]);
+		}
+
+		return ret;
+	}
+}
+
 // CreatureMetaData
 void CreatureMetaData::buildSkinSwapIndices(
 	const FString & swap_name, 
@@ -692,6 +750,41 @@ UCreatureMetaAsset::BuildMetaData()
 				}
 			}
 		}
+
+		// Fill Morph Spaces
+		if (jsonObject->HasField(TEXT("MorphTargets")) && 
+			jsonObject->HasField(TEXT("MorphRes")) && 
+			jsonObject->HasField(TEXT("MorphSpace")))
+		{
+			auto morph_obj = jsonObject->GetObjectField(TEXT("MorphTargets"));
+
+			auto morph_center_array = morph_obj->GetArrayField(TEXT("CenterData"));
+			meta_data.morph_data.center_clip = morph_center_array[1]->AsString();
+
+			auto morph_shapes_array = morph_obj->GetArrayField(TEXT("MorphShape"));
+			for (auto& cur_shape_data : morph_shapes_array)
+			{
+				auto cur_array = cur_shape_data->AsArray();
+				auto cur_clip = cur_array[0]->AsString();
+				auto pts_array = cur_array[1]->AsArray();
+				FVector2D cur_pt((float)pts_array[0]->AsNumber(), (float)pts_array[1]->AsNumber());
+				meta_data.morph_data.morph_clips.Add(TTuple<FString, FVector2D>(cur_clip, cur_pt));
+			}
+
+			meta_data.morph_data.morph_res = jsonObject->GetIntegerField(TEXT("MorphRes"));
+			FString raw_str = jsonObject->GetStringField(TEXT("MorphSpace"));
+			auto raw_bytes = Base64Lib::base64_decode(raw_str);
+			for (int32 j = 0; j < morph_shapes_array.Num(); j++)
+			{
+				int32 space_size = meta_data.morph_data.morph_res * meta_data.morph_data.morph_res;
+				int32 byte_idx = j * space_size;
+				TArray<uint8_t> space_data;
+				space_data.SetNum(space_size);
+				FMemory::Memcpy(space_data.GetData(), raw_bytes.GetData() + byte_idx, space_size);
+				meta_data.morph_data.morph_spaces.Add(space_data);
+			}
+		}
+
 	}
 }
 

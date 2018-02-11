@@ -15,6 +15,7 @@ public:
 		mesh_map.Empty();
 		anim_order_map.Empty();
 		skin_swaps.Empty();
+		morph_data = MorphData();
 	}
 
 	void buildSkinSwapIndices(
@@ -154,6 +155,15 @@ public:
 	TMap<FString, TMap<int32, TArray<int32> >> anim_order_map;
 	TMap<FString, TMap<int32, FString> > anim_events_map;
 	TMap<FString, TSet<FString>> skin_swaps;
+
+	struct MorphData
+	{
+		TArray<TArray<uint8_t>> morph_spaces;
+		FString center_clip;
+		TArray<TTuple<FString, FVector2D>> morph_clips;
+		int morph_res;
+	};
+	MorphData morph_data;
 };
 
 class CreaturePhysicsData
