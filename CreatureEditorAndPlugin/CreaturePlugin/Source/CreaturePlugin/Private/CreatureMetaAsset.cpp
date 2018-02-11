@@ -5,6 +5,7 @@
 #include "MeshBone.h"
 #include "Runtime/Engine/Classes/PhysicsEngine/ConstraintInstance.h"
 #include "Runtime/Engine/Classes/PhysicsEngine/PhysicsConstraintComponent.h"
+#include <limits>
 
 namespace Base64Lib {
 	static const FString base64_chars =
@@ -762,16 +763,36 @@ UCreatureMetaAsset::BuildMetaData()
 			meta_data.morph_data.center_clip = morph_center_array[1]->AsString();
 
 			auto morph_shapes_array = morph_obj->GetArrayField(TEXT("MorphShape"));
+			meta_data.morph_data.bounds_min = FVector2D(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+			meta_data.morph_data.bounds_max = FVector2D(std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
 			for (auto& cur_shape_data : morph_shapes_array)
 			{
 				auto cur_array = cur_shape_data->AsArray();
 				auto cur_clip = cur_array[0]->AsString();
 				auto pts_array = cur_array[1]->AsArray();
 				FVector2D cur_pt((float)pts_array[0]->AsNumber(), (float)pts_array[1]->AsNumber());
+				meta_data.morph_data.bounds_min.X = std::min(meta_data.morph_data.bounds_min.X, cur_pt.X);
+				meta_data.morph_data.bounds_max.X = std::max(meta_data.morph_data.bounds_max.X, cur_pt.X);
+				meta_data.morph_data.bounds_min.Y = std::min(meta_data.morph_data.bounds_min.Y, cur_pt.Y);
+				meta_data.morph_data.bounds_max.Y = std::max(meta_data.morph_data.bounds_max.Y, cur_pt.Y);
+
 				meta_data.morph_data.morph_clips.Add(TTuple<FString, FVector2D>(cur_clip, cur_pt));
 			}
-
+			
 			meta_data.morph_data.morph_res = jsonObject->GetIntegerField(TEXT("MorphRes"));
+			{
+				// Transform to Image space
+				for (auto& cur_clip : meta_data.morph_data.morph_clips)
+				{
+					auto bounds_size = meta_data.morph_data.bounds_max - meta_data.morph_data.bounds_min;
+					auto& cur_pt = cur_clip.Get<1>();
+					cur_pt = (cur_pt - meta_data.morph_data.bounds_min) / bounds_size * (float)(meta_data.morph_data.morph_res - 1);
+					cur_pt.X = std::min(std::max(0.0f, cur_pt.X), (float)(meta_data.morph_data.morph_res - 1));
+					cur_pt.Y = std::min(std::max(0.0f, cur_pt.Y), (float)(meta_data.morph_data.morph_res - 1));
+				}
+			}
+
+
 			FString raw_str = jsonObject->GetStringField(TEXT("MorphSpace"));
 			auto raw_bytes = Base64Lib::base64_decode(raw_str);
 			for (int32 j = 0; j < morph_shapes_array.Num(); j++)
@@ -783,6 +804,8 @@ UCreatureMetaAsset::BuildMetaData()
 				FMemory::Memcpy(space_data.GetData(), raw_bytes.GetData() + byte_idx, space_size);
 				meta_data.morph_data.morph_spaces.Add(space_data);
 			}
+
+			meta_data.morph_data.weights.SetNum(morph_shapes_array.Num());
 		}
 
 	}

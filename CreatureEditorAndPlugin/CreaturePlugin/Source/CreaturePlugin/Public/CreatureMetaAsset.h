@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include "glm/fwd.hpp"
 #include <vector>
+#include <algorithm>
 #include "CreatureMetaAsset.generated.h"
 
 class meshBone;
@@ -151,6 +152,85 @@ public:
 		return true;
 	}
 
+	void computeMorphWeights(const FVector2D& img_pt)
+	{
+		auto sampleFilterPt = [](
+				float q11, // (x1, y1)
+				float q12, // (x1, y2)
+				float q21, // (x2, y1)
+				float q22, // (x2, y2)
+				float x1,
+				float y1,
+				float x2,
+				float y2,
+				float x,
+				float y)
+		{
+			float x2x1, y2y1, x2x, y2y, yy1, xx1;
+			x2x1 = x2 - x1;
+			y2y1 = y2 - y1;
+			x2x = x2 - x;
+			y2y = y2 - y;
+			yy1 = y - y1;
+			xx1 = x - x1;
+
+			float denom = (x2x1 * y2y1);
+			float numerator = (
+				q11 * x2x * y2y +
+				q21 * xx1 * y2y +
+				q12 * x2x * yy1 +
+				q22 * xx1 * yy1
+				);
+
+			return (denom == 0) ? q11 : (1.0f / denom * numerator);
+		};
+
+		auto lookupVal = [this](int x_in, int y_in, int idx)
+		{
+			auto& cur_space = morph_data.morph_spaces[idx];
+			return static_cast<float>(cur_space[y_in *  morph_data.morph_res + x_in]) / 255.0f;
+		};
+
+		float x1 = std::floor(img_pt.X);
+		float y1 = std::floor(img_pt.Y);
+		float x2 = std::ceil(img_pt.X);
+		float y2 = std::ceil(img_pt.Y);
+
+		for (int32 i = 0; i < morph_data.morph_spaces.Num(); i++)
+		{
+			float q11 = (float)lookupVal(x1, y1, i); // (x1, y1)
+			float q12 = (float)lookupVal(x1, y2, i); // (x1, y2)
+			float q21 = (float)lookupVal(x2, y1, i); // (x2, y1)
+			float q22 = (float)lookupVal(x2, y2, i); // (x2, y2)
+
+			float sample_val = sampleFilterPt(
+				q11, q12, q21, q22, x1, y1, x2, y2, img_pt.X, img_pt.Y);
+			morph_data.weights[i] = sample_val;
+		}
+	}
+
+	void computeMorphWeightsNormalised(const FVector2D& normal_pt)
+	{
+		auto img_pt = normal_pt;
+		img_pt.X = std::max(std::min((float)morph_data.morph_res, normal_pt.X), 0.0f);
+		img_pt.Y = std::max(std::min((float)morph_data.morph_res, normal_pt.Y), 0.0f);
+		computeMorphWeights(img_pt);
+	}
+
+	void computeMorphWeightsWorld(const FVector2D& world_pt, const FVector2D& base_pt, float radius)
+	{
+		auto rel_pt = world_pt - base_pt;
+		auto cur_length = FVector2D::Distance(world_pt, base_pt);
+		if (cur_length > radius)
+		{
+			rel_pt.Normalize();
+			rel_pt *= radius;
+		}
+
+		FVector2D normal_pt = (rel_pt + FVector2D(radius, radius)) / (radius * 2.0f);
+		computeMorphWeightsNormalised(normal_pt);
+	}
+
 	TMap<int, TTuple<int32, int32>> mesh_map;
 	TMap<FString, TMap<int32, TArray<int32> >> anim_order_map;
 	TMap<FString, TMap<int32, FString> > anim_events_map;
@@ -161,6 +241,8 @@ public:
 		TArray<TArray<uint8_t>> morph_spaces;
 		FString center_clip;
 		TArray<TTuple<FString, FVector2D>> morph_clips;
+		TArray<float> weights;
+		FVector2D bounds_min, bounds_max;
 		int morph_res;
 	};
 	MorphData morph_data;
