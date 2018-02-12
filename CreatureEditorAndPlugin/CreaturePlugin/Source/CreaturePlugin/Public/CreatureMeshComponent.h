@@ -643,6 +643,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void AddSkinSwap(FString new_swap_name, TArray<FString> new_swap);
 
+	// Enables/Disables Morph Targets defined in the MetaData Asset
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetMorphTargetsActive(bool flag_in);
+
+	// Sets the Morph Targets world space point with a reference base pt
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void SetMorphTargetsWorldPt(FVector pt_in, FVector base_pt, float radius);
+
 	CreatureCore& GetCore();
 
 	virtual bool ShouldSkipTick() const;

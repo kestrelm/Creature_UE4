@@ -8,6 +8,11 @@
 class meshBone;
 class meshRenderBoneComposition;
 
+namespace CreatureModule {
+	class CreatureManager;
+	class Creature;
+}
+
 class CreatureMetaData {
 public:
 
@@ -154,6 +159,7 @@ public:
 
 	void computeMorphWeights(const FVector2D& img_pt)
 	{
+		morph_data.play_img_pt = img_pt;
 		auto sampleFilterPt = [](
 				float q11, // (x1, y1)
 				float q12, // (x1, y2)
@@ -211,9 +217,9 @@ public:
 
 	void computeMorphWeightsNormalised(const FVector2D& normal_pt)
 	{
-		auto img_pt = normal_pt;
-		img_pt.X = std::max(std::min((float)morph_data.morph_res, normal_pt.X), 0.0f);
-		img_pt.Y = std::max(std::min((float)morph_data.morph_res, normal_pt.Y), 0.0f);
+		auto img_pt = normal_pt * FVector2D(morph_data.morph_res - 1, morph_data.morph_res - 1);
+		img_pt.X = std::max(std::min((float)morph_data.morph_res - 1.0f, normal_pt.X), 0.0f);
+		img_pt.Y = std::max(std::min((float)morph_data.morph_res - 1.0f, normal_pt.Y), 0.0f);
 		computeMorphWeights(img_pt);
 	}
 
@@ -231,6 +237,8 @@ public:
 		computeMorphWeightsNormalised(normal_pt);
 	}
 
+	void updateMorphStep(CreatureModule::CreatureManager * manager_in, float delta_step);
+
 	TMap<int, TTuple<int32, int32>> mesh_map;
 	TMap<FString, TMap<int32, TArray<int32> >> anim_order_map;
 	TMap<FString, TMap<int32, FString> > anim_events_map;
@@ -244,6 +252,14 @@ public:
 		TArray<float> weights;
 		FVector2D bounds_min, bounds_max;
 		int morph_res;
+		TArray<TTuple<FName, float>> play_anims_data;
+		TTuple<FName, float> play_center_anim_data;
+		TArray<glm::float32> play_pts;
+		FVector2D play_img_pt;
+
+		bool isValid() const {
+			return (morph_spaces.Num() > 0);
+		}
 	};
 	MorphData morph_data;
 };

@@ -109,6 +109,85 @@ void CreatureMetaData::buildSkinSwapIndices(
 	}
 }
 
+void CreatureMetaData::updateMorphStep(
+	CreatureModule::CreatureManager * manager_in,
+	float delta_step)
+{
+	auto creature_in = manager_in->GetCreature();
+	if (morph_data.play_anims_data.Num() == 0)
+	{
+		auto& all_clips = manager_in->GetAllAnimations();
+		morph_data.play_anims_data.SetNum(morph_data.morph_clips.Num());
+		for (int32 i = 0; i < morph_data.play_anims_data.Num(); i++)
+		{
+			auto& cur_play_data = morph_data.play_anims_data[i];
+			cur_play_data.Get<0>() = FName(*morph_data.morph_clips[i].Get<0>());
+			const auto& cur_clip_name = cur_play_data.Get<0>();
+			cur_play_data.Get<1>() = all_clips[cur_clip_name]->getStartTime();
+		}
+
+		if (morph_data.center_clip.Len() > 0)
+		{
+			morph_data.play_center_anim_data.Get<0>() = FName(*morph_data.center_clip);
+			const auto& center_clip_name = morph_data.play_center_anim_data.Get<0>();
+			morph_data.play_center_anim_data.Get<1>() = all_clips[center_clip_name]->getStartTime();
+		}
+
+		morph_data.play_pts.SetNum(creature_in->GetTotalNumPoints() * 3);
+	}
+
+	FMemory::Memset(morph_data.play_pts.GetData(), 0, sizeof(glm::float32) * morph_data.play_pts.Num());
+
+	auto updatePoints = [this, creature_in](float ratio_in)
+	{
+		auto render_pts = morph_data.play_pts.GetData();
+		for (int j = 0; j < creature_in->GetTotalNumPoints() * 3; j += 3)
+		{
+			render_pts[j] +=
+				(creature_in->GetRenderPts()[j] * ratio_in);
+			render_pts[j + 1] +=
+				(creature_in->GetRenderPts()[j + 1] * ratio_in);
+		}
+	};
+
+	float center_ratio = 0;
+	bool has_center = (morph_data.center_clip.Len() > 0);
+	if (has_center)
+	{
+		auto radius = (float)morph_data.morph_res * 0.5f;
+		auto test_pt = morph_data.play_img_pt - FVector2D(morph_data.morph_res / 2, morph_data.morph_res / 2);
+		center_ratio = FVector2D::Distance(
+			test_pt / ((float)morph_data.morph_res * 0.5f), FVector2D::ZeroVector);
+
+		const auto& clip_name = morph_data.play_center_anim_data.Get<0>();
+		manager_in->SetActiveAnimationName(clip_name);
+		manager_in->setRunTime(morph_data.play_center_anim_data.Get<1>());
+		manager_in->Update(delta_step);
+
+		float inv_center_ratio = 1.0f - center_ratio;
+		updatePoints(inv_center_ratio);
+		morph_data.play_center_anim_data.Get<1>() = manager_in->getRunTime();
+	}
+
+	for (int32 i = 0; i < morph_data.play_anims_data.Num(); i++)
+	{
+		auto& cur_data = morph_data.play_anims_data[i];
+		const auto& clip_name = cur_data.Get<0>();
+		manager_in->SetActiveAnimationName(clip_name);
+		manager_in->setRunTime(cur_data.Get<1>());
+		manager_in->Update(delta_step);
+
+		cur_data.Get<1>() = manager_in->getRunTime();
+		updatePoints((center_ratio > 0) ? (morph_data.weights[i] * center_ratio) : morph_data.weights[i]);
+	}
+
+	// Copy to current render points
+	FMemory::Memcpy(
+		creature_in->GetRenderPts(),
+		morph_data.play_pts.GetData(), 
+		sizeof(glm::float32) * morph_data.play_pts.Num());
+}
+
 // Bend Physics
 static void SetLinearLimits(
 	FConstraintInstance& Constraint,

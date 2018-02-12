@@ -332,6 +332,28 @@ void UCreatureMeshComponent::AddSkinSwap(FString new_swap_name, TArray<FString> 
 	}
 }
 
+void UCreatureMeshComponent::SetMorphTargetsActive(bool flag_in)
+{
+	creature_core.run_morph_targets = flag_in;
+}
+
+void UCreatureMeshComponent::SetMorphTargetsWorldPt(FVector pt_in, FVector base_pt, float radius)
+{
+	auto char_base_pos = GetComponentToWorld().InverseTransformPosition(base_pt);
+	auto char_pt_pos = GetComponentToWorld().InverseTransformPosition(pt_in);
+	if (creature_meta_asset)
+	{
+		if (creature_meta_asset->GetMetaData()->morph_data.isValid())
+		{
+			creature_meta_asset->GetMetaData()->computeMorphWeightsWorld(
+				FVector2D(char_base_pos.X, char_base_pos.Y),
+				FVector2D(char_pt_pos.X, char_pt_pos.Y),
+				radius
+			);
+		}
+	}
+}
+
 void UCreatureMeshComponent::TryCreateBendPhysics()
 {
 	if (delay_bendphysics_clip.Len() == 0)

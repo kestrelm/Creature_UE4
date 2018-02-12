@@ -51,6 +51,7 @@ CreatureCore::CreatureCore()
 	global_indices_copy = nullptr;
 	skin_swap_active = false;
 	region_order_indices_num = 0;
+	run_morph_targets = false;
 	update_lock = TSharedPtr<FCriticalSection, ESPMode::ThreadSafe>(new FCriticalSection());
 }
 
@@ -853,13 +854,22 @@ CreatureCore::RunTick(float delta_time)
 
 		if (should_play) {
 			SCOPE_CYCLE_COUNTER(STAT_CreatureCore_UpdateManager);
-			creature_manager->Update(delta_time);
+
+			bool morph_targets_valid = false;
+			if (run_morph_targets && meta_data) {
+				morph_targets_valid = meta_data->morph_data.isValid();
+			}
+
+			if (morph_targets_valid) {
+				meta_data->updateMorphStep(creature_manager.Get(), delta_time);
+			}
+			else {
+				creature_manager->Update(delta_time);
+			}
 		}
 
 		UpdateCreatureRender();
-
 		FillBoneData();
-
 	}
 
 	return true;
