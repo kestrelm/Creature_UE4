@@ -836,10 +836,12 @@ UCreatureMetaAsset::BuildMetaData()
 			jsonObject->HasField(TEXT("MorphRes")) && 
 			jsonObject->HasField(TEXT("MorphSpace")))
 		{
+			morph_poses.Empty();
 			auto morph_obj = jsonObject->GetObjectField(TEXT("MorphTargets"));
 
 			auto morph_center_array = morph_obj->GetArrayField(TEXT("CenterData"));
 			meta_data.morph_data.center_clip = morph_center_array[1]->AsString();
+			morph_poses.Add(meta_data.morph_data.center_clip);
 
 			auto morph_shapes_array = morph_obj->GetArrayField(TEXT("MorphShape"));
 			meta_data.morph_data.bounds_min = FVector2D(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
@@ -856,6 +858,7 @@ UCreatureMetaAsset::BuildMetaData()
 				meta_data.morph_data.bounds_max.Y = std::max(meta_data.morph_data.bounds_max.Y, cur_pt.Y);
 
 				meta_data.morph_data.morph_clips.Add(TTuple<FString, FVector2D>(cur_clip, cur_pt));
+				morph_poses.Add(cur_clip);
 			}
 			
 			meta_data.morph_data.morph_res = jsonObject->GetIntegerField(TEXT("MorphRes"));

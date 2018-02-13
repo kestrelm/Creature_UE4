@@ -393,6 +393,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
 	TArray<FString> event_names;
 
+	// The available morph poses
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
+	TArray<FString> morph_poses;
+
 	FString& GetJsonString();
 
 	void BuildMetaData();
