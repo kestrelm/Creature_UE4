@@ -218,8 +218,8 @@ public:
 	void computeMorphWeightsNormalised(const FVector2D& normal_pt)
 	{
 		auto img_pt = normal_pt * FVector2D(morph_data.morph_res - 1, morph_data.morph_res - 1);
-		img_pt.X = std::max(std::min((float)morph_data.morph_res - 1.0f, normal_pt.X), 0.0f);
-		img_pt.Y = std::max(std::min((float)morph_data.morph_res - 1.0f, normal_pt.Y), 0.0f);
+		img_pt.X = std::max(std::min((float)morph_data.morph_res - 1.0f, img_pt.X), 0.0f);
+		img_pt.Y = std::max(std::min((float)morph_data.morph_res - 1.0f, img_pt.Y), 0.0f);
 		computeMorphWeights(img_pt);
 	}
 

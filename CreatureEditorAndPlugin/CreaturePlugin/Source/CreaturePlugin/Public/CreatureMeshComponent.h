@@ -649,7 +649,7 @@ public:
 
 	// Sets the Morph Targets world space point with a reference base pt
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
-	void SetMorphTargetsWorldPt(FVector pt_in, FVector base_pt, float radius);
+	void SetMorphTargetsWorldPt(FVector pt_in, FVector base_pt, float radius=1.0f, bool z_up=true);
 
 	CreatureCore& GetCore();
 

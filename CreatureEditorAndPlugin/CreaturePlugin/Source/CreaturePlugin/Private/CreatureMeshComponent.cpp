@@ -337,17 +337,25 @@ void UCreatureMeshComponent::SetMorphTargetsActive(bool flag_in)
 	creature_core.run_morph_targets = flag_in;
 }
 
-void UCreatureMeshComponent::SetMorphTargetsWorldPt(FVector pt_in, FVector base_pt, float radius)
+void UCreatureMeshComponent::SetMorphTargetsWorldPt(FVector pt_in, FVector base_pt, float radius, bool z_up)
 {
 	auto char_base_pos = GetComponentToWorld().InverseTransformPosition(base_pt);
 	auto char_pt_pos = GetComponentToWorld().InverseTransformPosition(pt_in);
+	radius = 1.0f /((GetComponentToWorld().GetScale3D().X + GetComponentToWorld().GetScale3D().Y) * 0.5f) * radius;
+
+	if (z_up)
+	{
+		std::swap(char_base_pos.Z, char_base_pos.Y);
+		std::swap(char_pt_pos.Z, char_pt_pos.Y);
+	}
+
 	if (creature_meta_asset)
 	{
 		if (creature_meta_asset->GetMetaData()->morph_data.isValid())
 		{
 			creature_meta_asset->GetMetaData()->computeMorphWeightsWorld(
-				FVector2D(char_base_pos.X, char_base_pos.Y),
-				FVector2D(char_pt_pos.X, char_pt_pos.Y),
+				FVector2D(char_pt_pos.X, -char_pt_pos.Y),
+				FVector2D(char_base_pos.X, -char_base_pos.Y),
 				radius
 			);
 		}
