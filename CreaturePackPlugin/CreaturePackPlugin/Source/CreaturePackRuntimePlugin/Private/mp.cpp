@@ -331,13 +331,13 @@ namespace mpMini {
 				msg_mini_read_bin(&array_size);
 				msg_mini_generic_data new_generic_data(0);
 
-				new_generic_data.type = MSG_MINI_GENERIC_ARRAY_INT_TYPE;
-				new_generic_data.int_array_val.resize(array_size);
+				new_generic_data.type = MSG_MINI_GENERIC_ARRAY_BYTE_TYPE;
+				new_generic_data.byte_array_val.resize(array_size);
 
 				readBytesChunk(array_size, 
 					[&new_generic_data](int idx, uint8_t data)
 				{
-					new_generic_data.int_array_val[idx] = (int32_t)data;
+					new_generic_data.byte_array_val[idx] = data;
 				});
 				generic_data.push_back(new_generic_data);
 			}

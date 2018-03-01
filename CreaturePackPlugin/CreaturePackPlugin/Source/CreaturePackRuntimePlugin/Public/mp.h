@@ -18,6 +18,7 @@ namespace mpMini {
 		MSG_MINI_GENERIC_ARRAY_INT_TYPE,
 		MSG_MINI_GENERIC_ARRAY_FLOAT_TYPE,
 		MSG_MINI_GENERIC_ARRAY_STRING_TYPE,
+		MSG_MINI_GENERIC_ARRAY_BYTE_TYPE
 	};
 
 	class msg_mini_generic_data {
@@ -35,6 +36,7 @@ namespace mpMini {
 		std::string string_val;
 		std::vector<int32_t> int_array_val;
 		std::vector<float> float_array_val;
+		std::vector<uint8_t> byte_array_val;
 		std::vector<std::string> str_array_val;
 	};
 

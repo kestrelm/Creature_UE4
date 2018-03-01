@@ -42,6 +42,7 @@
 #include <memory>
 #include <array>
 #include <stack>
+#include <cstring>
 
 class CreatureTimeSample
 {
@@ -408,6 +409,10 @@ protected:
 			{
 				return "deform_comp2";
 			}
+			else if (headerList[i] == "deform_comp1_1")
+			{
+				return "deform_comp1_1";
+			}
 		}
 
 		return "";
@@ -444,21 +449,40 @@ protected:
 
 			while (k < curOffsetPair.second)
 			{
-				auto pts_raw_array = fileData[k + 1].int_array_val;
+				const auto& pts_raw_array = fileData[k + 1].int_array_val;
+				const auto& pts_raw_byte_array = fileData[k + 1].byte_array_val;
 				int raw_num = (int)pts_raw_array.size();
+
+				if (deformCompressType == "deform_comp2")
+				{
+					raw_num = (int)pts_raw_byte_array.size();
+				}
+				else if (deformCompressType == "deform_comp1_1")
+				{
+					raw_num = (int)pts_raw_byte_array.size() / 2;
+				}
 
 				std::vector<float> final_pts_array(raw_num);
 				for (int m = 0; m < raw_num; m++)
 				{
-					float bucketVal = (float)pts_raw_array[m];
+					float bucketVal = 0;
 					float numBuckets = 0.0f;
 					if (deformCompressType == "deform_comp1")
 					{
+						bucketVal = (float)pts_raw_array[m];
 						numBuckets = 65535.0f;
 					}
 					else if (deformCompressType == "deform_comp2")
 					{
+						bucketVal = (float)pts_raw_byte_array[m];
 						numBuckets = 255.0f;
+					}
+					else if (deformCompressType == "deform_comp1_1")
+					{
+						uint16_t raw_int = 0;
+						std::memcpy(&raw_int, &pts_raw_byte_array[m * 2], sizeof(uint16_t));
+						bucketVal = (float)raw_int;
+						numBuckets = 65535.0f;
 					}
 
 					float setVal = 0.0f;
@@ -477,6 +501,7 @@ protected:
 				}
 
 				fileData[k + 1].int_array_val.clear();
+				fileData[k + 1].byte_array_val.clear();
 				fileData[k + 1].float_array_val = final_pts_array;
 
 				k += 4;
