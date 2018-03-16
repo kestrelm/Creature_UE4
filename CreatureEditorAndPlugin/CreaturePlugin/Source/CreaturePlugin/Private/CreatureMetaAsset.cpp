@@ -890,6 +890,21 @@ UCreatureMetaAsset::BuildMetaData()
 			meta_data.morph_data.weights.SetNum(morph_shapes_array.Num());
 		}
 
+		// Fill Vertex Attachments
+		vertex_attachments.Empty();
+		if (jsonObject->HasField(TEXT("VertAttachments")))
+		{
+			auto attachments_obj = jsonObject->GetObjectField(TEXT("VertAttachments"));
+			auto attachments_list = attachments_obj->GetArrayField(TEXT("attachments"));
+			for (auto& cur_data : attachments_list)
+			{
+				auto& cur_attachment = cur_data->AsObject();
+				auto cur_name = cur_attachment->GetStringField(TEXT("attach_name"));
+				auto cur_idx = cur_attachment->GetIntegerField(TEXT("idx"));
+				meta_data.vertex_attachments.Add(cur_name, cur_idx);
+				vertex_attachments.Add(cur_name);
+			}
+		}
 	}
 }
 

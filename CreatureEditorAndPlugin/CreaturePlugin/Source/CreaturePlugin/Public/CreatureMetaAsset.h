@@ -22,6 +22,7 @@ public:
 		anim_order_map.Empty();
 		skin_swaps.Empty();
 		morph_data = MorphData();
+		vertex_attachments.Empty();
 	}
 
 	void buildSkinSwapIndices(
@@ -243,6 +244,7 @@ public:
 	TMap<FString, TMap<int32, TArray<int32> >> anim_order_map;
 	TMap<FString, TMap<int32, FString> > anim_events_map;
 	TMap<FString, TSet<FString>> skin_swaps;
+	TMap<FString, int> vertex_attachments;
 
 	struct MorphData
 	{
@@ -396,6 +398,10 @@ public:
 	// The available morph poses
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
 	TArray<FString> morph_poses;
+
+	// The available vertex attachments
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Creature")
+	TArray<FString> vertex_attachments;
 
 	FString& GetJsonString();
 

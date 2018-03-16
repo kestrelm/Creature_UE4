@@ -391,6 +391,27 @@ void UCreatureMeshComponent::TryCreateBendPhysics()
 	delay_bendphysics_clip = FString("");
 }
 
+FVector UCreatureMeshComponent::GetVertexAttachment(FString name_in)
+{
+	if (creature_meta_asset)
+	{
+		auto meta_data = creature_meta_asset->GetMetaData();
+		if (meta_data->vertex_attachments.Contains(name_in))
+		{
+			auto base_xform = GetComponentToWorld();
+			auto cur_creature = creature_core.creature_manager->GetCreature();
+			auto vert_idx = meta_data->vertex_attachments[name_in];
+			FVector vert_pos(
+				cur_creature->GetRenderPts()[vert_idx * 3],
+				cur_creature->GetRenderPts()[vert_idx * 3 + 2],
+				cur_creature->GetRenderPts()[vert_idx * 3 + 1]);
+			return base_xform.TransformPosition(vert_pos);
+		}
+	}
+
+	return FVector(0,0,0);
+}
+
 CreatureCore& UCreatureMeshComponent::GetCore()
 {
 	return creature_core;

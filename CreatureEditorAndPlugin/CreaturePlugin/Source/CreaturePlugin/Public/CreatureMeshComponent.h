@@ -651,6 +651,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetMorphTargetsWorldPt(FVector pt_in, FVector base_pt, float radius=1.0f, bool z_up=true);
 
+	// Returns the world space point of a vertex attachment given its name
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	FVector GetVertexAttachment(FString name_in);
+
 	CreatureCore& GetCore();
 
 	virtual bool ShouldSkipTick() const;
