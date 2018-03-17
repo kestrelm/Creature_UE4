@@ -52,10 +52,13 @@ public:
 		UCustomProceduralMeshComponent* Component,
 		FProceduralMeshTriData * targetTrisIn,
 		const FColor& startColorIn);
+	
+	/** Return a type (or subtype) specific hash for sorting purposes */
+	virtual SIZE_T GetTypeHash() const override;
 
 	virtual ~FCProceduralMeshSceneProxy();
 
-	void AddRenderPacket(FProceduralMeshTriData * targetTrisIn, const FColor& startColorIn);
+	void AddRenderPacket(FProceduralMeshTriData * targetTrisIn, const FColor& startColorIn, ERHIFeatureLevel::Type featureLevel);
 
 	void ResetAllRenderPackets();
 	
@@ -91,7 +94,7 @@ public:
 private:
 	UCustomProceduralMeshComponent* parentComponent;
 	UMaterialInterface* Material;
-	TArray<FProceduralMeshRenderPacket> renderPackets;
+	TIndirectArray<FProceduralMeshRenderPacket> renderPackets;
 	int active_render_packet_idx;
 
 	FMaterialRelevance MaterialRelevance;
