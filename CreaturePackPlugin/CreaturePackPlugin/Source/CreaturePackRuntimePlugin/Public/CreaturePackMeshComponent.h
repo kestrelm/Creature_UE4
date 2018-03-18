@@ -129,7 +129,8 @@ protected:
 	void runRegionOffsetZs();
 
 	CreaturePackLoader * packData;
-	std::mutex updateLock, tickLock;
+	TSharedPtr<FCriticalSection, ESPMode::ThreadSafe> updateLock;
+	FCriticalSection tickLock;
 	TArray<uint8> regionAlphas;
 	std::shared_ptr<CreaturePackPlayer> playerObj;
 };
