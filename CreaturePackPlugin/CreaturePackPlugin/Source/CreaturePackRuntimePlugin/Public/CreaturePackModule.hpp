@@ -399,7 +399,7 @@ protected:
 
 	std::string hasDeformCompress() const
 	{
-		for (int i = 0; i < headerList.size(); i++)
+		for (int i = 0; i < static_cast<int>(headerList.size()); i++)
 		{
 			if (headerList[i] == "deform_comp1")
 			{
@@ -439,7 +439,7 @@ protected:
 			return;
 		}
 
-		for (int i = 0; i < getAnimationNum(); i++)
+		for (int i = 0; i < static_cast<int>(getAnimationNum()); i++)
 		{
 			auto curOffsetPair = getAnimationOffsets(i);
 
