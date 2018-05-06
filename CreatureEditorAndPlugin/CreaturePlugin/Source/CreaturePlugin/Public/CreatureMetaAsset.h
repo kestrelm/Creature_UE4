@@ -141,6 +141,11 @@ public:
 				}
 			}
 
+			if (!order_table.Contains(sample_time))
+			{
+				return nullptr;
+			}
+
 			return &order_table[sample_time];
 		}
 

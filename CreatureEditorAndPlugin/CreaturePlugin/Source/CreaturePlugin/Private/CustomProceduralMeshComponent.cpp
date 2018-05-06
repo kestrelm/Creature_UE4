@@ -488,7 +488,7 @@ FCProceduralMeshSceneProxy::FCProceduralMeshSceneProxy(
 	{
 		AddRenderPacket(targetTrisIn, startColorIn, GetScene().GetFeatureLevel());
 	}
-	}
+}
 
 SIZE_T FCProceduralMeshSceneProxy::GetTypeHash() const
 {
