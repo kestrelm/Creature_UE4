@@ -44,8 +44,8 @@ bool UCreatureAnimGraphSchema::TryCreateConnection(UEdGraphPin* A, UEdGraphPin* 
 					TransitionNode->CompiledTransition->AnimStateMachine = Graph->ParentStateMachine;
 				}
 			}
-			A->MakeLinkTo(TransitionNode->CreatePin(EEdGraphPinDirection::EGPD_Input, A->PinType, FString("In")));
-			TransitionNode->CreatePin(EEdGraphPinDirection::EGPD_Output, FEdGraphPinType(), FString("Out"))->MakeLinkTo(B);
+			A->MakeLinkTo(TransitionNode->CreatePin(EEdGraphPinDirection::EGPD_Input, A->PinType, FName("In")));
+			TransitionNode->CreatePin(EEdGraphPinDirection::EGPD_Output, FEdGraphPinType(), FName("Out"))->MakeLinkTo(B);
 			A->GetOwningNode()->GetGraph()->AddNode(TransitionNode);
 			TransitionNode->TransitionTargetNode = Cast<UCreatureAnimStateNode>(B->GetOwningNode());
 		}

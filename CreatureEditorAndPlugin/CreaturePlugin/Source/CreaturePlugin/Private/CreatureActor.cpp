@@ -116,12 +116,6 @@ void ACreatureActor::PostEditChangeProperty(FPropertyChangedEvent & PropertyChan
 */
 #endif
 
-void ACreatureActor::SetActorHiddenInGame(bool bNewHidden)
-{
-	creature_mesh->RecreateRenderProxy(true);
-	Super::SetActorHiddenInGame(bNewHidden);
-}
-
 CreatureModule::CreatureManager * 
 ACreatureActor::GetCreatureManager()
 {
