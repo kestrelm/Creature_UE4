@@ -293,7 +293,12 @@ public:
 			
 		});
 
-		if (IsInRenderingThread())
+		auto buffers_valid = VertexBuffer->PositionBuffer.VertexBufferRHI.GetReference()
+			&& VertexBuffer->TangentBuffer.VertexBufferRHI.GetReference()
+			&& VertexBuffer->ColorBuffer.VertexBufferRHI.GetReference()
+			&& VertexBuffer->TexCoordBuffer.VertexBufferRHI.GetReference();
+
+		if (IsInRenderingThread() && buffers_valid)
 		{
 			FLocalVertexFactory::InitResource();
 		}
