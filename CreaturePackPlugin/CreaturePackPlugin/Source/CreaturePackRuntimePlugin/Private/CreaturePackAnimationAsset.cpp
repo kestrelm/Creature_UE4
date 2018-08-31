@@ -1,5 +1,7 @@
 
 #include "CreaturePackAnimationAsset.h"
+#include "Serialization/ArchiveLoadCompressedProxy.h"
+#include "Serialization/BufferArchive.h"
 
 FString UCreaturePackAnimationAsset::GetCreatureFilename() const
 {

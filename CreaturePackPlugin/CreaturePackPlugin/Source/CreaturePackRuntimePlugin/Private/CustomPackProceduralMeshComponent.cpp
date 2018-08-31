@@ -4,8 +4,11 @@
 
 #include "CustomPackProceduralMeshComponent.h"
 #include "DynamicMeshBuilder.h"
+#include <Materials/Material.h>
+#include <Engine/CollisionProfile.h>
 #include "Runtime/Launch/Resources/Version.h"
 #include <Runtime/Core/Public/Async/ParallelFor.h>
+#include "Engine/Engine.h"
 
 static TAutoConsoleVariable<int32> CVarShowCreaturePackMeshes(
 	TEXT("creature.ShowMeshes"),

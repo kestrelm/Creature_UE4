@@ -34,6 +34,8 @@
 *****************************************************************************/
 
 #include "CreaturePackMeshComponent.h"
+#include "DrawDebugHelpers.h"
+
 
 static TMap<FString, CreaturePackLoader *> globalCreaturePackLoaders;
 static std::mutex loadLock;
@@ -291,12 +293,6 @@ UCreaturePackMeshComponent::doCreatureMeshUpdate(int render_packet_idx)
 			32,
 			FColor(255, 0, 0)
 			);
-
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Sphere pos is: (%f, %f, %f)"), tmpDebugSphere.Center.X, tmpDebugSphere.Center.Y, tmpDebugSphere.Center.Z));
-		FTransform wTransform = GetComponentToWorld();
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Walk pos is: (%f, %f, %f)"), wTransform.GetLocation().X,
-			wTransform.GetLocation().Y,
-			wTransform.GetLocation().Z));
 	}
 }
 

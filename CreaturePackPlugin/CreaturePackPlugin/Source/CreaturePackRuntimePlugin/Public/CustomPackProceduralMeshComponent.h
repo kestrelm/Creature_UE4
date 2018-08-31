@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "PrimitiveSceneProxy.h"
+#include "Components/MeshComponent.h"
 #include "CustomPackProceduralMeshComponent.generated.h"
 
 class UCustomPackProceduralMeshComponent;

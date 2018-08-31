@@ -2,6 +2,10 @@
 #include "CreaturePackAnimationAssetTypeActions.h"
 #include "CreaturePackMeshComponent.h"
 #include "PropertyEditorModule.h"
+#include "UnrealEd/Public/ComponentVisualizer.h"
+#include "UnrealEd/Public/UnrealEdGlobals.h"
+#include "Editor/UnrealEd/Classes/Editor/UnrealEdEngine.h"
+//#include "UnrealEd/Public/E
 #define LOCTEXT_NAMESPACE "CreaturePackEditor"
 
 class UCreaturePackMeshVisualizer : public FComponentVisualizer

@@ -1,4 +1,5 @@
-#include "UnrealEd.h"
+#include <Factories/Factory.h>
+#include <UnrealEd/Public/EditorReimportHandler.h>
 #include "CreaturePackAnimationAssetFactory.generated.h"
 #pragma once
 UCLASS()
