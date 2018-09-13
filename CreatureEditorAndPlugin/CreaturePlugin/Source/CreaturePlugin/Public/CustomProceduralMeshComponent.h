@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "PrimitiveSceneProxy.h"
+#include "Components/MeshComponent.h"
 #include  <glm/glm.hpp>
 #include "CustomProceduralMeshComponent.generated.h"
 

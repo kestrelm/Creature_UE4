@@ -1,8 +1,10 @@
 #pragma  once
-#include "Engine.h"
+#include "CoreMinimal.h"
 #include "glm/fwd.hpp"
 #include <vector>
 #include <algorithm>
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
+#include "Components/BoxComponent.h"
 #include "CreatureMetaAsset.generated.h"
 
 class meshBone;

@@ -40,9 +40,12 @@
 
 #include <vector>
 #include "CustomProceduralMeshComponent.h"
+#include "PrimitiveSceneProxy.h"
+#include "Components/MeshComponent.h"
 #include "CreatureAnimationAsset.h"
 #include "CreatureMetaAsset.h"
 #include "CreatureCore.h"
+#include "Async/Future.h"
 #include "CreatureMeshComponent.generated.h"
 
 USTRUCT(BlueprintType)

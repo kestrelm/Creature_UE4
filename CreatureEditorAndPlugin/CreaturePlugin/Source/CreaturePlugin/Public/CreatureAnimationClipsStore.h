@@ -1,10 +1,10 @@
 /********************************************************************************
-** auth£∫ God Of Pen
-** desc£∫ …–Œ¥±‡–¥√Ë ˆ
+** Author God Of Pen
 ** Ver.:  V1.0.0
 *********************************************************************************/
 
-#include "Engine.h"
+
+#include "CoreMinimal.h"
 #include "CreatureAnimationClip.h"
 #include "CreatureAnimationClipsStore.generated.h"
 

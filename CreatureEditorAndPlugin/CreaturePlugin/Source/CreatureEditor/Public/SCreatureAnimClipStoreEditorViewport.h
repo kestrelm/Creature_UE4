@@ -1,10 +1,9 @@
 /********************************************************************************
-** auth£∫ God Of Pen
-** desc£∫ ”√”⁄‘§¿¿AnimClipStoreµƒViewport
+** Author God Of Pen
 ** Ver.:  V1.0.0
 *********************************************************************************/
-#include "Engine.h"
-#include "UnrealEd.h"
+
+#include "CoreMinimal.h"
 #include "EditorUndoClient.h"
 #include "SEditorViewport.h"
 #pragma  once

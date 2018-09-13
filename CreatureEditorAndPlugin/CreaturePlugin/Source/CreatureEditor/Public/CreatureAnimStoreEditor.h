@@ -3,7 +3,7 @@
 #include "Editor/KismetWidgets/Public/SSingleObjectDetailsPanel.h"
 #include "CreatureAnimationClipsStore.h"
 #include "GraphEditor.h"
-#include "STextComboBox.h"
+#include "Widgets/Input/STextComboBox.h"
 //这个类负责定义编辑器的外观
 #pragma once
 class SCreatureAnimClipStoreEditorViewport;

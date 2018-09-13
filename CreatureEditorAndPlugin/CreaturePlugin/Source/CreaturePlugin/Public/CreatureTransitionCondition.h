@@ -1,9 +1,9 @@
 /********************************************************************************
-** auth£∫ God Of Pen
-** desc£∫ …–Œ¥±‡–¥√Ë ˆ
+** Author God Of Pen
 ** Ver.:  V1.0.0
 *********************************************************************************/
-#include "Engine.h"
+
+#include "CoreMinimal.h"
 #include "CreatureAnimState.h"
 #include "CreatureTransitionCondition.generated.h"
 

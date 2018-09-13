@@ -1,5 +1,5 @@
-#include "CreaturePluginPCH.h"
 #include "SCreatureWidget.h"
+#include "CreaturePluginPCH.h"
 #include "Slate/SMeshWidget.h"
 #include "Rendering/DrawElements.h"
 #include "Modules/ModuleManager.h"

@@ -1,7 +1,7 @@
 #pragma once
  
-#include "Runtime/UMG/Public/UMG.h"
 #include "Runtime/UMG/Public/UMGStyle.h"
+#include "Components/Widget.h"
 #include "CreatureAnimationAsset.h"
 #include "CreatureMetaAsset.h"
 #include "CreatureCore.h"

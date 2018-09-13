@@ -1,10 +1,9 @@
 /********************************************************************************
-** auth£∫ God Of Pen
-** desc£∫ …–Œ¥±‡–¥√Ë ˆ
+** Author God Of Pen
 ** Ver.:  V1.0.0
 *********************************************************************************/
 
-#include "UnrealEd.h"
+
 #include "CreatureAnimationClipsStoreFactory.generated.h"
 #pragma once
 UCLASS()

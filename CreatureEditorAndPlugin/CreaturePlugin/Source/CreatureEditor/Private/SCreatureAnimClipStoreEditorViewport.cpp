@@ -1,6 +1,5 @@
-#include "CreatureEditorPCH.h"
-#include "EditorViewportClient.h"
 #include "SCreatureAnimClipStoreEditorViewport.h"
+#include "EditorViewportClient.h"
 #include "CreatureAnimStoreEditorViewportClient.h"
 #define LOCTEXT_NAMESPACE "CreatureAnimClipStoreEditorViewport"
 void SCreatureAnimClipStoreEditorViewport::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
@@ -8,7 +7,6 @@ void SCreatureAnimClipStoreEditorViewport::Tick(const FGeometry& AllottedGeometr
 	SEditorViewport::Tick(AllottedGeometry, InCurrentTime, InDeltaTime);
 	if (PreviewClient.IsValid())
 	{
-		//¸üÐÂºÍäÖÈ¾viewport
 		PreviewClient->Tick(InDeltaTime);
 		GEditor->UpdateSingleViewportClient(PreviewClient.Get(),true,false);
 	}

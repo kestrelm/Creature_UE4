@@ -1,9 +1,9 @@
 /********************************************************************************
-** auth： God Of Pen
-** desc： 用于产生CreatureAnimationAsset，同时处理打开JSon文件并导入的功能
+** Author God Of Pen
 ** Ver.:  V1.0.0
 *********************************************************************************/
-#include "UnrealEd.h"
+#include <Factories/Factory.h>
+#include <UnrealEd/Public/EditorReimportHandler.h>
 #include "CreatureAnimationAssetFactory.generated.h"
 #pragma once
 UCLASS()

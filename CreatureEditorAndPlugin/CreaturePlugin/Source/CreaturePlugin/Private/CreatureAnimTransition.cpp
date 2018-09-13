@@ -1,6 +1,6 @@
 
-#include "CreaturePluginPCH.h"
 #include "CreatureAnimTransition.h"
+#include "CreaturePluginPCH.h"
 #include "CreatureAnimStateMachineInstance.h"
 
 bool UCreatureAnimTransition::Translate(UCreatureAnimStateMachineInstance *forInstance)

@@ -1,4 +1,3 @@
-#include "CreatureEditorPCH.h"
 #include "CreatureStateMachineGraph.h"
 #include "EdGraph/EdGraphSchema.h"
 #include "CreatureAnimStateNode.h"

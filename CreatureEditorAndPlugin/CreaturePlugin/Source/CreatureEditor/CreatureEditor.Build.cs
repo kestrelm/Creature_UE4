@@ -27,6 +27,7 @@ namespace UnrealBuildTool.Rules
         public CreatureEditor(ReadOnlyTargetRules Target)
             : base(Target)
         {
+            PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
             PublicIncludePaths.AddRange(new string[] { ModulePath + "/Public", "Editor/GraphEditor/Public","Editor/AnimGraph/Public"});
             PrivateIncludePaths.AddRange(new string[] { ModulePath + "/Private" });
 

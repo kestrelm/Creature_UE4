@@ -1,3 +1,4 @@
+#include "CoreMinimal.h"
 #include "IDetailCustomization.h"
 #include "CreatureMeshComponent.h"
 #include "Runtime/Engine/Classes/Components/SplineComponent.h"

@@ -36,6 +36,7 @@ namespace UnrealBuildTool.Rules
         public CreaturePlugin(ReadOnlyTargetRules Target)
             : base(Target)
         {
+            PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
             PublicIncludePaths.AddRange(new string[] { ModulePath + "/Public", });
             PrivateIncludePaths.AddRange(new string[] { ModulePath + "/Private", });
 

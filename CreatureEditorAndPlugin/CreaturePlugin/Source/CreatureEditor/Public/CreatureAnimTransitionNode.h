@@ -1,9 +1,9 @@
 /********************************************************************************
-** auth： God Of Pen
-** desc：用于表示一个动画状态转换的Node
+** Author God Of Pen
 ** Ver.:  V1.0.0
 *********************************************************************************/
-#include "Engine.h"
+
+#include "CoreMinimal.h"
 #include "EdGraph/EdGraphNode.h"
 #include "SGraphNode.h"
 #include "CreatureAnimTransition.h"

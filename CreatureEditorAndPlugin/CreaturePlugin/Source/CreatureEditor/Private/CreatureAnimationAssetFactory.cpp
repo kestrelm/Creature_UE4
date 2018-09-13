@@ -1,8 +1,9 @@
-#include "CreatureEditorPCH.h"
 #include "CreatureAnimationAssetFactory.h"
 #include "CreatureAnimationAsset.h"
 #include "Developer/DesktopPlatform/Public/IDesktopPlatform.h"
 #include "Developer/DesktopPlatform/Public/DesktopPlatformModule.h"
+#include "UnrealEd/Public/EditorDirectories.h"
+#include "Misc/FileHelper.h"
 #include <string>
 #include "CreatureCore.h"
 

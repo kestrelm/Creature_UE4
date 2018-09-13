@@ -1,10 +1,9 @@
 /********************************************************************************
-** auth： God Of Pen
-** desc： 本类用于生成状态机的资源Object 
+** Author God Of Pen
 ** Ver.:  V1.0.0
 *********************************************************************************/
+
 #include "CreatureAnimStateMachine.h"
-#include "UnrealEd.h"
 #include "CreatureAnimStateMachineAssetFactory.generated.h"
 #pragma once
 UCLASS()

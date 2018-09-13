@@ -1,6 +1,9 @@
-
+#include "CreatureCore.h"
 #include "CreaturePluginPCH.h"
 #include "CreatureMetaAsset.h"
+#include "Engine/Engine.h"
+#include "HAL/PlatformFile.h"
+#include "HAL/PlatformFilemanager.h"
 
 DECLARE_CYCLE_STAT(TEXT("CreatureCore_RunTick"), STAT_CreatureCore_RunTick, STATGROUP_Creature);
 DECLARE_CYCLE_STAT(TEXT("CreatureCore_UpdateCreatureRender"), STAT_CreatureCore_UpdateCreatureRender, STATGROUP_Creature);
@@ -158,7 +161,7 @@ void CreatureCore::UpdateCreatureRender()
 		for (auto& single_region : cur_regions)
 		{
 			glm::float32 * region_pts = cur_pts + (single_region->getStartPtIndex() * 3);
-			for (size_t i = 0; i < single_region->getNumPts(); i++)
+			for (int32 i = 0; i < single_region->getNumPts(); i++)
 			{
 				region_pts[2] = region_z;
 				region_pts += 3;
@@ -214,7 +217,7 @@ void CreatureCore::UpdateCreatureRender()
 			{
 				auto single_region = regions_map[real_name];
 				glm::float32 * region_pts = cur_pts + (single_region->getStartPtIndex() * 3);
-				for (size_t i = 0; i < single_region->getNumPts(); i++)
+				for (int32 i = 0; i < single_region->getNumPts(); i++)
 				{
 					region_pts[2] = region_z;
 					region_pts += 3;
@@ -743,7 +746,7 @@ FTransform
 CreatureCore::GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, const FTransform& base_transform) const
 {
 	FTransform ret_xform;
-	for (size_t i = 0; i < bone_data.Num(); i++)
+	for (int32 i = 0; i < bone_data.Num(); i++)
 	{
 		if (bone_data[i].name == name_in)
 		{

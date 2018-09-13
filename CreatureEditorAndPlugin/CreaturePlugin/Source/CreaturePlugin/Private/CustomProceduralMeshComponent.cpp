@@ -2,9 +2,10 @@
 //
 // forked from "Engine/Plugins/Runtime/CustomMeshComponent/Source/CustomMeshComponent/Private/CustomMeshComponent.cpp"
 
-#include "CreaturePluginPCH.h"
-#include "DynamicMeshBuilder.h"
 #include "CustomProceduralMeshComponent.h"
+#include "DynamicMeshBuilder.h"
+#include <Materials/Material.h>
+#include "Engine/CollisionProfile.h"
 #include "Runtime/Launch/Resources/Version.h"
 #include <Runtime/Core/Public/Async/ParallelFor.h>
 
