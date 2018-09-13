@@ -396,10 +396,10 @@ void CreaturePhysicsData::createPhysicsChain(
 	auto makeChainConstraints = [](
 		UBoxComponent * body1,
 		UBoxComponent * body2,
-		float stiffness,
-		float damping,
-		USceneComponent * attach_root,
-		UObject * parent)
+		float stiffness_in,
+		float damping_in,
+		USceneComponent * attach_root_in,
+		UObject * parent_in)
 	{
 		FConstraintInstance constraint_inst;
 		SetAngularLimits(
@@ -412,10 +412,10 @@ void CreaturePhysicsData::createPhysicsChain(
 			0.0f,
 			true,
 			true,
-			stiffness,
-			damping,
-			stiffness,
-			damping);
+			stiffness_in,
+			damping_in,
+			stiffness_in,
+			damping_in);
 
 		SetLinearLimits(
 			constraint_inst,
@@ -425,10 +425,10 @@ void CreaturePhysicsData::createPhysicsChain(
 			2,
 			2.0f,
 			false,
-			stiffness * 2.0f,
-			damping * 2.0f);
+			stiffness_in * 2.0f,
+			damping_in * 2.0f);
 
-		UPhysicsConstraintComponent* constraint_comp = NewObject<UPhysicsConstraintComponent>(parent);
+		UPhysicsConstraintComponent* constraint_comp = NewObject<UPhysicsConstraintComponent>(parent_in);
 
 		auto body_pt = body1->GetComponentLocation();
 		//constraint_comp->SetWorldLocation(body_pt);
