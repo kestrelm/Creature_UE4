@@ -1,6 +1,7 @@
 #pragma  once
 #include "CoreMinimal.h"
 #include "glm/fwd.hpp"
+#include <cmath>
 #include <vector>
 #include <algorithm>
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
