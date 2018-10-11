@@ -37,6 +37,12 @@ void SCreatureWidget::UpdateMesh(const FVector2D& translation, const FVector2D& 
 	}
 
 	auto proc_mesh = creature_core->GetProcMeshData(world_type);
+	creature_core->UpdateCreatureRender();
+
+	if (creature_core->shouldSkinSwap())
+	{
+		proc_mesh.indices_num = creature_core->GetRealTotalIndicesNum();
+	}
 
 	// Update Indices
 	if (render_data.IndexData.Num() != proc_mesh.indices_num) {
