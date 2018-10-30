@@ -646,6 +646,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void AddSkinSwap(FString new_swap_name, TArray<FString> new_swap);
 
+	// Enables Region Color Animation
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void EnableRegionColors();
+
 	// Enables/Disables Morph Targets defined in the MetaData Asset
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void SetMorphTargetsActive(bool flag_in);

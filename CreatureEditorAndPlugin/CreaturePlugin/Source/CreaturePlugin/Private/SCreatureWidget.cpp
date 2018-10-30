@@ -69,8 +69,7 @@ void SCreatureWidget::UpdateMesh(const FVector2D& translation, const FVector2D& 
 		new_vert.Position.Y *= -mesh_scale.Y * local_scale.Y;
 		new_vert.Position += translation;
 
-		uint8 cur_alpha = (*proc_mesh.region_alphas)[i];
-		new_vert.Color = FColor(cur_alpha, cur_alpha, cur_alpha, cur_alpha);
+		new_vert.Color = (*proc_mesh.region_colors)[i];
 
 		float cur_u = proc_mesh.uvs[i * 2];
 		float cur_v = proc_mesh.uvs[i * 2 + 1];

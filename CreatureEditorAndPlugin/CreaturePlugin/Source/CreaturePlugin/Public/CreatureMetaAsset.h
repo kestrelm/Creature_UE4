@@ -14,6 +14,7 @@ class meshRenderBoneComposition;
 namespace CreatureModule {
 	class CreatureManager;
 	class Creature;
+	class CreatureAnimation;
 }
 
 class CreatureMetaData {
@@ -26,6 +27,7 @@ public:
 		skin_swaps.Empty();
 		morph_data = MorphData();
 		vertex_attachments.Empty();
+		anim_region_colors.Empty();
 	}
 
 	void buildSkinSwapIndices(
@@ -39,6 +41,8 @@ public:
 	{
 		return (sampleOrder(anim_name, time_in) != nullptr);
 	}
+
+	void updateRegionColors(TMap<FName, TSharedPtr<CreatureModule::CreatureAnimation> >& animations);
 
 	int updateIndicesAndPoints(
 		glm::uint32 * dst_indices,
@@ -253,6 +257,14 @@ public:
 	TMap<FString, TMap<int32, FString> > anim_events_map;
 	TMap<FString, TSet<FString>> skin_swaps;
 	TMap<FString, int> vertex_attachments;
+
+	struct AnimColorData
+	{
+		int32 frame;
+		uint8_t r, g, b;
+	};
+
+	TMap<FString, TMap<FString, TArray<AnimColorData>>> anim_region_colors;
 
 	struct MorphData
 	{

@@ -307,6 +307,18 @@ public:
 
 	float getOpacity() const;
 
+	void setRed(float value_in);
+
+	float getRed() const;
+
+	void setGreen(float value_in);
+
+	float getGreen() const;
+
+	void setBlue(float value_in);
+
+	float getBlue() const;
+
 protected:
     
     void initUvWarp();
@@ -325,6 +337,7 @@ protected:
     TArray<glm::vec2> uv_warp_ref_uvs;
 	int32 uv_level;
 	float opacity;
+	float red, green, blue;
     TMap<FName, TArray<float> > normal_weight_map;
 //    TMap<int32, TArray<float> > fast_normal_weight_map;
     TArray<TArray<float> > fast_normal_weight_map;
@@ -502,6 +515,9 @@ public:
 	{
 		key = key_in;
 		opacity = 100.0f;
+		red = 100.0f;
+		green = 100.0f;
+		blue = 100.0f;
 	}
 
 	virtual ~meshOpacityCache() {}
@@ -516,6 +532,36 @@ public:
 		return opacity;
 	}
 
+	void setRed(float value_in)
+	{
+		red = value_in;
+	}
+
+	float getRed() const
+	{
+		return red;
+	}
+
+	void setGreen(float value_in)
+	{
+		green = value_in;
+	}
+
+	float getGreen() const
+	{
+		return green;
+	}
+
+	void setBlue(float value_in)
+	{
+		blue = value_in;
+	}
+
+	float getBlue() const
+	{
+		return blue;
+	}
+
 	const FName& getKey() const {
 		return key;
 	}
@@ -528,6 +574,7 @@ public:
 protected:
 	FName key;
 	float opacity;
+	float red, green, blue;
 };
 
 class meshBoneCacheManager {

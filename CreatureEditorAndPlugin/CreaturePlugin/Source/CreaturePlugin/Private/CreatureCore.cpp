@@ -99,7 +99,7 @@ CreatureCore::GetProcMeshData(EWorldType::Type world_type)
 		FProceduralMeshTriData ret_data(nullptr,
 			nullptr, nullptr,
 			0, 0,
-			&region_alphas,
+			&region_colors,
 			update_lock);
 
 		return ret_data;
@@ -115,23 +115,23 @@ CreatureCore::GetProcMeshData(EWorldType::Type world_type)
 	glm::uint32 * copy_indices = GetIndicesCopy(num_indices);
 	std::memcpy(copy_indices, cur_idx, sizeof(glm::uint32) * num_indices);
 
-	if (region_alphas.Num() != num_points)
+	if (region_colors.Num() != num_points)
 	{
-		region_alphas.SetNum(num_points);
+		region_colors.SetNum(num_points);
 	}
 
 	if ((world_type == EWorldType::Type::Editor) || (world_type == EWorldType::Type::EditorPreview))
 	{
-		for (auto i = 0; i < region_alphas.Num(); i++)
+		for (auto i = 0; i < region_colors.Num(); i++)
 		{
-			region_alphas[i] = 255;
+			region_colors[i] = FColor(255, 255, 255, 255);
 		}
 	}
 
 	FProceduralMeshTriData ret_data(copy_indices,
 		cur_pts, cur_uvs,
 		num_points, num_indices,
-		&region_alphas,
+		&region_colors,
 		update_lock);
 
 	return ret_data;
@@ -336,7 +336,7 @@ bool CreatureCore::InitCreatureRender()
 
 void CreatureCore::InitValues()
 {
-	region_alpha_map.Empty();
+	region_colors_map.Empty();
 	meta_data = nullptr;
 }
 
@@ -472,9 +472,9 @@ void CreatureCore::ProcessRenderRegions()
 	int num_triangles = cur_creature->GetTotalNumIndices() / 3;
 
 	// process alphas
-	if (region_alphas.Num() != cur_creature->GetTotalNumPoints())
+	if (region_colors.Num() != cur_creature->GetTotalNumPoints())
 	{
-		region_alphas.Init(255, cur_creature->GetTotalNumPoints());
+		region_colors.Init(FColor(255, 255, 255, 255), cur_creature->GetTotalNumPoints());
 	}
 
 	// fill up animation alphas
@@ -483,23 +483,26 @@ void CreatureCore::ProcessRenderRegions()
 		auto cur_region = cur_region_pair.Value;
 		auto start_pt_index = cur_region->getStartPtIndex();
 		auto end_pt_index = cur_region->getEndPtIndex();
-		auto cur_alpha = FMath::Clamp(cur_region->getOpacity() / 100.0f, 0.0f, 1.0f) * 255.0f;
-
+		float opacity = FMath::Clamp(cur_region->getOpacity() / 100.0f, 0.0f, 1.0f);
+		uint8 cur_alpha = (uint8)(opacity * 255.0f);
+		uint8 cur_r = (uint8)(cur_region->getRed() / 100.0f * opacity * 255.0f);
+		uint8 cur_g = (uint8)(cur_region->getGreen() / 100.0f * opacity * 255.0f);
+		uint8 cur_b = (uint8)(cur_region->getBlue() / 100.0f * opacity * 255.0f);
 
 		for (auto i = start_pt_index; i <= end_pt_index; i++)
 		{
-			region_alphas[i] = (uint8)cur_alpha;
+			region_colors[i] = FColor(cur_r, cur_g, cur_b, cur_alpha);
 		}
 	}
 
 	// user overwrite alphas
-	if (region_alpha_map.Num() > 0)
+	if (region_colors_map.Num() > 0)
 	{
 		// fill up the alphas for specific regions with alpha overwrites
-		for (auto cur_iter : region_alpha_map)
+		for (auto cur_iter : region_colors_map)
 		{
 			auto cur_name = cur_iter.Key;
-			auto cur_alpha = cur_iter.Value;
+			auto cur_alpha = cur_iter.Value.A;
 
 			if (regions_map.Contains(cur_name))
 			{
@@ -509,7 +512,7 @@ void CreatureCore::ProcessRenderRegions()
 
 				for (auto i = start_pt_index; i <= end_pt_index; i++)
 				{
-					region_alphas[i] = cur_alpha;
+					region_colors[i] = FColor(cur_alpha, cur_alpha, cur_alpha, cur_alpha);;
 				}
 			}
 		}
@@ -958,12 +961,13 @@ CreatureCore::SetBluePrintRegionAlpha(FName region_name_in, uint8 alpha_in)
 		return;
 	}
 
-	region_alpha_map.Add(region_name_in, alpha_in);
+	FColor new_color(alpha_in, alpha_in, alpha_in, alpha_in);
+	region_colors_map.Add(region_name_in, new_color);
 }
 
 void CreatureCore::RemoveBluePrintRegionAlpha(FName region_name_in)
 {
-	region_alpha_map.Remove(region_name_in);
+	region_colors_map.Remove(region_name_in);
 }
 
 void 
@@ -1147,6 +1151,14 @@ bool CreatureCore::shouldSkinSwap() const
 	return meta_data && skin_swap_active && (skin_swap_indices.Num() > 0);
 }
 
+void CreatureCore::enableRegionColors()
+{
+	if (meta_data)
+	{
+		meta_data->updateRegionColors(creature_manager->GetAllAnimations());
+	}
+}
+
 void 
 CreatureCore::RunBeginPlay()
 {
@@ -1154,5 +1166,5 @@ CreatureCore::RunBeginPlay()
 	InitCreatureRender();
 	is_ready_play = true;
 
-	region_alpha_map.Empty();
+	region_colors_map.Empty();
 }

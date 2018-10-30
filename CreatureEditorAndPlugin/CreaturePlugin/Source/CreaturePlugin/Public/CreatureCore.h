@@ -189,6 +189,8 @@ public:
 
 	bool shouldSkinSwap() const;
 
+	void enableRegionColors();
+
 	// properties
 	FName creature_filename, creature_asset_filename;
 	float bone_data_size;
@@ -200,8 +202,8 @@ public:
 	TArray<FProceduralMeshTriangle> draw_triangles;
 	TSharedPtr<CreatureModule::CreatureManager> creature_manager;
 	TArray<FCreatureBoneData> bone_data;
-	TArray<uint8> region_alphas;
-	TMap<FName, uint8> region_alpha_map;
+	TArray<FColor> region_colors;
+	TMap<FName, FColor> region_colors_map;
 	TArray<FName> region_custom_order;
 	FName absolute_creature_filename;
 	bool should_play, is_looping;

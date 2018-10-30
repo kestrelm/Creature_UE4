@@ -333,6 +333,11 @@ void UCreatureMeshComponent::AddSkinSwap(FString new_swap_name, TArray<FString> 
 	}
 }
 
+void UCreatureMeshComponent::EnableRegionColors()
+{
+	creature_core.enableRegionColors();
+}
+
 void UCreatureMeshComponent::SetMorphTargetsActive(bool flag_in)
 {
 	creature_core.run_morph_targets = flag_in;

@@ -43,6 +43,11 @@ void UCreatureWidget::InitCreatureCore()
 	}
 }
 
+void UCreatureWidget::EnableRegionColors()
+{
+	creature_core.enableRegionColors();
+}
+
 void UCreatureWidget::SynchronizeProperties()
 {
     // Property update(s)

@@ -111,6 +111,46 @@ void CreatureMetaData::buildSkinSwapIndices(
 	}
 }
 
+void CreatureMetaData::updateRegionColors(TMap<FName, TSharedPtr<CreatureModule::CreatureAnimation>>& animations)
+{
+	for (auto& cur_pair : animations)
+	{
+		auto clip_name = cur_pair.Key.ToString();
+		auto& clip_anim = cur_pair.Value;
+		if (anim_region_colors.Contains(clip_name))
+		{
+			const auto& clip_regions_data =	anim_region_colors[clip_name];
+			auto& opacity_cache = clip_anim->getOpacityCache();
+			auto& opacity_table = opacity_cache.getCacheTable();
+			for (int m = opacity_cache.getStartTime(); m <= opacity_cache.getEndime(); m++)
+			{
+				auto idx = opacity_cache.getIndexByTime(m);
+				auto& regions_data = opacity_table[idx];
+				for (auto& cur_region : regions_data)
+				{
+					if (clip_regions_data.Contains(cur_region.getKey().ToString()))
+					{
+						auto& read_anim_data = clip_regions_data[cur_region.getKey().ToString()];
+						const auto& read_colors_data = read_anim_data[idx];
+						if (read_colors_data.frame == m)
+						{
+							// check to see the frames match, then set
+							auto getColorFloat = [this](uint8_t val_in)
+							{
+								return static_cast<float>(val_in) / 255.0f * 100.0f;
+							};
+
+							cur_region.setRed(getColorFloat(read_colors_data.r));
+							cur_region.setGreen(getColorFloat(read_colors_data.g));
+							cur_region.setBlue(getColorFloat(read_colors_data.b));
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 void CreatureMetaData::updateMorphStep(
 	CreatureModule::CreatureManager * manager_in,
 	float delta_step)
@@ -905,6 +945,58 @@ UCreatureMetaAsset::BuildMetaData()
 				auto cur_idx = cur_attachment->GetIntegerField(TEXT("idx"));
 				meta_data.vertex_attachments.Add(cur_name, cur_idx);
 				vertex_attachments.Add(cur_name);
+			}
+		}
+
+		// Fill Animated Region Colors
+		meta_data.anim_region_colors.Empty();
+		if (jsonObject->HasField(TEXT("AnimRegionColors")))
+		{
+			auto region_colors_node = jsonObject->GetObjectField(TEXT("AnimRegionColors"));
+			for (auto cur_data : region_colors_node->Values)
+			{
+				auto anim_name = cur_data.Key;
+				auto regions_node = cur_data.Value->AsObject();
+				TMap<FString, TArray<CreatureMetaData::AnimColorData>> regions_anim;
+				for (auto r_data : regions_node->Values)
+				{
+					auto r_name = r_data.Key;
+					auto b64_data = r_data.Value->AsString();
+					auto bytes_data = Base64Lib::base64_decode(b64_data);
+					int chunk_size = sizeof(int) + (sizeof(uint8_t) * 3);
+					int chunk_num = (int)bytes_data.Num() / chunk_size;
+					TArray<CreatureMetaData::AnimColorData> colors_anim;
+					for (int m = 0; m < chunk_num; m++)
+					{
+						uint8_t * base_ptr = &(bytes_data.GetData()[m * chunk_size]);
+						uint8_t * read_ptr = base_ptr;
+						int32 frame_val = 0;
+						uint8_t r_val = 0, g_val = 0, b_val = 0;
+
+						FMemory::Memcpy(&frame_val, read_ptr, sizeof(int32));
+						read_ptr += sizeof(int32);
+
+						FMemory::Memcpy(&r_val, read_ptr, sizeof(uint8_t));
+						read_ptr += sizeof(uint8_t);
+
+						FMemory::Memcpy(&g_val, read_ptr, sizeof(uint8_t));
+						read_ptr += sizeof(uint8_t);
+
+						FMemory::Memcpy(&b_val, read_ptr, sizeof(uint8_t));
+						read_ptr += sizeof(uint8_t);
+
+						CreatureMetaData::AnimColorData color_data;
+						color_data.frame = frame_val;
+						color_data.r = r_val;
+						color_data.g = g_val;
+						color_data.b = b_val;
+
+						colors_anim.Add(color_data);
+					}
+
+					regions_anim.Add(r_name, colors_anim);
+				}
+				meta_data.anim_region_colors.Add(anim_name, regions_anim);
 			}
 		}
 	}

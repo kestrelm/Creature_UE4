@@ -334,7 +334,7 @@ public:
 		point_num = data_in->point_num;
 		indices_num = data_in->indices_num;
 		real_indices_num = indices_num;
-		region_alphas = data_in->region_alphas;
+		region_colors = data_in->region_colors;
 		update_lock = data_in->update_lock;
 		should_release = false;
 
@@ -395,8 +395,7 @@ public:
 				this->points[pos_idx + y_id],
 				this->points[pos_idx + z_id]);
 
-			float set_alpha = (*this->region_alphas)[i];
-			curVert.Color = FColor(set_alpha, set_alpha, set_alpha, set_alpha);
+			curVert.Color = (*this->region_colors)[i];
 
 			int uv_idx = i * 2;
 			for (int texCoord = 0; texCoord < MAX_STATIC_TEXCOORDS; texCoord++)
@@ -468,7 +467,7 @@ public:
 	glm::float32 * points;
 	glm::float32 * uvs;
 	int32 point_num, indices_num, real_indices_num;
-	TArray<uint8> * region_alphas;
+	TArray<FColor> * region_colors;
 	TSharedPtr<FCriticalSection, ESPMode::ThreadSafe> update_lock;
 	bool should_release;
 };

@@ -72,6 +72,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void AddSkinSwap(FString new_swap_name, TArray<FString> new_swap);
 
+	// Enables Region Color Animation
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void EnableRegionColors();
+
 	// UWidget interface
 	virtual void SynchronizeProperties() override;
 	// End of UWidget interface

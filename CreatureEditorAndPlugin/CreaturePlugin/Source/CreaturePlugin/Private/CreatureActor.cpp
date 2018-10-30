@@ -90,7 +90,7 @@ void ACreatureActor::OnConstruction(const FTransform & Transform)
 	}
 
 	bool retval = creature_core.InitCreatureRender();
-	creature_core.region_alpha_map.Empty();
+	creature_core.region_colors_map.Empty();
 
 	if (retval)
 	{
