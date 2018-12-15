@@ -137,7 +137,7 @@ USTRUCT(BlueprintType)
 struct FCreatureBoneIK  {
 	GENERATED_USTRUCT_BODY()
 	FCreatureBoneIK()
-		: children_ready(false)
+		: target_pos(ForceInitToZero), positive_angle(false), children_ready(false)
 	{
 	}
 
@@ -167,7 +167,7 @@ USTRUCT(BlueprintType)
 struct FCreatureFrameCallback {
 	GENERATED_USTRUCT_BODY()
 	FCreatureFrameCallback()
-		: triggered(false)
+		: frame(0), triggered(false)
 	{}
 
 	void resetCallback()
@@ -210,7 +210,7 @@ USTRUCT(BlueprintType)
 struct FCreatureRepeatFrameCallback {
 	GENERATED_USTRUCT_BODY()
 	FCreatureRepeatFrameCallback()
-		: currentFrame(0), triggeredFrame(0), startFrame(0)
+		: repeatFrames(0), offsetFrame(0), currentFrame(0), triggeredFrame(0), startFrame(0)
 	{}
 
 	void resetCallback(float frameIn)
