@@ -1,4 +1,3 @@
-#include "CreatureEditorPCH.h"
 #include "CreatureMetaAssetTypeActions.h"
 #include "CreatureMetaAsset.h"
 

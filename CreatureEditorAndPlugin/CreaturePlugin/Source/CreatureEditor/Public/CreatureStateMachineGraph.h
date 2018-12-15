@@ -1,9 +1,9 @@
 /********************************************************************************
-** auth： God Of Pen
-** desc： 用于Creature状态机的节点图类
+** Author God Of Pen
 ** Ver.:  V1.0.0
 *********************************************************************************/
-#include "Engine.h"
+
+#include "CoreMinimal.h"
 #include "EdGraph/EdGraph.h"
 
 #include "CreatureStateMachineGraph.generated.h"

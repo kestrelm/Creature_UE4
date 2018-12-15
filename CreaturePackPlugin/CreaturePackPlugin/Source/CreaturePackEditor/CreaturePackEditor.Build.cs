@@ -6,7 +6,6 @@ namespace UnrealBuildTool.Rules
     {
         private string ModulePath
         {
-            //get { return Path.GetDirectoryName(RulesCompiler.GetModuleFilename(this.GetType().Name)); }
             get { 
 
                 
@@ -22,10 +21,10 @@ namespace UnrealBuildTool.Rules
             : base(Target)
         {
             PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-            PublicIncludePaths.AddRange(new string[] { "CreaturePackEditor/Public", "AssetTools/Public","GraphEditorActions/Public","AnimGraph/Public"});
-            PrivateIncludePaths.AddRange(new string[] { "CreaturePackEditor/Public", "CreaturePackEditor/Private","UnrealEd/Private/Settings","Editor/AnimGraph/Private" });
+            PublicIncludePaths.AddRange(new string[] { ModulePath + "/Public"});
+            PrivateIncludePaths.AddRange(new string[] { ModulePath + "/Public", ModulePath + "/Private"});
 
-            PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "CreaturePackRuntimePlugin", "UnrealEd", "PropertyEditor", "Paper2DEditor","AssetTools","EditorStyle","KismetWidgets","GraphEditor","AnimGraph" });
+            PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "CreaturePackRuntimePlugin", "UnrealEd", "PropertyEditor","AssetTools","EditorStyle","KismetWidgets","GraphEditor","AnimGraph" });
 
             PrivateDependencyModuleNames.AddRange(new string[] { "RHI", "RenderCore", "ShaderCore", "CreaturePackRuntimePlugin", "SlateCore", "Slate", "AssetTools", "GraphEditor", "AnimGraph" });
 

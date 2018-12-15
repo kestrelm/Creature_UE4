@@ -34,6 +34,8 @@
 *****************************************************************************/
 
 #include "CreaturePackMeshComponent.h"
+#include "DrawDebugHelpers.h"
+
 
 static TMap<FString, CreaturePackLoader *> globalCreaturePackLoaders;
 static std::mutex loadLock;
@@ -51,6 +53,7 @@ UCreaturePackMeshComponent::UCreaturePackMeshComponent(const FObjectInitializer&
 	creature_debug_draw = false;
 	attach_vertex_id = -1;
 	region_offset_z = 0.01f;
+	updateLock = TSharedPtr<FCriticalSection, ESPMode::ThreadSafe>(new FCriticalSection());
 }
 
 void UCreaturePackMeshComponent::SetActiveAnimation(FString name_in)
@@ -224,7 +227,7 @@ UCreaturePackMeshComponent::GetProcMeshData()
 			nullptr, nullptr,
 			0, 0,
 			&regionAlphas,
-			&updateLock);
+			updateLock);
 
 		return ret_data;
 	}
@@ -244,11 +247,12 @@ UCreaturePackMeshComponent::GetProcMeshData()
 		}
 	}
 
-	FProceduralPackMeshTriData ret_data(cur_idx,
+	FProceduralPackMeshTriData ret_data(
+		cur_idx,
 		cur_pts, cur_uvs,
 		num_points, num_indices,
 		&regionAlphas,
-		&updateLock);
+		updateLock);
 
 	return ret_data;
 }
@@ -256,7 +260,7 @@ UCreaturePackMeshComponent::GetProcMeshData()
 void 
 UCreaturePackMeshComponent::runTick(float deltaTime)
 {
-	std::lock_guard<std::mutex> lock(tickLock);
+	FScopeLock lock(&tickLock);
 
 	if (!isPlayerValid())
 	{
@@ -289,12 +293,6 @@ UCreaturePackMeshComponent::doCreatureMeshUpdate(int render_packet_idx)
 			32,
 			FColor(255, 0, 0)
 			);
-
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Sphere pos is: (%f, %f, %f)"), tmpDebugSphere.Center.X, tmpDebugSphere.Center.Y, tmpDebugSphere.Center.Z));
-		FTransform wTransform = GetComponentToWorld();
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Walk pos is: (%f, %f, %f)"), wTransform.GetLocation().X,
-			wTransform.GetLocation().Y,
-			wTransform.GetLocation().Z));
 	}
 }
 

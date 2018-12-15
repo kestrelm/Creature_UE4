@@ -1,7 +1,5 @@
 // UE4 Procedural Mesh Generation from the Epic Wiki (https://wiki.unrealengine.com/Procedural_Mesh_Generation)
 //
-
-#include "CreaturePluginPCH.h"
 #include "CreatureActor.h"
 #include <chrono>
 
@@ -92,7 +90,7 @@ void ACreatureActor::OnConstruction(const FTransform & Transform)
 	}
 
 	bool retval = creature_core.InitCreatureRender();
-	creature_core.region_alpha_map.Empty();
+	creature_core.region_colors_map.Empty();
 
 	if (retval)
 	{
@@ -115,12 +113,6 @@ void ACreatureActor::PostEditChangeProperty(FPropertyChangedEvent & PropertyChan
 }
 */
 #endif
-
-void ACreatureActor::SetActorHiddenInGame(bool bNewHidden)
-{
-	creature_mesh->RecreateRenderProxy(true);
-	Super::SetActorHiddenInGame(bNewHidden);
-}
 
 CreatureModule::CreatureManager * 
 ACreatureActor::GetCreatureManager()

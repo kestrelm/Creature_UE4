@@ -325,6 +325,22 @@ namespace mpMini {
 
 				generic_data.push_back(new_generic_data);
 			}
+			else if (msg_mini_object_is_bin(&read_msg_obj))
+			{
+				uint32_t array_size;
+				msg_mini_read_bin(&array_size);
+				msg_mini_generic_data new_generic_data(0);
+
+				new_generic_data.type = MSG_MINI_GENERIC_ARRAY_BYTE_TYPE;
+				new_generic_data.byte_array_val.resize(array_size);
+
+				readBytesChunk(array_size, 
+					[&new_generic_data](int idx, uint8_t data)
+				{
+					new_generic_data.byte_array_val[idx] = data;
+				});
+				generic_data.push_back(new_generic_data);
+			}
 			else if (msg_mini_object_is_float(&read_msg_obj))
 			{
 				msg_mini_generic_data new_generic_data(MSG_MINI_GENERIC_FLOAT_TYPE);
@@ -726,6 +742,26 @@ namespace mpMini {
 	}
 
 	bool 
+	msg_mini::msg_mini_read_bin(uint32_t *size)
+	{
+		msg_mini_object obj;
+
+		if (!msg_mini_read_object(&obj))
+			return false;
+
+		switch (obj.type) {
+		case MSG_MINI_TYPE_BIN8:
+		case MSG_MINI_TYPE_BIN16:
+		case MSG_MINI_TYPE_BIN32:
+			*size = obj.as.array_size;
+			return true;
+		default:
+			error = INVALID_TYPE_ERROR;
+			return false;
+		}
+	}
+
+	bool 
 	msg_mini::msg_mini_read_array(uint32_t *size) 
 	{
 		msg_mini_object obj;
@@ -893,6 +929,22 @@ namespace mpMini {
 		}
 		else if (type_marker == ARRAY32_MARKER) {
 			obj->type = MSG_MINI_TYPE_ARRAY32;
+			if (!read(&obj->as.u32, sizeof(uint32_t))) {
+				error = DATA_READING_ERROR;
+				return false;
+			}
+			obj->as.array_size = be32(obj->as.u32);
+		}
+		else if (type_marker == BIN16_MARKER) {
+			obj->type = MSG_MINI_TYPE_BIN16;
+			if (!read(&obj->as.u16, sizeof(uint16_t))) {
+				error = DATA_READING_ERROR;
+				return false;
+			}
+			obj->as.array_size = be16(obj->as.u16);
+		}		
+		else if (type_marker == BIN32_MARKER) {
+			obj->type = MSG_MINI_TYPE_BIN32;
 			if (!read(&obj->as.u32, sizeof(uint32_t))) {
 				error = DATA_READING_ERROR;
 				return false;
@@ -1092,6 +1144,19 @@ namespace mpMini {
 		case MSG_MINI_TYPE_STR8:
 		case MSG_MINI_TYPE_STR16:
 		case MSG_MINI_TYPE_STR32:
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	bool
+	msg_mini::msg_mini_object_is_bin(msg_mini_object *obj)
+	{
+		switch (obj->type) {
+		case MSG_MINI_TYPE_BIN8:
+		case MSG_MINI_TYPE_BIN16:
+		case MSG_MINI_TYPE_BIN32:
 			return true;
 		default:
 			return false;

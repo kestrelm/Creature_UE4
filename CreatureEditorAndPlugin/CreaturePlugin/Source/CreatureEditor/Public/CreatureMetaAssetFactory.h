@@ -1,9 +1,8 @@
 /********************************************************************************
-** auth�� God Of Pen
-** desc�� ���ڲ���CreatureAnimationAsset��ͬʱ��������JSon�ļ��������Ĺ���
+** Author God Of Pen
 ** Ver.:  V1.0.0
 *********************************************************************************/
-#include "UnrealEd.h"
+#include <Factories/Factory.h>
 #include "CreatureMetaAssetFactory.generated.h"
 #pragma once
 UCLASS()

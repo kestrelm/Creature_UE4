@@ -1,7 +1,8 @@
-#include "CreatureEditorPCH.h"
 #include "CreatureAnimStateMachineDetails.h"
 #include "CreatureAnimStateMachine.h"
 #include "CreatureAnimTransition.h"
+#include "DetailLayoutBuilder.h"
+#include "DetailCategoryBuilder.h"
 #define LOCTEXT_NAMESPACE "CreatureAnimStateMachine"
 
 TSharedRef<IDetailCustomization> FCreatureAnimStateMachineDetails::MakeInstance()

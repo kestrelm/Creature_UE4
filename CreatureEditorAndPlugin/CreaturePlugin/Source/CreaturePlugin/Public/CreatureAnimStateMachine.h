@@ -1,5 +1,5 @@
 #pragma once
-#include "Engine.h"
+#include "CoreMinimal.h"
 #include "AnimationRuntime.h"
 #include "EdGraph/EdGraph.h"
 #include "CreatureTransitionCondition.h"

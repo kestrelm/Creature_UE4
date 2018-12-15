@@ -1,7 +1,7 @@
 #pragma once
  
-#include "Runtime/UMG/Public/UMG.h"
 #include "Runtime/UMG/Public/UMGStyle.h"
+#include "Components/Widget.h"
 #include "CreatureAnimationAsset.h"
 #include "CreatureMetaAsset.h"
 #include "CreatureCore.h"
@@ -71,6 +71,10 @@ public:
 	// Adds a new Skin Swap
 	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
 	void AddSkinSwap(FString new_swap_name, TArray<FString> new_swap);
+
+	// Enables Region Color Animation
+	UFUNCTION(BlueprintCallable, Category = "Components|Creature")
+	void EnableRegionColors();
 
 	// UWidget interface
 	virtual void SynchronizeProperties() override;

@@ -1,10 +1,9 @@
 /********************************************************************************
-** auth： God Of Pen
-** desc： 蓝图创建规则描述文件
+** Author God Of Pen
 ** Ver.:  V1.0.0
 *********************************************************************************/
 
-#include "Engine.h"
+#include "CoreMinimal.h"
 #include "EdGraph/EdGraphSchema.h"
 #include "CreatureAnimGraphSchema.generated.h"
 #pragma  once

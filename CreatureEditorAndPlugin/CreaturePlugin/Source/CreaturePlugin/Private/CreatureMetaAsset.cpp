@@ -1,10 +1,71 @@
 
-#include "CreaturePluginPCH.h"
 #include "CreatureMetaAsset.h"
+#include "CreaturePluginPCH.h"
 #include "CreatureCore.h"
 #include "MeshBone.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 #include "Runtime/Engine/Classes/PhysicsEngine/ConstraintInstance.h"
 #include "Runtime/Engine/Classes/PhysicsEngine/PhysicsConstraintComponent.h"
+#include <limits>
+
+namespace Base64Lib {
+	static const FString base64_chars =
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz"
+		"0123456789+/";
+
+	static inline bool is_base64(uint8_t c) {
+		return (isalnum(c) || (c == '+') || (c == '/'));
+	}
+
+	TArray<uint8_t> base64_decode(FString const& encoded_string) {
+		int in_len = static_cast<int>(encoded_string.Len());
+		int i = 0;
+		int j = 0;
+		int in_ = 0;
+		uint8_t char_array_4[4], char_array_3[3];
+		TArray<uint8_t> ret;
+
+		while (in_len-- && (encoded_string[in_] != '=') && is_base64(encoded_string[in_])) {
+			char_array_4[i++] = encoded_string[in_]; in_++;
+			if (i == 4) {
+				for (i = 0; i < 4; i++) {
+					int32 find_idx = -1;
+					base64_chars.FindChar(char_array_4[i], find_idx);
+					char_array_4[i] = (uint8_t)find_idx;
+				}
+
+				char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+				char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+				char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+				for (i = 0; (i < 3); i++)
+					ret.Add(char_array_3[i]);
+				i = 0;
+			}
+		}
+
+		if (i) {
+			for (j = i; j <4; j++)
+				char_array_4[j] = 0;
+
+			for (j = 0; j < 4; j++) {
+				int32 find_idx = -1;
+				base64_chars.FindChar(char_array_4[j], find_idx);
+				char_array_4[j] = (uint8_t)find_idx;
+			}
+
+			char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+			char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+			char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+			for (j = 0; (j < i - 1); j++) ret.Add(char_array_3[j]);
+		}
+
+		return ret;
+	}
+}
 
 // CreatureMetaData
 void CreatureMetaData::buildSkinSwapIndices(
@@ -48,6 +109,125 @@ void CreatureMetaData::buildSkinSwapIndices(
 			offset += cur_region->getNumIndices();
 		}
 	}
+}
+
+void CreatureMetaData::updateRegionColors(TMap<FName, TSharedPtr<CreatureModule::CreatureAnimation>>& animations)
+{
+	for (auto& cur_pair : animations)
+	{
+		auto clip_name = cur_pair.Key.ToString();
+		auto& clip_anim = cur_pair.Value;
+		if (anim_region_colors.Contains(clip_name))
+		{
+			const auto& clip_regions_data =	anim_region_colors[clip_name];
+			auto& opacity_cache = clip_anim->getOpacityCache();
+			auto& opacity_table = opacity_cache.getCacheTable();
+			for (int m = opacity_cache.getStartTime(); m <= opacity_cache.getEndime(); m++)
+			{
+				auto idx = opacity_cache.getIndexByTime(m);
+				auto& regions_data = opacity_table[idx];
+				for (auto& cur_region : regions_data)
+				{
+					if (clip_regions_data.Contains(cur_region.getKey().ToString()))
+					{
+						auto& read_anim_data = clip_regions_data[cur_region.getKey().ToString()];
+						const auto& read_colors_data = read_anim_data[idx];
+						if (read_colors_data.frame == m)
+						{
+							// check to see the frames match, then set
+							auto getColorFloat = [this](uint8_t val_in)
+							{
+								return static_cast<float>(val_in) / 255.0f * 100.0f;
+							};
+
+							cur_region.setRed(getColorFloat(read_colors_data.r));
+							cur_region.setGreen(getColorFloat(read_colors_data.g));
+							cur_region.setBlue(getColorFloat(read_colors_data.b));
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void CreatureMetaData::updateMorphStep(
+	CreatureModule::CreatureManager * manager_in,
+	float delta_step)
+{
+	auto creature_in = manager_in->GetCreature();
+	if (morph_data.play_anims_data.Num() == 0)
+	{
+		auto& all_clips = manager_in->GetAllAnimations();
+		morph_data.play_anims_data.SetNum(morph_data.morph_clips.Num());
+		for (int32 i = 0; i < morph_data.play_anims_data.Num(); i++)
+		{
+			auto& cur_play_data = morph_data.play_anims_data[i];
+			cur_play_data.Get<0>() = FName(*morph_data.morph_clips[i].Get<0>());
+			const auto& cur_clip_name = cur_play_data.Get<0>();
+			cur_play_data.Get<1>() = all_clips[cur_clip_name]->getStartTime();
+		}
+
+		if (morph_data.center_clip.Len() > 0)
+		{
+			morph_data.play_center_anim_data.Get<0>() = FName(*morph_data.center_clip);
+			const auto& center_clip_name = morph_data.play_center_anim_data.Get<0>();
+			morph_data.play_center_anim_data.Get<1>() = all_clips[center_clip_name]->getStartTime();
+		}
+
+		morph_data.play_pts.SetNum(creature_in->GetTotalNumPoints() * 3);
+	}
+
+	FMemory::Memset(morph_data.play_pts.GetData(), 0, sizeof(glm::float32) * morph_data.play_pts.Num());
+
+	auto updatePoints = [this, creature_in](float ratio_in)
+	{
+		auto render_pts = morph_data.play_pts.GetData();
+		for (int j = 0; j < creature_in->GetTotalNumPoints() * 3; j += 3)
+		{
+			render_pts[j] +=
+				(creature_in->GetRenderPts()[j] * ratio_in);
+			render_pts[j + 1] +=
+				(creature_in->GetRenderPts()[j + 1] * ratio_in);
+		}
+	};
+
+	float center_ratio = 0;
+	bool has_center = (morph_data.center_clip.Len() > 0);
+	if (has_center)
+	{
+		auto radius = (float)morph_data.morph_res * 0.5f;
+		auto test_pt = morph_data.play_img_pt - FVector2D(morph_data.morph_res / 2, morph_data.morph_res / 2);
+		center_ratio = FVector2D::Distance(
+			test_pt / ((float)morph_data.morph_res * 0.5f), FVector2D::ZeroVector);
+
+		const auto& clip_name = morph_data.play_center_anim_data.Get<0>();
+		manager_in->SetActiveAnimationName(clip_name);
+		manager_in->setRunTime(morph_data.play_center_anim_data.Get<1>());
+		manager_in->Update(delta_step);
+
+		float inv_center_ratio = 1.0f - center_ratio;
+		updatePoints(inv_center_ratio);
+		morph_data.play_center_anim_data.Get<1>() = manager_in->getRunTime();
+	}
+
+	for (int32 i = 0; i < morph_data.play_anims_data.Num(); i++)
+	{
+		auto& cur_data = morph_data.play_anims_data[i];
+		const auto& clip_name = cur_data.Get<0>();
+		manager_in->SetActiveAnimationName(clip_name);
+		manager_in->setRunTime(cur_data.Get<1>());
+		manager_in->Update(delta_step);
+
+		cur_data.Get<1>() = manager_in->getRunTime();
+		updatePoints((center_ratio > 0) ? (morph_data.weights[i] * center_ratio) : morph_data.weights[i]);
+	}
+
+	// Copy to current render points
+	FMemory::Memcpy(
+		creature_in->GetRenderPts(),
+		morph_data.play_pts.GetData(), 
+		sizeof(glm::float32) * morph_data.play_pts.Num());
 }
 
 // Bend Physics
@@ -256,10 +436,10 @@ void CreaturePhysicsData::createPhysicsChain(
 	auto makeChainConstraints = [](
 		UBoxComponent * body1,
 		UBoxComponent * body2,
-		float stiffness,
-		float damping,
-		USceneComponent * attach_root,
-		UObject * parent)
+		float stiffness_in,
+		float damping_in,
+		USceneComponent * attach_root_in,
+		UObject * parent_in)
 	{
 		FConstraintInstance constraint_inst;
 		SetAngularLimits(
@@ -272,10 +452,10 @@ void CreaturePhysicsData::createPhysicsChain(
 			0.0f,
 			true,
 			true,
-			stiffness,
-			damping,
-			stiffness,
-			damping);
+			stiffness_in,
+			damping_in,
+			stiffness_in,
+			damping_in);
 
 		SetLinearLimits(
 			constraint_inst,
@@ -285,10 +465,10 @@ void CreaturePhysicsData::createPhysicsChain(
 			2,
 			2.0f,
 			false,
-			stiffness * 2.0f,
-			damping * 2.0f);
+			stiffness_in * 2.0f,
+			damping_in * 2.0f);
 
-		UPhysicsConstraintComponent* constraint_comp = NewObject<UPhysicsConstraintComponent>(parent);
+		UPhysicsConstraintComponent* constraint_comp = NewObject<UPhysicsConstraintComponent>(parent_in);
 
 		auto body_pt = body1->GetComponentLocation();
 		//constraint_comp->SetWorldLocation(body_pt);
@@ -598,6 +778,10 @@ UCreatureMetaAsset::BuildMetaData()
 					cur_switch_order_map.Add(cur_switch_time, cur_switch_ints);
 				}
 
+				cur_switch_order_map.KeySort([](int32 A, int32 B)
+				{
+					return A < B;
+				});
 
 				meta_data.anim_order_map.Add(cur_anim_name, cur_switch_order_map);
 			}
@@ -686,6 +870,133 @@ UCreatureMetaAsset::BuildMetaData()
 
 					bend_physics_chains.Add(new_chain);
 				}
+			}
+		}
+
+		// Fill Morph Spaces
+		if (jsonObject->HasField(TEXT("MorphTargets")) && 
+			jsonObject->HasField(TEXT("MorphRes")) && 
+			jsonObject->HasField(TEXT("MorphSpace")))
+		{
+			morph_poses.Empty();
+			auto morph_obj = jsonObject->GetObjectField(TEXT("MorphTargets"));
+
+			auto morph_center_array = morph_obj->GetArrayField(TEXT("CenterData"));
+			meta_data.morph_data.center_clip = morph_center_array[1]->AsString();
+			morph_poses.Add(meta_data.morph_data.center_clip);
+
+			auto morph_shapes_array = morph_obj->GetArrayField(TEXT("MorphShape"));
+			meta_data.morph_data.bounds_min = FVector2D(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+			meta_data.morph_data.bounds_max = FVector2D(std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
+			for (auto& cur_shape_data : morph_shapes_array)
+			{
+				auto cur_array = cur_shape_data->AsArray();
+				auto cur_clip = cur_array[0]->AsString();
+				auto pts_array = cur_array[1]->AsArray();
+				FVector2D cur_pt((float)pts_array[0]->AsNumber(), (float)pts_array[1]->AsNumber());
+				meta_data.morph_data.bounds_min.X = std::min(meta_data.morph_data.bounds_min.X, cur_pt.X);
+				meta_data.morph_data.bounds_max.X = std::max(meta_data.morph_data.bounds_max.X, cur_pt.X);
+				meta_data.morph_data.bounds_min.Y = std::min(meta_data.morph_data.bounds_min.Y, cur_pt.Y);
+				meta_data.morph_data.bounds_max.Y = std::max(meta_data.morph_data.bounds_max.Y, cur_pt.Y);
+
+				meta_data.morph_data.morph_clips.Add(TTuple<FString, FVector2D>(cur_clip, cur_pt));
+				morph_poses.Add(cur_clip);
+			}
+			
+			meta_data.morph_data.morph_res = jsonObject->GetIntegerField(TEXT("MorphRes"));
+			{
+				// Transform to Image space
+				for (auto& cur_clip : meta_data.morph_data.morph_clips)
+				{
+					auto bounds_size = meta_data.morph_data.bounds_max - meta_data.morph_data.bounds_min;
+					auto& cur_pt = cur_clip.Get<1>();
+					cur_pt = (cur_pt - meta_data.morph_data.bounds_min) / bounds_size * (float)(meta_data.morph_data.morph_res - 1);
+					cur_pt.X = std::min(std::max(0.0f, cur_pt.X), (float)(meta_data.morph_data.morph_res - 1));
+					cur_pt.Y = std::min(std::max(0.0f, cur_pt.Y), (float)(meta_data.morph_data.morph_res - 1));
+				}
+			}
+
+
+			FString raw_str = jsonObject->GetStringField(TEXT("MorphSpace"));
+			auto raw_bytes = Base64Lib::base64_decode(raw_str);
+			for (int32 j = 0; j < morph_shapes_array.Num(); j++)
+			{
+				int32 space_size = meta_data.morph_data.morph_res * meta_data.morph_data.morph_res;
+				int32 byte_idx = j * space_size;
+				TArray<uint8_t> space_data;
+				space_data.SetNum(space_size);
+				FMemory::Memcpy(space_data.GetData(), raw_bytes.GetData() + byte_idx, space_size);
+				meta_data.morph_data.morph_spaces.Add(space_data);
+			}
+
+			meta_data.morph_data.weights.SetNum(morph_shapes_array.Num());
+		}
+
+		// Fill Vertex Attachments
+		vertex_attachments.Empty();
+		if (jsonObject->HasField(TEXT("VertAttachments")))
+		{
+			auto attachments_obj = jsonObject->GetObjectField(TEXT("VertAttachments"));
+			auto attachments_list = attachments_obj->GetArrayField(TEXT("attachments"));
+			for (auto& cur_data : attachments_list)
+			{
+				auto& cur_attachment = cur_data->AsObject();
+				auto cur_name = cur_attachment->GetStringField(TEXT("attach_name"));
+				auto cur_idx = cur_attachment->GetIntegerField(TEXT("idx"));
+				meta_data.vertex_attachments.Add(cur_name, cur_idx);
+				vertex_attachments.Add(cur_name);
+			}
+		}
+
+		// Fill Animated Region Colors
+		meta_data.anim_region_colors.Empty();
+		if (jsonObject->HasField(TEXT("AnimRegionColors")))
+		{
+			auto region_colors_node = jsonObject->GetObjectField(TEXT("AnimRegionColors"));
+			for (auto cur_data : region_colors_node->Values)
+			{
+				auto anim_name = cur_data.Key;
+				auto regions_node = cur_data.Value->AsObject();
+				TMap<FString, TArray<CreatureMetaData::AnimColorData>> regions_anim;
+				for (auto r_data : regions_node->Values)
+				{
+					auto r_name = r_data.Key;
+					auto b64_data = r_data.Value->AsString();
+					auto bytes_data = Base64Lib::base64_decode(b64_data);
+					int chunk_size = sizeof(int) + (sizeof(uint8_t) * 3);
+					int chunk_num = (int)bytes_data.Num() / chunk_size;
+					TArray<CreatureMetaData::AnimColorData> colors_anim;
+					for (int m = 0; m < chunk_num; m++)
+					{
+						uint8_t * base_ptr = &(bytes_data.GetData()[m * chunk_size]);
+						uint8_t * read_ptr = base_ptr;
+						int32 frame_val = 0;
+						uint8_t r_val = 0, g_val = 0, b_val = 0;
+
+						FMemory::Memcpy(&frame_val, read_ptr, sizeof(int32));
+						read_ptr += sizeof(int32);
+
+						FMemory::Memcpy(&r_val, read_ptr, sizeof(uint8_t));
+						read_ptr += sizeof(uint8_t);
+
+						FMemory::Memcpy(&g_val, read_ptr, sizeof(uint8_t));
+						read_ptr += sizeof(uint8_t);
+
+						FMemory::Memcpy(&b_val, read_ptr, sizeof(uint8_t));
+						read_ptr += sizeof(uint8_t);
+
+						CreatureMetaData::AnimColorData color_data;
+						color_data.frame = frame_val;
+						color_data.r = r_val;
+						color_data.g = g_val;
+						color_data.b = b_val;
+
+						colors_anim.Add(color_data);
+					}
+
+					regions_anim.Add(r_name, colors_anim);
+				}
+				meta_data.anim_region_colors.Add(anim_name, regions_anim);
 			}
 		}
 	}

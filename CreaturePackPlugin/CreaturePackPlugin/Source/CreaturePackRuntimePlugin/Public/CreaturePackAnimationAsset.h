@@ -1,5 +1,7 @@
 #pragma  once
-#include "Engine.h"
+#include "UObject/Object.h"
+#include "EditorFramework/AssetImportData.h"
+#include "Materials/MaterialInterface.h"
 #include "CreaturePackAnimationAsset.generated.h"
 
 UCLASS()

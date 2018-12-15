@@ -2,6 +2,9 @@
 #include "CreaturePackAnimationAsset.h"
 #include "Developer/DesktopPlatform/Public/IDesktopPlatform.h"
 #include "Developer/DesktopPlatform/Public/DesktopPlatformModule.h"
+#include "UnrealEd/Public/EditorDirectories.h"
+#include "Misc/FileHelper.h"
+#include "Serialization/ArchiveSaveCompressedProxy.h"
 #include <string>
 #define LOCTEXT_NAMESPACE "CreaturePackAnimationAssetFactory"
 

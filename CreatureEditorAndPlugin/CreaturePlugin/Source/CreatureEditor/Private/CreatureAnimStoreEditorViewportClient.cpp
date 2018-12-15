@@ -1,9 +1,7 @@
-
-#include "CreatureEditorPCH.h"
+#include "CreatureAnimStoreEditorViewportClient.h"
 #include "Runtime/Engine/Public/Slate/SceneViewport.h"
 #include "SEditorViewport.h"
 #include "AssetEditorModeManager.h"
-#include "CreatureAnimStoreEditorViewportClient.h"
 #include "CreatureMeshComponent.h"
 #include "CreatureAnimationClipsStore.h"
 FCreatureAnimStoreEditorViewportClient::FCreatureAnimStoreEditorViewportClient(const TWeakPtr<class SEditorViewport>& InEditorViewportWidget /*= nullptr*/, UCreatureAnimationClipsStore* EditingAnimStore)

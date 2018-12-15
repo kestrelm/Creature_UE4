@@ -1,4 +1,3 @@
-#include "CreatureEditorPCH.h"
 #include "CreatureMetaAssetFactory.h"
 #include "CreatureMetaAsset.h"
 #include "Developer/DesktopPlatform/Public/IDesktopPlatform.h"

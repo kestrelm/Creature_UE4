@@ -1,8 +1,8 @@
 
+#include "CreatureAnimationClipsStore.h"
 #include "CreaturePluginPCH.h"
 #include "CreatureMeshComponent.h"
 #include "CreatureAnimationClip.h"
-#include "CreatureAnimationClipsStore.h"
 
 void UCreatureAnimationClipsStore::LoadAnimationDataToComponent(class UCreatureMeshComponent* MeshComponent)
 {

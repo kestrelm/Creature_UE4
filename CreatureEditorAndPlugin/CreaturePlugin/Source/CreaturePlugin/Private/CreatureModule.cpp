@@ -32,8 +32,8 @@
  * OUT OF OR IN CONNECTION WITH THE RUNTIMES OR THE USE OR OTHER DEALINGS IN THE
  * RUNTIMES.
  *****************************************************************************/
-#include "CreaturePluginPCH.h"
 #include "CreatureModule.h"
+#include "CreaturePluginPCH.h"
 #include <Runtime/Core/Public/Async/ParallelFor.h>
 
 DECLARE_CYCLE_STAT(TEXT("CreatureManager_Update"), STAT_CreatureManager_Update, STATGROUP_Creature);
@@ -563,7 +563,7 @@ static void FillDeformationCache(JsonNode& json_obj,
 				auto gap_fraction = (float)j / (float)gap_diff;
 				TArray<meshDisplacementCache> gap_cache_list;
 				
-				for (size_t k = 0; k < cache_list.Num(); k++)
+				for (int32 k = 0; k < cache_list.Num(); k++)
 				{
 					auto& cur_data = cache_manager.getCacheTable()[set_index][k];
 					auto& prev_data = cache_manager.getCacheTable()[prev_index][k];
@@ -1136,7 +1136,7 @@ namespace CreatureModule {
 	void 
 	CreatureAnimation::clearCachePts()
 	{
-		for (size_t i = 0; i < cache_pts.Num(); i++)
+		for (int32 i = 0; i < cache_pts.Num(); i++)
 		{
 			delete[] cache_pts[i];
 		}

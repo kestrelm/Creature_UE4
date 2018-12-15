@@ -1,5 +1,5 @@
-#include "CreaturePluginPCH.h"
 #include "CreatureWidget.h"
+#include "CreaturePluginPCH.h"
 #include "SCreatureWidget.h"
 
 //LOCTEXT
@@ -41,6 +41,11 @@ void UCreatureWidget::InitCreatureCore()
 			creature_core.meta_data = creature_meta_asset->GetMetaData();
 		}
 	}
+}
+
+void UCreatureWidget::EnableRegionColors()
+{
+	creature_core.enableRegionColors();
 }
 
 void UCreatureWidget::SynchronizeProperties()

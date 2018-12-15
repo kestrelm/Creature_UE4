@@ -1,4 +1,4 @@
-#include "Engine.h"
+#include "CoreMinimal.h"
 
 #include "CreatureAnimState.generated.h"
 #pragma once

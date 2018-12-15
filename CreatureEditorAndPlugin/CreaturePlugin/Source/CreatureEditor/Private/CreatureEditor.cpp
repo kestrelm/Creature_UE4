@@ -1,4 +1,3 @@
-#include "CreatureEditorPCH.h"
 #include "CreatureEditor.h"
 #include "CreatureAnimStateMachineDetails.h"
 #include "CreatureAnimStoreAssetTypeActions.h"

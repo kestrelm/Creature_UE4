@@ -1,11 +1,11 @@
 /********************************************************************************
-** auth： God Of Pen
-** desc： 这是动画状态机编辑器的界面窗口
+** Author God Of Pen
 ** Ver.:  V1.0.0
 *********************************************************************************/
-#include "UnrealEd.h"
-#include "Editor/PropertyEditor/Public/PropertyEditing.h"
+
 #include "Editor/PropertyEditor/Public/PropertyCustomizationHelpers.h"
+#include "IDetailCustomization.h"
+
 #pragma once
 
 class FCreatureAnimStateMachineDetails : public IDetailCustomization

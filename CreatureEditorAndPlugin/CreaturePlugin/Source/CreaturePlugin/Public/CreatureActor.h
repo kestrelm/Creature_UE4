@@ -213,8 +213,5 @@ public:
 	// Called on startup
 	virtual void BeginPlay();
 
-	UFUNCTION(BlueprintCallable, Category = "Rendering", meta = (DisplayName = "Set Actor Hidden In Game", Keywords = "Visible Hidden Show Hide"))
-	virtual void SetActorHiddenInGame(bool bNewHidden) override;
-
 	void GenerateTriangle(TArray<FProceduralMeshTriangle>& OutTriangles);
 };

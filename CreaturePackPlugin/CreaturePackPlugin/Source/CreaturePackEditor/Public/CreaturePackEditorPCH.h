@@ -1,8 +1,6 @@
 #pragma once
 
 
-#include "Engine.h"
-#include "UnrealEd.h"
 #include "SlateBasics.h"
 
 #include "EditorStyleSet.h"

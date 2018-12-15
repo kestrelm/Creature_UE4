@@ -1,13 +1,18 @@
-#include "CreatureEditorPCH.h"
 #include "CreatureToolsDetails.h"
 #include "Developer/DesktopPlatform/Public/IDesktopPlatform.h"
 #include "Developer/DesktopPlatform/Public/DesktopPlatformModule.h"
-#include "UnrealEd.h"
+#include "Widgets/Input/SButton.h"
+#include "Misc/MessageDialog.h"
 #include "BusyCursor.h"
 #include "ScopedTransaction.h"
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
+#include "EngineUtils.h"
+#include "Kismet/GameplayStatics.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
+
 
 #define LOCTEXT_NAMESPACE "CreatureToolsDetails"
 

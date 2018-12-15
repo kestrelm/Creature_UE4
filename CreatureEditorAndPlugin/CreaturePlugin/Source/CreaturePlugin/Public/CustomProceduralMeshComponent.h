@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "PrimitiveSceneProxy.h"
+#include "Components/MeshComponent.h"
 #include  <glm/glm.hpp>
 #include "CustomProceduralMeshComponent.generated.h"
 
@@ -23,7 +25,7 @@ public:
 		glm::float32 * uvs_in,
 		int32 point_num_in,
 		int32 indices_num_in,
-		TArray<uint8> * region_alphas_in,
+		TArray<FColor> * region_colors_in,
 		TSharedPtr<FCriticalSection, ESPMode::ThreadSafe> update_lock_in)
 	{
 		indices = indices_in;
@@ -31,7 +33,7 @@ public:
 		uvs = uvs_in;
 		point_num = point_num_in;
 		indices_num = indices_num_in;
-		region_alphas = region_alphas_in;
+		region_colors = region_colors_in;
 		update_lock = update_lock_in;
 	}
 
@@ -39,7 +41,7 @@ public:
 	glm::float32 * points;
 	glm::float32 * uvs;
 	int32 point_num, indices_num;
-	TArray<uint8> * region_alphas;
+	TArray<FColor> * region_colors;
 	TSharedPtr<FCriticalSection, ESPMode::ThreadSafe> update_lock;
 };
 

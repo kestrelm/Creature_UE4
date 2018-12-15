@@ -42,6 +42,7 @@
 #include <memory>
 #include <array>
 #include <stack>
+#include <cstring>
 
 class CreatureTimeSample
 {
@@ -242,9 +243,11 @@ public:
 	CreaturePackLoader()
 	{
 		// do nothing
+		dMinX = dMinY = dMaxX = dMaxY = 0;
 	}
 
     CreaturePackLoader(const std::vector<uint8_t>& byteArray)
+		: CreaturePackLoader()
     {
 		runDecoder(byteArray);
 		meshRegionsList = findConnectedRegions();
@@ -347,6 +350,7 @@ public:
     std::vector<std::string> headerList;
     std::vector<int32> animPairsOffsetList;
 	std::vector<std::pair<uint32_t, uint32_t>> meshRegionsList;
+	float dMinX, dMinY, dMaxX, dMaxY;
     
 protected:
     void runDecoder(const std::vector<uint8_t>& byteArray)
@@ -366,6 +370,9 @@ protected:
 		updatePoints(getBasePointsOffset());
 		updateUVs(getBaseUvsOffset());
 		
+		fillDeformRanges();
+		finalAllPointSamples();
+
 		// init Animation Clip Map		
 		for (size_t i = 0; i < getAnimationNum(); i++)
 		{
@@ -389,6 +396,118 @@ protected:
 		}
 
     }
+
+	std::string hasDeformCompress() const
+	{
+		for (int i = 0; i < static_cast<int>(headerList.size()); i++)
+		{
+			if (headerList[i] == "deform_comp1")
+			{
+				return "deform_comp1";
+			}
+			else if (headerList[i] == "deform_comp2")
+			{
+				return "deform_comp2";
+			}
+			else if (headerList[i] == "deform_comp1_1")
+			{
+				return "deform_comp1_1";
+			}
+		}
+
+		return "";
+	}
+
+	void fillDeformRanges()
+	{
+		if (hasDeformCompress().size() > 0)
+		{
+			auto cur_ranges_offset = getAnimationOffsets(getAnimationNum());
+			auto cur_ranges = fileData[cur_ranges_offset.first];
+			dMinX = (float)(cur_ranges.float_array_val[0]);
+			dMinY = (float)(cur_ranges.float_array_val[1]);
+			dMaxX = (float)(cur_ranges.float_array_val[2]);
+			dMaxY = (float)(cur_ranges.float_array_val[3]);
+		}
+	}
+
+	void finalAllPointSamples()
+	{
+		auto deformCompressType = hasDeformCompress();
+		if (deformCompressType.size() == 0)
+		{
+			return;
+		}
+
+		for (int i = 0; i < static_cast<int>(getAnimationNum()); i++)
+		{
+			auto curOffsetPair = getAnimationOffsets(i);
+
+			auto animName = fileData[curOffsetPair.first].string_val;
+			auto k = curOffsetPair.first;
+			k++;
+
+			while (k < curOffsetPair.second)
+			{
+				const auto& pts_raw_array = fileData[k + 1].int_array_val;
+				const auto& pts_raw_byte_array = fileData[k + 1].byte_array_val;
+				int raw_num = (int)pts_raw_array.size();
+
+				if (deformCompressType == "deform_comp2")
+				{
+					raw_num = (int)pts_raw_byte_array.size();
+				}
+				else if (deformCompressType == "deform_comp1_1")
+				{
+					raw_num = (int)pts_raw_byte_array.size() / 2;
+				}
+
+				std::vector<float> final_pts_array(raw_num);
+				for (int m = 0; m < raw_num; m++)
+				{
+					float bucketVal = 0;
+					float numBuckets = 0.0f;
+					if (deformCompressType == "deform_comp1")
+					{
+						bucketVal = (float)pts_raw_array[m];
+						numBuckets = 65535.0f;
+					}
+					else if (deformCompressType == "deform_comp2")
+					{
+						bucketVal = (float)pts_raw_byte_array[m];
+						numBuckets = 255.0f;
+					}
+					else if (deformCompressType == "deform_comp1_1")
+					{
+						uint16_t raw_int = 0;
+						std::memcpy(&raw_int, &pts_raw_byte_array[m * 2], sizeof(uint16_t));
+						bucketVal = (float)raw_int;
+						numBuckets = 65535.0f;
+					}
+
+					float setVal = 0.0f;
+					if (m % 2 == 0)
+					{
+						setVal = (bucketVal / numBuckets * (dMaxX - dMinX)) + dMinX;
+						setVal += points.get()[m];
+					}
+					else
+					{
+						setVal = (bucketVal / numBuckets * (dMaxY - dMinY)) + dMinY;
+						setVal += points.get()[m];
+					}
+
+					final_pts_array[m] = setVal;
+				}
+
+				fileData[k + 1].int_array_val.clear();
+				fileData[k + 1].byte_array_val.clear();
+				fileData[k + 1].float_array_val = final_pts_array;
+
+				k += 4;
+			}
+		}
+	}
 
 	class graphNode {
 	public:

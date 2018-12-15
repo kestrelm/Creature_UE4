@@ -1,4 +1,3 @@
-#include "CreatureEditorPCH.h"
 #include "CreatureAnimationClipsStoreFactory.h"
 #include "CreatureAnimationClipsStore.h"
 #define LOCTEXT_NAMESPACE "CreatureAnimationClipsStoreFactory"

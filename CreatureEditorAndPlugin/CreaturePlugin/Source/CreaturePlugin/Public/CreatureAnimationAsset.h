@@ -1,10 +1,11 @@
 /********************************************************************************
-** auth： God Of Pen
-** desc： 存储单个动画文件包含的所有动画
+** Author God Of Pen
 ** Ver.:  V1.0.0
 *********************************************************************************/
+
 #pragma  once
-#include "Engine.h"
+#include "CoreMinimal.h"
+#include "Materials/MaterialInterface.h"
 #include "CreatureAnimationAsset.generated.h"
 
 /** Container used to cache useful data about an animation, including it's point cache */

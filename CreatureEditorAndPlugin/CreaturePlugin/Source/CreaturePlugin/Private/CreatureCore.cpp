@@ -1,6 +1,9 @@
-
+#include "CreatureCore.h"
 #include "CreaturePluginPCH.h"
 #include "CreatureMetaAsset.h"
+#include "Engine/Engine.h"
+#include "HAL/PlatformFile.h"
+#include "HAL/PlatformFilemanager.h"
 
 DECLARE_CYCLE_STAT(TEXT("CreatureCore_RunTick"), STAT_CreatureCore_RunTick, STATGROUP_Creature);
 DECLARE_CYCLE_STAT(TEXT("CreatureCore_UpdateCreatureRender"), STAT_CreatureCore_UpdateCreatureRender, STATGROUP_Creature);
@@ -51,6 +54,7 @@ CreatureCore::CreatureCore()
 	global_indices_copy = nullptr;
 	skin_swap_active = false;
 	region_order_indices_num = 0;
+	run_morph_targets = false;
 	update_lock = TSharedPtr<FCriticalSection, ESPMode::ThreadSafe>(new FCriticalSection());
 }
 
@@ -95,7 +99,7 @@ CreatureCore::GetProcMeshData(EWorldType::Type world_type)
 		FProceduralMeshTriData ret_data(nullptr,
 			nullptr, nullptr,
 			0, 0,
-			&region_alphas,
+			&region_colors,
 			update_lock);
 
 		return ret_data;
@@ -111,23 +115,23 @@ CreatureCore::GetProcMeshData(EWorldType::Type world_type)
 	glm::uint32 * copy_indices = GetIndicesCopy(num_indices);
 	std::memcpy(copy_indices, cur_idx, sizeof(glm::uint32) * num_indices);
 
-	if (region_alphas.Num() != num_points)
+	if (region_colors.Num() != num_points)
 	{
-		region_alphas.SetNum(num_points);
+		region_colors.SetNum(num_points);
 	}
 
 	if ((world_type == EWorldType::Type::Editor) || (world_type == EWorldType::Type::EditorPreview))
 	{
-		for (auto i = 0; i < region_alphas.Num(); i++)
+		for (auto i = 0; i < region_colors.Num(); i++)
 		{
-			region_alphas[i] = 255;
+			region_colors[i] = FColor(255, 255, 255, 255);
 		}
 	}
 
 	FProceduralMeshTriData ret_data(copy_indices,
 		cur_pts, cur_uvs,
 		num_points, num_indices,
-		&region_alphas,
+		&region_colors,
 		update_lock);
 
 	return ret_data;
@@ -157,7 +161,7 @@ void CreatureCore::UpdateCreatureRender()
 		for (auto& single_region : cur_regions)
 		{
 			glm::float32 * region_pts = cur_pts + (single_region->getStartPtIndex() * 3);
-			for (size_t i = 0; i < single_region->getNumPts(); i++)
+			for (int32 i = 0; i < single_region->getNumPts(); i++)
 			{
 				region_pts[2] = region_z;
 				region_pts += 3;
@@ -170,7 +174,10 @@ void CreatureCore::UpdateCreatureRender()
 		if (meta_data)
 		{
 			auto dst_indices = GetIndicesCopy(cur_num_indices);
-			if (shouldSkinSwap())
+			auto has_region_order = meta_data->hasRegionOrder(
+				creature_manager->GetActiveAnimationName().ToString(),
+				(int)creature_manager->getActualRunTime());
+			if (shouldSkinSwap() && (has_region_order == false))
 			{
 				// Skin Swap
 				std::copy(
@@ -210,7 +217,7 @@ void CreatureCore::UpdateCreatureRender()
 			{
 				auto single_region = regions_map[real_name];
 				glm::float32 * region_pts = cur_pts + (single_region->getStartPtIndex() * 3);
-				for (size_t i = 0; i < single_region->getNumPts(); i++)
+				for (int32 i = 0; i < single_region->getNumPts(); i++)
 				{
 					region_pts[2] = region_z;
 					region_pts += 3;
@@ -329,7 +336,7 @@ bool CreatureCore::InitCreatureRender()
 
 void CreatureCore::InitValues()
 {
-	region_alpha_map.Empty();
+	region_colors_map.Empty();
 	meta_data = nullptr;
 }
 
@@ -465,9 +472,9 @@ void CreatureCore::ProcessRenderRegions()
 	int num_triangles = cur_creature->GetTotalNumIndices() / 3;
 
 	// process alphas
-	if (region_alphas.Num() != cur_creature->GetTotalNumPoints())
+	if (region_colors.Num() != cur_creature->GetTotalNumPoints())
 	{
-		region_alphas.Init(255, cur_creature->GetTotalNumPoints());
+		region_colors.Init(FColor(255, 255, 255, 255), cur_creature->GetTotalNumPoints());
 	}
 
 	// fill up animation alphas
@@ -476,23 +483,26 @@ void CreatureCore::ProcessRenderRegions()
 		auto cur_region = cur_region_pair.Value;
 		auto start_pt_index = cur_region->getStartPtIndex();
 		auto end_pt_index = cur_region->getEndPtIndex();
-		auto cur_alpha = FMath::Clamp(cur_region->getOpacity() / 100.0f, 0.0f, 1.0f) * 255.0f;
-
+		float opacity = FMath::Clamp(cur_region->getOpacity() / 100.0f, 0.0f, 1.0f);
+		uint8 cur_alpha = (uint8)(opacity * 255.0f);
+		uint8 cur_r = (uint8)(cur_region->getRed() / 100.0f * opacity * 255.0f);
+		uint8 cur_g = (uint8)(cur_region->getGreen() / 100.0f * opacity * 255.0f);
+		uint8 cur_b = (uint8)(cur_region->getBlue() / 100.0f * opacity * 255.0f);
 
 		for (auto i = start_pt_index; i <= end_pt_index; i++)
 		{
-			region_alphas[i] = (uint8)cur_alpha;
+			region_colors[i] = FColor(cur_r, cur_g, cur_b, cur_alpha);
 		}
 	}
 
 	// user overwrite alphas
-	if (region_alpha_map.Num() > 0)
+	if (region_colors_map.Num() > 0)
 	{
 		// fill up the alphas for specific regions with alpha overwrites
-		for (auto cur_iter : region_alpha_map)
+		for (auto cur_iter : region_colors_map)
 		{
 			auto cur_name = cur_iter.Key;
-			auto cur_alpha = cur_iter.Value;
+			auto cur_alpha = cur_iter.Value.A;
 
 			if (regions_map.Contains(cur_name))
 			{
@@ -502,7 +512,7 @@ void CreatureCore::ProcessRenderRegions()
 
 				for (auto i = start_pt_index; i <= end_pt_index; i++)
 				{
-					region_alphas[i] = cur_alpha;
+					region_colors[i] = FColor(cur_alpha, cur_alpha, cur_alpha, cur_alpha);;
 				}
 			}
 		}
@@ -739,7 +749,7 @@ FTransform
 CreatureCore::GetBluePrintBoneXform(FName name_in, bool world_transform, float position_slide_factor, const FTransform& base_transform) const
 {
 	FTransform ret_xform;
-	for (size_t i = 0; i < bone_data.Num(); i++)
+	for (int32 i = 0; i < bone_data.Num(); i++)
 	{
 		if (bone_data[i].name == name_in)
 		{
@@ -850,13 +860,22 @@ CreatureCore::RunTick(float delta_time)
 
 		if (should_play) {
 			SCOPE_CYCLE_COUNTER(STAT_CreatureCore_UpdateManager);
-			creature_manager->Update(delta_time);
+
+			bool morph_targets_valid = false;
+			if (run_morph_targets && meta_data) {
+				morph_targets_valid = meta_data->morph_data.isValid();
+			}
+
+			if (morph_targets_valid) {
+				meta_data->updateMorphStep(creature_manager.Get(), delta_time);
+			}
+			else {
+				creature_manager->Update(delta_time);
+			}
 		}
 
 		UpdateCreatureRender();
-
 		FillBoneData();
-
 	}
 
 	return true;
@@ -942,12 +961,13 @@ CreatureCore::SetBluePrintRegionAlpha(FName region_name_in, uint8 alpha_in)
 		return;
 	}
 
-	region_alpha_map.Add(region_name_in, alpha_in);
+	FColor new_color(alpha_in, alpha_in, alpha_in, alpha_in);
+	region_colors_map.Add(region_name_in, new_color);
 }
 
 void CreatureCore::RemoveBluePrintRegionAlpha(FName region_name_in)
 {
-	region_alpha_map.Remove(region_name_in);
+	region_colors_map.Remove(region_name_in);
 }
 
 void 
@@ -1131,6 +1151,14 @@ bool CreatureCore::shouldSkinSwap() const
 	return meta_data && skin_swap_active && (skin_swap_indices.Num() > 0);
 }
 
+void CreatureCore::enableRegionColors()
+{
+	if (meta_data)
+	{
+		meta_data->updateRegionColors(creature_manager->GetAllAnimations());
+	}
+}
+
 void 
 CreatureCore::RunBeginPlay()
 {
@@ -1138,5 +1166,5 @@ CreatureCore::RunBeginPlay()
 	InitCreatureRender();
 	is_ready_play = true;
 
-	region_alpha_map.Empty();
+	region_colors_map.Empty();
 }

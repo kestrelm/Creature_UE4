@@ -24,10 +24,10 @@ namespace UnrealBuildTool.Rules
 
         public bool LoadCreatureLib(ReadOnlyTargetRules Target)
         {
-            Definitions.Add("GLM_FORCE_RADIANS");
-            Definitions.Add("CREATURE_NO_USE_ZIP");
-            Definitions.Add("CREATURE_NO_USE_EXCEPTIONS");
-            Definitions.Add("CREATURE_MULTICORE");
+            PublicDefinitions.Add("GLM_FORCE_RADIANS");
+            PublicDefinitions.Add("CREATURE_NO_USE_ZIP");
+            PublicDefinitions.Add("CREATURE_NO_USE_EXCEPTIONS");
+            PublicDefinitions.Add("CREATURE_MULTICORE");
             PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "Includes"));
 
             return true;
@@ -36,8 +36,9 @@ namespace UnrealBuildTool.Rules
         public CreaturePlugin(ReadOnlyTargetRules Target)
             : base(Target)
         {
-            PublicIncludePaths.AddRange(new string[] { "CreaturePlugin/Public", });
-            PrivateIncludePaths.AddRange(new string[] { "CreaturePlugin/Private", });
+            PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+            PublicIncludePaths.AddRange(new string[] { ModulePath + "/Public", });
+            PrivateIncludePaths.AddRange(new string[] { ModulePath + "/Private", });
 
             PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG", "Slate", "SlateCore" });
 

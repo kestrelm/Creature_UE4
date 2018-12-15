@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include <mutex>
+#include "PrimitiveSceneProxy.h"
+#include "Components/MeshComponent.h"
 #include "CustomPackProceduralMeshComponent.generated.h"
 
 class UCustomPackProceduralMeshComponent;
@@ -18,13 +19,14 @@ public:
 		FProceduralPackMeshTriData(nullptr, nullptr, nullptr, 0, 0, nullptr, nullptr);
 	}
 
-	FProceduralPackMeshTriData(uint32 * indices_in,
+	FProceduralPackMeshTriData(
+		uint32 * indices_in,
 		float * points_in,
 		float * uvs_in,
 		int32 point_num_in,
 		int32 indices_num_in,
 		TArray<uint8> * region_alphas_in,
-		std::mutex * update_lock_in)
+		TSharedPtr<FCriticalSection, ESPMode::ThreadSafe> update_lock_in)
 	{
 		indices = indices_in;
 		points = points_in;
@@ -40,7 +42,7 @@ public:
 	float * uvs;
 	int32 point_num, indices_num;
 	TArray<uint8> * region_alphas;
-	std::mutex * update_lock;
+	TSharedPtr<FCriticalSection, ESPMode::ThreadSafe> update_lock;
 };
 
 /** Scene proxy */
@@ -48,28 +50,32 @@ class FCProceduralPackMeshSceneProxy : public FPrimitiveSceneProxy
 {
 public:
 
-	FCProceduralPackMeshSceneProxy(UCustomPackProceduralMeshComponent* Component,
-		FProceduralPackMeshTriData * targetTrisIn);
+	FCProceduralPackMeshSceneProxy(
+		UCustomPackProceduralMeshComponent* Component,
+		FProceduralPackMeshTriData * targetTrisIn,
+		const FColor& startColorIn);
+
+	/** Return a type (or subtype) specific hash for sorting purposes */
+	virtual SIZE_T GetTypeHash() const override;
 
 	virtual ~FCProceduralPackMeshSceneProxy();
 
-	void AddRenderPacket(FProceduralPackMeshTriData * targetTrisIn);
+	void AddRenderPacket(FProceduralPackMeshTriData * targetTrisIn, const FColor& startColorIn, ERHIFeatureLevel::Type featureLevel);
 
 	void ResetAllRenderPackets();
-	
+
 	void SetActiveRenderPacketIdx(int idxIn);
 
 	void UpdateDynamicComponentData();
 
 	void SetNeedsMaterialUpdate(bool flag_in);
 
-	void SetNeedsIndexUpdate(bool flag_in);
+	void SetNeedsIndexUpdate(bool flag_in, int32 index_new_num = -1);
 
 	void UpdateMaterial();
 
-	void DoneUpdating();
-
-	virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views,
+	virtual void GetDynamicMeshElements(
+		const TArray<const FSceneView*>& Views,
 		const FSceneViewFamily& ViewFamily,
 		uint32 VisibilityMap,
 		FMeshElementCollector& Collector) const override;
@@ -84,17 +90,22 @@ public:
 	uint32 GetAllocatedSize(void) const;
 
 	FProceduralPackMeshRenderPacket * GetActiveRenderPacket();
+	bool GetDoesActiveRenderPacketHaveVertices() const;
+
+	void SetDynamicData_RenderThread();
 
 private:
-	UCustomPackProceduralMeshComponent* parentComponent;
+	UCustomPackProceduralMeshComponent * parentComponent;
 	UMaterialInterface* Material;
-	TArray<FProceduralPackMeshRenderPacket> renderPackets;
+	TIndirectArray<FProceduralPackMeshRenderPacket> renderPackets;
 	int active_render_packet_idx;
 
 	FMaterialRelevance MaterialRelevance;
-	bool needs_updating;
 	bool needs_index_updating;
+	int32 needs_index_update_num;
 	bool needs_material_updating;
+
+	mutable FCriticalSection renderPacketsCS;
 };
 
 USTRUCT(BlueprintType)
@@ -102,17 +113,17 @@ struct FProceduralPackMeshVertex
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, Category=Triangle)
-	FVector Position;
+		UPROPERTY(EditAnywhere, Category = Triangle)
+		FVector Position;
 
-	UPROPERTY(EditAnywhere, Category=Triangle)
-	FColor Color;
+	UPROPERTY(EditAnywhere, Category = Triangle)
+		FColor Color;
 
-	UPROPERTY(EditAnywhere, Category=Triangle)
-	float U;
+	UPROPERTY(EditAnywhere, Category = Triangle)
+		float U;
 
-	UPROPERTY(EditAnywhere, Category=Triangle)
-	float V;
+	UPROPERTY(EditAnywhere, Category = Triangle)
+		float V;
 };
 
 USTRUCT(BlueprintType)
@@ -120,29 +131,29 @@ struct FProceduralPackMeshTriangle
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, Category=Triangle)
-	FProceduralPackMeshVertex Vertex0;
+		UPROPERTY(EditAnywhere, Category = Triangle)
+		FProceduralPackMeshVertex Vertex0;
 
-	UPROPERTY(EditAnywhere, Category=Triangle)
-	FProceduralPackMeshVertex Vertex1;
+	UPROPERTY(EditAnywhere, Category = Triangle)
+		FProceduralPackMeshVertex Vertex1;
 
-	UPROPERTY(EditAnywhere, Category=Triangle)
-	FProceduralPackMeshVertex Vertex2;
+	UPROPERTY(EditAnywhere, Category = Triangle)
+		FProceduralPackMeshVertex Vertex2;
 };
 
 /** Component that allows you to specify custom triangle mesh geometry */
-UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup=Rendering)
+UCLASS(editinlinenew, meta = (BlueprintSpawnableComponent), ClassGroup = Rendering)
 class UCustomPackProceduralMeshComponent : public UMeshComponent //, public IInterface_CollisionDataProvider
 {
 	GENERATED_UCLASS_BODY()
 
 public:
 
-	void ForceAnUpdate(int render_packet_idx=-1);
+	void ForceAnUpdate(int render_packet_idx = -1, bool markDirty = true);
 
 	/** Description of collision */
-	UPROPERTY(BlueprintReadOnly, Category="Collision")
-	class UBodySetup* ModelBodySetup;
+	UPROPERTY(BlueprintReadOnly, Category = "Collision")
+		class UBodySetup* ModelBodySetup;
 
 	// Begin Interface_CollisionDataProvider Interface
 	/*
@@ -178,6 +189,8 @@ public:
 
 	bool SetProceduralMeshTriData(const FProceduralPackMeshTriData& TriData);
 
+	/** Called to send dynamic data for this component to the rendering thread */
+	virtual void SendRenderDynamicData_Concurrent() override;
 
 protected:
 	FProceduralPackMeshTriData defaultTriData;
@@ -202,6 +215,6 @@ protected:
 		return (FCProceduralPackMeshSceneProxy*)SceneProxy;
 	}
 	bool render_proxy_ready;
-	std::mutex local_lock;
+	FCriticalSection local_lock;
 	bool recreate_render_proxy;
 };

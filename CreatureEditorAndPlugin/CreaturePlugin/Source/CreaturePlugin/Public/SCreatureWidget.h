@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SlateCore.h"
+#include "CoreMinimal.h"
 #include "Slate/SMeshWidget.h"  
 
 class FProceduralMeshTriData;

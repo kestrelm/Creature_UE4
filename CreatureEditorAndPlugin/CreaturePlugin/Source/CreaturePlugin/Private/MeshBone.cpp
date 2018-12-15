@@ -33,8 +33,8 @@
  * RUNTIMES.
  *****************************************************************************/
 
-#include "CreaturePluginPCH.h"
 #include "MeshBone.h"
+#include "CreaturePluginPCH.h"
 #include <math.h>
 #include <Runtime/Core/Public/Async/ParallelFor.h>
 
@@ -625,7 +625,10 @@ meshRenderRegion::meshRenderRegion(glm::uint32 * indices_in,
     tag_id = -1;
 	uv_level = 0;
 	opacity = 100.0f;
-    
+	red = 100.0f;
+	green = 100.0f;
+	blue = 100.0f;
+
     initUvWarp();
 }
 
@@ -982,6 +985,36 @@ float
 meshRenderRegion::getOpacity() const
 {
 	return opacity;
+}
+
+void meshRenderRegion::setRed(float value_in)
+{
+	red = value_in;
+}
+
+float meshRenderRegion::getRed() const
+{
+	return red;
+}
+
+void meshRenderRegion::setGreen(float value_in)
+{
+	green = value_in;
+}
+
+float meshRenderRegion::getGreen() const
+{
+	return green;
+}
+
+void meshRenderRegion::setBlue(float value_in)
+{
+	blue = value_in;
+}
+
+float meshRenderRegion::getBlue() const
+{
+	return blue;
 }
 
 glm::vec2
@@ -2172,6 +2205,9 @@ meshOpacityCacheManager::setValuesAtTime(int32 time_in,
 	for (auto cur_iter : regions_map) {
 		meshOpacityCache new_data(cur_iter.Value->getName());
 		new_data.setOpacity(cur_iter.Value->getOpacity());
+		new_data.setRed(cur_iter.Value->getRed());
+		new_data.setGreen(cur_iter.Value->getGreen());
+		new_data.setBlue(cur_iter.Value->getBlue());
 
 		cache_list.Add(new_data);
 	}
@@ -2208,6 +2244,9 @@ meshOpacityCacheManager::retrieveValuesAtTime(float time_in,
 		meshRenderRegion * set_region = regions_map[cur_key];
 		float final_opacity = base_data.getOpacity();
 		set_region->setOpacity(final_opacity);
+		set_region->setRed(base_data.getRed());
+		set_region->setGreen(base_data.getGreen());
+		set_region->setBlue(base_data.getBlue());
 	}
 }
 
