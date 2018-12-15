@@ -9,7 +9,7 @@ FCreatureAnimStoreEditorViewportClient::FCreatureAnimStoreEditorViewportClient(c
 {
 	OwnerScene = MakeShareable(new FAdvancedPreviewScene(FPreviewScene::ConstructionValues()));
 	OwnerScene->SetFloorOffset(500);
-	FEditorViewportClient::FEditorViewportClient(nullptr, (OwnerScene.Get()), InEditorViewportWidget);
+	PreviewScene = OwnerScene.Get();
 	EditingStore=EditingAnimStore;
 	PreviewScene = (OwnerScene.Get());
 	((FAssetEditorModeManager*)ModeTools)->SetPreviewScene(PreviewScene);
