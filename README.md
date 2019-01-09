@@ -100,3 +100,10 @@ Please head over the [CreatureDemos](https://github.com/kestrelm/CreatureDemos) 
 - If the compiler complains about errors having to do with miniz, #define the **CREATURE_NO_USE_ZIP** preprocessor definition in your build.
 
 - If the compiler complains about errors having to do with exceptions ( or disallows exceptions in your environment ), #define the **CREATURE_NO_USE_EXCEPTIONS** preprocessor definition in your build.
+
+
+### Support for PaperZD
+
+[**PaperZD**](https://www.unrealengine.com/marketplace/paperzd) now supports Creature in UE4. ZetaD is response to Paper2D lack of animation support, allowing users to create their own AnimBP just as on 3D and be able to use them to drive the animation states or events in a easy and visual way.
+
+You can get the version of Creature that works with **PaperZD** [here](https://github.com/heavybullets/CreatureForPaperZD)
