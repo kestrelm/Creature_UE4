@@ -840,7 +840,14 @@ void UCreatureMeshComponent::DoCreatureMeshUpdate(int render_packet_idx, bool ma
 	FCProceduralMeshSceneProxy *localRenderProxy = GetLocalRenderProxy();
 	if (localRenderProxy)
 	{
-		int32 draw_indices_num = creature_core.shouldSkinSwap() ? creature_core.GetRealTotalIndicesNum() : -1;
+		if (creature_core.HasMeshModifier())
+		{
+			// Update mesh using modifier
+			creature_core.UpdateMeshModifier();
+		}
+
+		bool has_dynamic_indices = (creature_core.shouldSkinSwap() || creature_core.HasMeshModifier());
+		int32 draw_indices_num = has_dynamic_indices ? creature_core.GetRealTotalIndicesNum() : -1;
 		localRenderProxy->SetNeedsIndexUpdate(creature_core.should_update_render_indices, draw_indices_num);
 	}
 

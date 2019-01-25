@@ -15,6 +15,7 @@ DECLARE_CYCLE_STAT(TEXT("CreatureCore_SetActiveAnimation"), STAT_CreatureCore_Se
 static TMap<FName, TSharedPtr<CreatureModule::CreatureAnimation> > global_animations;
 static TMap<FName, TSharedPtr<CreatureModule::CreatureLoadDataPacket> > global_load_data_packets;
 
+// Misc Functions
 static FName GetAnimationToken(const FName& filename_in, const FName& name_in)
 {
 	return FName(*FString::Printf(TEXT("%s_%s"), *filename_in.ToString(), *name_in.ToString()));
@@ -31,6 +32,37 @@ std::string ConvertToString(FName name)
 	return t;
 }
 
+// CreatureMeshDataModifier
+CreatureMeshDataModifier::CreatureMeshDataModifier(int32 num_indices, int32 num_pts)
+{
+	m_indices.SetNum(num_indices);
+	m_pts.SetNum(num_pts * 3);
+	m_uvs.SetNum(num_pts * 2);
+	m_colors.SetNum(num_pts);
+}
+
+void CreatureMeshDataModifier::initData(CreatureCore& core_in)
+{
+	if (m_initCB)
+	{
+		m_initCB(*this, core_in);
+	}
+}
+
+void CreatureMeshDataModifier::update(CreatureCore& core_in)
+{
+	if (m_updateCB)
+	{
+		m_updateCB(*this, core_in);
+	}
+}
+
+int CreatureMeshDataModifier::numPoints() const
+{
+	return m_pts.Num() / 3;
+}
+
+// CreatureCore
 CreatureCore::CreatureCore()
 {
 	pJsonData = nullptr;
@@ -108,12 +140,12 @@ CreatureCore::GetProcMeshData(EWorldType::Type world_type)
 	auto cur_creature = creature_manager->GetCreature();
 	int32 num_points = cur_creature->GetTotalNumPoints();
 	int32 num_indices = cur_creature->GetTotalNumIndices();
-	glm::uint32 * cur_idx = cur_creature->GetGlobalIndices();
+	glm::uint32 * cur_indices = cur_creature->GetGlobalIndices();
 	glm::float32 * cur_pts = cur_creature->GetRenderPts();
 	glm::float32 * cur_uvs = cur_creature->GetGlobalUvs();
 
 	glm::uint32 * copy_indices = GetIndicesCopy(num_indices);
-	std::memcpy(copy_indices, cur_idx, sizeof(glm::uint32) * num_indices);
+	std::memcpy(copy_indices, cur_indices, sizeof(glm::uint32) * num_indices);
 
 	if (region_colors.Num() != num_points)
 	{
@@ -127,11 +159,34 @@ CreatureCore::GetProcMeshData(EWorldType::Type world_type)
 			region_colors[i] = FColor(255, 255, 255, 255);
 		}
 	}
+	
+	// Determine actual points, uvs and indices to set for the render mesh
+	glm::uint32 * actual_indices = copy_indices;
+	glm::float32 * actual_pts = cur_pts;
+	glm::float32 * actual_uvs = cur_uvs;
+	int32 actual_num_points = num_points;
+	int32 actual_num_indices = num_indices;
+	TArray<FColor> * actual_region_colors = &region_colors;
 
-	FProceduralMeshTriData ret_data(copy_indices,
-		cur_pts, cur_uvs,
-		num_points, num_indices,
-		&region_colors,
+	if (mesh_modifier.IsValid())
+	{
+		// Use mesh modifier
+		mesh_modifier->initData(*this);
+		actual_indices = mesh_modifier->m_indices.GetData();
+		actual_pts = mesh_modifier->m_pts.GetData();
+		actual_uvs = mesh_modifier->m_uvs.GetData();
+		actual_num_points = mesh_modifier->numPoints();
+		actual_num_indices = mesh_modifier->m_numIndices;
+		actual_region_colors = &(mesh_modifier->m_colors);
+	}
+
+	FProceduralMeshTriData ret_data(
+		actual_indices,
+		actual_pts, 
+		actual_uvs,
+		actual_num_points, 
+		actual_num_indices,
+		actual_region_colors,
 		update_lock);
 
 	return ret_data;
@@ -1083,6 +1138,11 @@ glm::uint32 * CreatureCore::GetIndicesCopy(int init_size)
 
 int32 CreatureCore::GetRealTotalIndicesNum() const
 {
+	if (HasMeshModifier())
+	{
+		return mesh_modifier->m_numIndices;
+	}
+
 	auto cur_creature = creature_manager->GetCreature();
 	int32 num_indices = cur_creature->GetTotalNumIndices();
 
@@ -1098,6 +1158,19 @@ int32 CreatureCore::GetRealTotalIndicesNum() const
 	}
 
 	return num_indices;
+}
+
+bool CreatureCore::HasMeshModifier() const
+{
+	return mesh_modifier.IsValid();
+}
+
+void CreatureCore::UpdateMeshModifier()
+{
+	if (mesh_modifier.IsValid())
+	{
+		mesh_modifier->update(*this);
+	}
 }
 
 std::vector<meshBone *> 

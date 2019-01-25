@@ -4,6 +4,7 @@
 #include "CreatureAnimStateMachineAssetTypeActions.h"
 #include "CreatureAnimationAssetTypeActions.h"
 #include "CreatureMetaAssetTypeActions.h"
+#include "CreatureParticlesAssetTypeActions.h"
 #include "CreatureToolsDetails.h"
 
 #define LOCTEXT_NAMESPACE "CreatureEditor"
@@ -22,6 +23,7 @@ void CreatureEditor::StartupModule()
 	AssetTools.RegisterAssetTypeActions(MakeShareable(new FCreatureAnimStoreAssetTypeActions(CreatureAssetCategoryBit)));
 	AssetTools.RegisterAssetTypeActions(MakeShareable(new FCreatureAnimationAssetTypeActions(CreatureAssetCategoryBit)));
 	AssetTools.RegisterAssetTypeActions(MakeShareable(new FCreatureMetaAssetTypeActions(CreatureAssetCategoryBit)));
+	AssetTools.RegisterAssetTypeActions(MakeShareable(new FCreatureParticlesAssetTypeActions(CreatureAssetCategoryBit)));
 }
 
 void CreatureEditor::ShutdownModule()

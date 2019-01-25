@@ -40,6 +40,7 @@
 #include <Runtime/Engine/Classes/Engine/EngineTypes.h>
 #include <vector>
 #include <memory>
+#include <functional>
 
 // Creature Core is a thin wrapper between the Creature Runtime and any UE4 Creature Object(s)
 // The variables of this class are all made public for easy access since it really just functions as a simple
@@ -59,6 +60,26 @@ struct FCreatureBoneData
 	FTransform startXform;
 	FTransform endXform;
 	FName name;
+};
+
+class CreatureCore;
+class CreatureMeshDataModifier
+{
+public:
+	CreatureMeshDataModifier(int32 num_indices, int32 num_pts);
+
+	void initData(CreatureCore& core_in);
+
+	void update(CreatureCore& core_in);
+
+	int numPoints() const;
+
+	TArray<glm::uint32> m_indices;
+	TArray<glm::float32> m_pts;
+	TArray<glm::float32> m_uvs;
+	TArray<FColor> m_colors;
+	int32 m_numIndices = 0;
+	std::function<void(CreatureMeshDataModifier&, CreatureCore&)> m_initCB, m_updateCB;
 };
 
 class CREATUREPLUGIN_API CreatureCore {
@@ -183,6 +204,10 @@ public:
 
 	int32 GetRealTotalIndicesNum() const;
 
+	bool HasMeshModifier() const;
+
+	void UpdateMeshModifier();
+
 	std::vector<meshBone *> getAllChildrenWithIgnore(const FName& ignore_name, meshBone * base_bone = nullptr);
 
 	void enableSkinSwap(const FString& swap_name_in, bool active);
@@ -217,6 +242,7 @@ public:
 	bool should_update_render_indices;
 	bool run_morph_targets;
 	TSharedPtr<FCriticalSection, ESPMode::ThreadSafe> update_lock;
+	TSharedPtr<CreatureMeshDataModifier> mesh_modifier;
 
 	//////////////////////////////////////////////////////////////////////////
 	//Add by God of Pen
