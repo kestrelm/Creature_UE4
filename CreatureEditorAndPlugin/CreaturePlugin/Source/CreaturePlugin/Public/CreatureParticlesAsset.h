@@ -4,6 +4,8 @@
 #include "Runtime/Core/Public/Templates/UniquePtr.h"
 #include "CreatureParticlesAsset.generated.h"
 
+class CreatureCore;
+
 UCLASS()
 class CREATUREPLUGIN_API UCreatureParticlesAsset :public UObject
 {
@@ -15,7 +17,7 @@ public:
 
 	// Names of all animation clips for this particles asset
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Creature")
-	TArray<FString> animation_clipnames;
+	TArray<FName> animation_clipnames;
 
 protected:
 
@@ -38,14 +40,14 @@ protected:
 	public:
 		int32 base_idx = -1;
 		int32 num_frames;
-		FString name;
+		FName name;
 
 		// <Frame, <layer idx, particlesOffsetsData>>
-		TMap<int, TMap<int, particlesOffsetsData>> particles_lookup;
+		TMap<int32, TMap<int, particlesOffsetsData>> particles_lookup;
 	};
 
 	TUniquePtr<mpMiniLib::msg_mini> m_PackData;
-	TMap<FString, clipOffsetsData> m_ClipDataOffsets;
+	TMap<FName, clipOffsetsData> m_ClipDataOffsets;
 	int32 m_maxParticlesNum = 0;
 	int32 m_maxIndicesNum = 0;
 
@@ -59,11 +61,13 @@ protected:
 
 	int32 getAnimClipsNum(const std::vector<mpMiniLib::msg_mini_generic_data>& pack_objs) const;
 
-	TArray<FString> getAnimClipNames(const std::vector<mpMiniLib::msg_mini_generic_data>& pack_objs) const;
+	TArray<FName> getAnimClipNames(const std::vector<mpMiniLib::msg_mini_generic_data>& pack_objs) const;
 
 public:
 
 	void setData(const TArray<uint8>& data_in);
 
 	mpMiniLib::msg_mini * getPackData();
+
+	void setupMeshModifier(CreatureCore& core_in);
 };

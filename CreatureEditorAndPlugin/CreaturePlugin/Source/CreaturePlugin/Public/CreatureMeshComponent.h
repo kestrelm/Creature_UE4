@@ -33,9 +33,7 @@
 * RUNTIMES.
 *****************************************************************************/
 
-// This is the Mesh Component version of the Creature Runtime. You can use this class if you want to add the Creature Runtime as a 
-// mesh component instead of a regular CreatureActor object.
-
+// This is the Mesh Component version of the Creature Runtime.
 #pragma once
 
 #include <vector>
@@ -44,6 +42,7 @@
 #include "Components/MeshComponent.h"
 #include "CreatureAnimationAsset.h"
 #include "CreatureMetaAsset.h"
+#include "CreatureParticlesAsset.h"
 #include "CreatureCore.h"
 #include "Async/Future.h"
 #include "CreatureMeshComponent.generated.h"
@@ -317,7 +316,11 @@ public:
 	/** Points to a Creature Meta Asset containing the JSON of the mdata file exported out from Creature. This file contains extra data like animation data for region ordering for example. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
 	UCreatureMetaAsset * creature_meta_asset;
-	
+
+	/** Points to a Creature Particles Asset containing exported Particles authored with the Flow System in Creature*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components|Creature")
+	UCreatureParticlesAsset * creature_particles_asset;
+
 	/** Playback speed of the animation, 2.0 is the default */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components|Creature")
 	float animation_speed;
@@ -756,6 +759,8 @@ protected:
 	void LoadAnimationFromStore();
 
 	void TryCreateBendPhysics();
+
+	void TryEnableParticles();
 
 	// future used for async creature processing
 	TFuture<bool> creatureTickResult;

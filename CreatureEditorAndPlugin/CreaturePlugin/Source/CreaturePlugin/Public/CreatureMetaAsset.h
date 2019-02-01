@@ -284,6 +284,14 @@ public:
 		}
 	};
 	MorphData morph_data;
+
+	struct UVData
+	{
+		int32 tag_id;
+		FVector2D uv0, uv1;
+	};
+
+	TMap<int32, UVData> uvs_data;
 };
 
 class CreaturePhysicsData

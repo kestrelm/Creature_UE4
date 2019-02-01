@@ -176,7 +176,7 @@ CreatureCore::GetProcMeshData(EWorldType::Type world_type)
 		actual_pts = mesh_modifier->m_pts.GetData();
 		actual_uvs = mesh_modifier->m_uvs.GetData();
 		actual_num_points = mesh_modifier->numPoints();
-		actual_num_indices = mesh_modifier->m_numIndices;
+		actual_num_indices = mesh_modifier->m_maxIndice;
 		actual_region_colors = &(mesh_modifier->m_colors);
 	}
 
@@ -1138,7 +1138,7 @@ glm::uint32 * CreatureCore::GetIndicesCopy(int init_size)
 
 int32 CreatureCore::GetRealTotalIndicesNum() const
 {
-	if (HasMeshModifier())
+	if (HasMeshModifier() && mesh_modifier->m_isValid)
 	{
 		return mesh_modifier->m_numIndices;
 	}
@@ -1163,6 +1163,11 @@ int32 CreatureCore::GetRealTotalIndicesNum() const
 bool CreatureCore::HasMeshModifier() const
 {
 	return mesh_modifier.IsValid();
+}
+
+void CreatureCore::ClearMeshModifier()
+{
+	mesh_modifier.Reset();
 }
 
 void CreatureCore::UpdateMeshModifier()

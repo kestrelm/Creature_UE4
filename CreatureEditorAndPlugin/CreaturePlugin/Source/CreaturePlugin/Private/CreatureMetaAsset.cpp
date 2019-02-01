@@ -1000,6 +1000,28 @@ UCreatureMetaAsset::BuildMetaData()
 			}
 		}
 	}
+
+	// Fill UVs
+	meta_data.uvs_data.Empty();
+	if (jsonObject->HasField(TEXT("UVsData")))
+	{
+		const auto& uvs_node = jsonObject->GetArrayField(TEXT("UVsData"));
+		for (const auto& cur_data : uvs_node)
+		{
+			CreatureMetaData::UVData new_uvs;
+			const auto& c_obj = cur_data->AsObject();
+			int c_tag_id = c_obj->GetIntegerField("tag_id");
+			new_uvs.tag_id = c_tag_id;
+
+			const auto& c_uv0 = c_obj->GetArrayField("uv0");
+			const auto& c_uv1 = c_obj->GetArrayField("uv1");
+			
+			new_uvs.uv0 = FVector2D(static_cast<float>(c_uv0[0]->AsNumber()), 1.0f - static_cast<float>(c_uv0[1]->AsNumber()));
+			new_uvs.uv1 = FVector2D(static_cast<float>(c_uv1[0]->AsNumber()), 1.0f - static_cast<float>(c_uv1[1]->AsNumber()));
+
+			meta_data.uvs_data.Add(c_tag_id, new_uvs);
+		}
+	}
 }
 
 TSharedPtr<CreaturePhysicsData>

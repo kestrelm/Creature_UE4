@@ -79,7 +79,9 @@ public:
 	TArray<glm::float32> m_uvs;
 	TArray<FColor> m_colors;
 	int32 m_numIndices = 0;
+	int32 m_maxIndice = -1;
 	std::function<void(CreatureMeshDataModifier&, CreatureCore&)> m_initCB, m_updateCB;
+	bool m_isValid = false;
 };
 
 class CREATUREPLUGIN_API CreatureCore {
@@ -205,6 +207,8 @@ public:
 	int32 GetRealTotalIndicesNum() const;
 
 	bool HasMeshModifier() const;
+
+	void ClearMeshModifier();
 
 	void UpdateMeshModifier();
 

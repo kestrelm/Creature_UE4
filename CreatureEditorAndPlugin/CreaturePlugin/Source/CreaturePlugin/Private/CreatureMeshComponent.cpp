@@ -563,6 +563,13 @@ void UCreatureMeshComponent::UpdateCoreValues()
 void UCreatureMeshComponent::PrepareRenderData(CreatureCore &forCore)
 {
 	RecreateRenderProxy(true);
+
+	GetCore().ClearMeshModifier();
+	if (creature_particles_asset)
+	{
+		TryEnableParticles();
+	}
+
 	SetProceduralMeshTriData(forCore.GetProcMeshData(GetWorld()->WorldType));
 }
 
@@ -1817,6 +1824,15 @@ void UCreatureMeshComponent::ProcessFrameCallbacks()
 				CreatureRepeatFrameCallbackEvent.Broadcast(frame_callback.name);
 			}
 		}
+	}
+}
+
+void UCreatureMeshComponent::TryEnableParticles()
+{
+	if ((GetWorld()->WorldType != EWorldType::Type::Editor) &&
+		(GetWorld()->WorldType != EWorldType::Type::EditorPreview))
+	{
+		creature_particles_asset->setupMeshModifier(GetCore());
 	}
 }
 
