@@ -30,6 +30,8 @@ For more information on how to use the runtimes, please head over to this [site]
 
 - **UMG Slate UI Support** Render and display your Creature Character Animations together with UE4's powerful UMG Slate UI Widget Framework
 
+- **Flow Particle Effects Support** Playback Particle Animations authored by the Creature Flow FX system Flipbook style
+
 ### Sample Creature Character Animation Files
 
 You can find a list of different character JSONs and their associated PNG texture/character atlases to test out the runtime [here](https://github.com/kestrelm/Creature_UE4/tree/master/CharacterSamples).
