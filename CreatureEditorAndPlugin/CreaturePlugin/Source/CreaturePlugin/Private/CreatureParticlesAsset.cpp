@@ -287,7 +287,7 @@ void UCreatureParticlesAsset::setupMeshModifier(CreatureCore & core_in)
 				// Set base region z
 				for (int32 i = 0; i < cur_region->getNumIndices(); i++)
 				{
-					modifier_in.m_pts[i * 3 + 2] = region_z;
+					modifier_in.m_pts[cur_region->getIndices()[i] * 3 + 2] = region_z;
 				}
 
 				int32 layer_idx = cur_region->getTagId();
