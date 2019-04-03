@@ -2,12 +2,12 @@
 #include "CreaturePackRuntimePlugin.h"
 #include "CreaturePackMeshComponent.h"
 
-void CreaturePackPlugin::StartupModule()
+void CreaturePackRuntimePlugin::StartupModule()
 {
 }
 
-void CreaturePackPlugin::ShutdownModule()
+void CreaturePackRuntimePlugin::ShutdownModule()
 {
 }
 
-IMPLEMENT_MODULE(CreaturePackPlugin, CreaturePackPlugin)
+IMPLEMENT_MODULE(CreaturePackRuntimePlugin, CreaturePackRuntimePlugin)

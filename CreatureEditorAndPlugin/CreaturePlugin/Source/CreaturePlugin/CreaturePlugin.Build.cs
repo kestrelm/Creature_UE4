@@ -42,7 +42,7 @@ namespace UnrealBuildTool.Rules
 
             PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG", "Slate", "SlateCore" });
 
-            PrivateDependencyModuleNames.AddRange(new string[] { "RHI", "RenderCore", "ShaderCore", "Json", "JsonUtilities" });
+            PrivateDependencyModuleNames.AddRange(new string[] { "RHI", "RenderCore", "Json", "JsonUtilities" });
 
             LoadCreatureLib(Target);
         }

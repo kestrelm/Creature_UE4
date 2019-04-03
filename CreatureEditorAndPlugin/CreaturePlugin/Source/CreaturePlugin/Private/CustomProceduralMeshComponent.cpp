@@ -539,8 +539,10 @@ void FCProceduralMeshSceneProxy::AddRenderPacket(FProceduralMeshTriData * target
 
 	//FProceduralMeshRenderPacket new_packet(featureLevel);
 	//FProceduralMeshRenderPacket& cur_packet = renderPackets.Add_GetRef(new_packet);
-
-	auto packetPtr = new(renderPackets) FProceduralMeshRenderPacket(targetTrisIn, featureLevel);
+    
+	//auto packetPtr = new(renderPackets) FProceduralMeshRenderPacket(targetTrisIn, featureLevel);
+    renderPackets.Add(new FProceduralMeshRenderPacket(targetTrisIn, featureLevel));
+    auto packetPtr = &renderPackets.Last();
 	auto &cur_packet = *packetPtr;
 
 	auto& IndexBuffer = cur_packet.IndexBuffer;
@@ -706,25 +708,7 @@ void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScen
 		return;
 	}
 			
-	const bool bWireframe = AllowDebugViewmodes() && ViewFamily.EngineShowFlags.Wireframe;
-
-	auto WireframeMaterialInstance = new FColoredMaterialRenderProxy(
-		GEngine->WireframeMaterial ? GEngine->WireframeMaterial->GetRenderProxy(IsSelected()) : NULL,
-		FLinearColor(0, 0.5f, 1.f)
-		);
-
-	Collector.RegisterOneFrameMaterialProxy(WireframeMaterialInstance);
-
-	FMaterialRenderProxy* MaterialProxy = NULL;
-	if (bWireframe)
-	{
-		MaterialProxy = WireframeMaterialInstance;
-	}
-	else
-	{
-		MaterialProxy = Material->GetRenderProxy(IsSelected());
-	}
-
+	FMaterialRenderProxy* MaterialProxy = Material->GetRenderProxy();
 	for (int32 ViewIndex = 0; ViewIndex < Views.Num(); ViewIndex++)
 	{
 		if (VisibilityMap & (1 << ViewIndex))
@@ -735,10 +719,10 @@ void FCProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const FScen
 			FMeshBatch& Mesh = Collector.AllocateMesh();
 			FMeshBatchElement& BatchElement = Mesh.Elements[0];
 			BatchElement.IndexBuffer = &IndexBuffer;
-			Mesh.bWireframe = bWireframe;
+			Mesh.bWireframe = false;
 			Mesh.VertexFactory = &VertexFactory;
 			Mesh.MaterialRenderProxy = MaterialProxy;
-			BatchElement.PrimitiveUniformBuffer = CreatePrimitiveUniformBufferImmediate(GetLocalToWorld(), GetBounds(), GetLocalBounds(), true, UseEditorDepthTest());
+			BatchElement.PrimitiveUniformBuffer = nullptr;
 			BatchElement.FirstIndex = 0;
 			BatchElement.NumPrimitives = cur_packet.real_indices_num / 3;
 			BatchElement.MinVertexIndex = 0;
@@ -823,12 +807,12 @@ void UCustomProceduralMeshComponent::SendRenderDynamicData_Concurrent()
 	if (proxy)
 	{
 		// Enqueue command to send to render thread
-		ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(
-			FSendCreatureDynamicData,
-			FCProceduralMeshSceneProxy*, sceneProxy, proxy,
-			{
-				sceneProxy->SetDynamicData_RenderThread();
-			});
+        FCProceduralMeshSceneProxy* sceneProxy = proxy;
+        ENQUEUE_RENDER_COMMAND(FSendCreatureDynamicData)(
+            [sceneProxy](FRHICommandListImmediate& RHICmdList)
+        {
+            sceneProxy->SetDynamicData_RenderThread();
+        });
 	}
 }
 

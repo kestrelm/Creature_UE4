@@ -25,7 +25,7 @@ namespace UnrealBuildTool.Rules
 
             PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
 
-            PrivateDependencyModuleNames.AddRange(new string[] { "RHI", "RenderCore", "ShaderCore" });
+            PrivateDependencyModuleNames.AddRange(new string[] { "RHI", "RenderCore" });
         }
     }
 }

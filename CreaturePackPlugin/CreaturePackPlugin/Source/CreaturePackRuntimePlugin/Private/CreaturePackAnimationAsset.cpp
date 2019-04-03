@@ -31,7 +31,7 @@ TArray<uint8>& UCreaturePackAnimationAsset::GetFileData()
 	if (CreatureFileData.Num() == 0)
 	{
 		FArchiveLoadCompressedProxy Decompressor =
-			FArchiveLoadCompressedProxy(CreatureZipBinary, ECompressionFlags::COMPRESS_ZLIB);
+			FArchiveLoadCompressedProxy(CreatureZipBinary, NAME_Zlib, ECompressionFlags::COMPRESS_ZLIB);
 
 		if (Decompressor.IsError() || (CreatureZipBinary.Num() == 0))
 		{

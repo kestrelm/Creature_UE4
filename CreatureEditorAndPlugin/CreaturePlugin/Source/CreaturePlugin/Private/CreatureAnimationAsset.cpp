@@ -58,7 +58,7 @@ FString& UCreatureAnimationAsset::GetJsonString()
 		if (CreatureFileJSonData.IsEmpty())
 		{
 			FArchiveLoadCompressedProxy Decompressor =
-				FArchiveLoadCompressedProxy(CreatureZipBinary, ECompressionFlags::COMPRESS_ZLIB);
+				FArchiveLoadCompressedProxy(CreatureZipBinary, NAME_Zlib, ECompressionFlags::COMPRESS_ZLIB);
 
 			if (Decompressor.IsError() || (CreatureZipBinary.Num() == 0))
 			{
