@@ -126,7 +126,8 @@ CreatureCore::GetAndClearShouldAnimEnd()
 FProceduralMeshTriData 
 CreatureCore::GetProcMeshData(EWorldType::Type world_type)
 {
-	if (!is_animation_loaded)
+	auto cur_creature = creature_manager->GetCreature();
+	if ((is_animation_loaded == false) || (cur_creature == nullptr))
 	{
 		FProceduralMeshTriData ret_data(nullptr,
 			nullptr, nullptr,
@@ -137,7 +138,6 @@ CreatureCore::GetProcMeshData(EWorldType::Type world_type)
 		return ret_data;
 	}
 
-	auto cur_creature = creature_manager->GetCreature();
 	int32 num_points = cur_creature->GetTotalNumPoints();
 	int32 num_indices = cur_creature->GetTotalNumIndices();
 	glm::uint32 * cur_indices = cur_creature->GetGlobalIndices();
