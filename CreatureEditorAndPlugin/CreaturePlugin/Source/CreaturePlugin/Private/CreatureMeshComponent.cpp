@@ -618,11 +618,14 @@ void UCreatureMeshComponent::RunTick(float DeltaTime)
 	if (run_task_multicore) {
 		// Make sure this only runs for characters that will not be removed from the scene
 		// otherwise it might not be safe
-		creatureTickResult = Async<bool>(EAsyncExecution::TaskGraph, [this, DeltaTime]()
+
+		TFunction<bool()> aTask = [this, DeltaTime]() -> bool
 		{
 			SCOPE_CYCLE_COUNTER(STAT_CreatureMesh_Tick_Async);
 			return RunTickProcessing(DeltaTime, false);
-		});
+		};
+
+		creatureTickResult = Async(EAsyncExecution::TaskGraph, aTask);
 	}
 	else {
 		auto can_tick = RunTickProcessing(DeltaTime, true);
