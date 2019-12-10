@@ -942,7 +942,7 @@ UCreatureMeshComponent::GetCollectionDataFromClip(FCreatureMeshCollectionClip * 
 
 bool UCreatureMeshComponent::ShouldSkipTick() const
 {
-	return (GetOwner() && GetOwner()->bHidden) || bHiddenInGame || completely_disable || !bVisible;
+	return (GetOwner() && GetOwner()->IsHidden()) || bHiddenInGame || completely_disable || !IsVisible();
 }
 
 void UCreatureMeshComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)

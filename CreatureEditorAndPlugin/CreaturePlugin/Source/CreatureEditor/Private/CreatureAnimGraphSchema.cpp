@@ -89,13 +89,9 @@ EGraphType UCreatureAnimGraphSchema::GetGraphType(const UEdGraph* TestEdGraph) c
 	return GT_StateMachine;
 }
 
-void UCreatureAnimGraphSchema::GetContextMenuActions(const UEdGraph* CurrentGraph, const UEdGraphNode* InGraphNode, const UEdGraphPin* InGraphPin, FMenuBuilder* MenuBuilder, bool bIsDebugging) const
+void UCreatureAnimGraphSchema::GetContextMenuActions(class UToolMenu* Menu, class UGraphNodeContextMenuContext* Context) const
 {
-	
-	MenuBuilder->AddMenuEntry(FGenericCommands::Get().Delete);
-	MenuBuilder->AddMenuEntry(FGenericCommands::Get().Rename);
-	
-	Super::GetContextMenuActions(CurrentGraph, InGraphNode, InGraphPin, MenuBuilder, bIsDebugging);
+	Super::GetContextMenuActions(Menu, Context);
 }
 
 FLinearColor UCreatureAnimGraphSchema::GetPinTypeColor(const FEdGraphPinType& PinType) const

@@ -267,7 +267,7 @@ void ACreatureActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime); // Call parent class tick function  
 	UpdateCoreValues();
 
-	if (bHidden)
+	if (IsHidden())
 	{
 		return;
 	}
