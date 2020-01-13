@@ -97,12 +97,9 @@ int32 SCreatureWidget::OnPaint(
 	auto can_draw = render_brush && (render_data.VertexData.Num() > 0) && (render_data.IndexData.Num() > 0);
 	if (can_draw)
 	{
-		FSlateBrush * MyBrush = render_brush;
-		// Possible regression bug in UE4.24, the line below no longer compiles. However the definition for FSlateDataPayload::ResourceManager does exist in the Master branch
-		//FSlateShaderResourceProxy* ResourceProxy =  FSlateDataPayload::ResourceManager->GetShaderResource(*MyBrush);
-		FSlateResourceHandle Handle = FSlateApplication::Get().GetRenderer()->GetResourceHandle(*MyBrush);
-
-		//if (ResourceProxy) {
+		FSlateResourceHandle Handle = FSlateApplication::Get().GetRenderer()->GetResourceHandle(*render_brush);
+		const FSlateShaderResourceProxy * ResourceProxy = Handle.GetResourceProxy();
+		if (ResourceProxy) {
 			FSlateDrawElement::MakeCustomVerts(
 				OutDrawElements,
 				LayerId,
@@ -112,7 +109,7 @@ int32 SCreatureWidget::OnPaint(
 				nullptr,
 				0,
 				0);
-		//}
+		}
 	}
 
     return LayerId;
