@@ -36,6 +36,11 @@ void SCreatureWidget::UpdateMesh(const FVector2D& translation, const FVector2D& 
 		return;
 	}
 
+	if (creature_core->creature_manager == nullptr)
+	{
+		return;
+	}
+
 	auto proc_mesh = creature_core->GetProcMeshData(world_type);
 	creature_core->UpdateCreatureRender();
 
