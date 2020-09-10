@@ -27,7 +27,7 @@ public:
 
 	void SetWorldType(EWorldType::Type world_type_in)
 	{
-		world_type = world_type;
+		world_type = world_type_in;
 	}
 
 	void SetBrush(FSlateBrush * render_brush_in);
