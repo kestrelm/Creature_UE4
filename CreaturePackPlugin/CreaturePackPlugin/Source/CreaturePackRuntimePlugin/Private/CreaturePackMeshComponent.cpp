@@ -121,7 +121,7 @@ void UCreaturePackMeshComponent::TickComponent(float DeltaTime, ELevelTick TickT
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if ((GetOwner() && GetOwner()->bHidden) || bHiddenInGame)
+	if ((GetOwner() && GetOwner()->IsHidden()) || bHiddenInGame)
 	{
 		return;
 	}
