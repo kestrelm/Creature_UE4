@@ -8,6 +8,14 @@ Trailer Video for the plugin is [**here**](https://youtu.be/S01sZY8mTz4).
 
 For more information on how to use the runtimes, please head over to this [site](http://www.kestrelmoon.com/creaturedocs/Game_Engine_Runtimes_And_Integration/Unreal_Engine_C++_Runtimes.html)
 
+## Attention! For UE4 Users
+
+There is the **UE4 branch** which you should check out to use the stable UE4 version.
+
+## For UE5 Users
+
+The version in **Master** is for UE5 and will be ongoing development. If you want a stable version of the plugin, use the **UE4** version located in the **UE4** branch.
+
 ### Features of the Creature UE4 Runtime
 
 - **High Performance with Multi-core Optimizations** Thanks to the amazing work of [Eyesiah](https://github.com/Eyesiah), the High Performance Creature UE4 runtime distributes animation + pose computation workloads on multi-core platforms

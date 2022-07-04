@@ -12,7 +12,7 @@ FCreatureAnimStoreEditorViewportClient::FCreatureAnimStoreEditorViewportClient(c
 	PreviewScene = OwnerScene.Get();
 	EditingStore=EditingAnimStore;
 	PreviewScene = (OwnerScene.Get());
-	((FAssetEditorModeManager*)ModeTools)->SetPreviewScene(PreviewScene);
+	//((FAssetEditorModeManager*)ModeTools)->SetPreviewScene(PreviewScene);
 	DrawHelper.bDrawGrid = true;
 	DrawHelper.bDrawPivot = true;
 	

@@ -911,8 +911,8 @@ UCreatureMetaAsset::BuildMetaData()
 					auto bounds_size = meta_data.morph_data.bounds_max - meta_data.morph_data.bounds_min;
 					auto& cur_pt = cur_clip.Get<1>();
 					cur_pt = (cur_pt - meta_data.morph_data.bounds_min) / bounds_size * (float)(meta_data.morph_data.morph_res - 1);
-					cur_pt.X = std::min(std::max(0.0f, cur_pt.X), (float)(meta_data.morph_data.morph_res - 1));
-					cur_pt.Y = std::min(std::max(0.0f, cur_pt.Y), (float)(meta_data.morph_data.morph_res - 1));
+					cur_pt.X = std::min(std::max<float>(0.0f, cur_pt.X), (float)(meta_data.morph_data.morph_res - 1));
+					cur_pt.Y = std::min(std::max<float>(0.0f, cur_pt.Y), (float)(meta_data.morph_data.morph_res - 1));
 				}
 			}
 

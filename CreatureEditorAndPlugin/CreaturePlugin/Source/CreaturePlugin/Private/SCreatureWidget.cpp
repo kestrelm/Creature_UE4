@@ -72,7 +72,7 @@ void SCreatureWidget::UpdateMesh(const FVector2D& translation, const FVector2D& 
 		new_vert.Position.Y = proc_mesh.points[i * 3 + 1];
 		new_vert.Position.X *= mesh_scale.X * local_scale.X;
 		new_vert.Position.Y *= -mesh_scale.Y * local_scale.Y;
-		new_vert.Position += translation;
+		new_vert.Position += FVector2f(translation);
 
 		new_vert.Color = (*proc_mesh.region_colors)[i];
 
@@ -97,7 +97,7 @@ int32 SCreatureWidget::OnPaint(
     bool bParentEnabled) const
 {
 	const_cast<SCreatureWidget *>(this)->UpdateMesh(
-		AllottedGeometry.AbsolutePosition + (AllottedGeometry.GetAbsoluteSize() * 0.5f),
+		FVector2d(AllottedGeometry.AbsolutePosition) + (AllottedGeometry.GetAbsoluteSize() * 0.5f),
 		AllottedGeometry.GetAbsoluteSize() * 0.02f);
 	auto can_draw = render_brush && (render_data.VertexData.Num() > 0) && (render_data.IndexData.Num() > 0);
 	if (can_draw)

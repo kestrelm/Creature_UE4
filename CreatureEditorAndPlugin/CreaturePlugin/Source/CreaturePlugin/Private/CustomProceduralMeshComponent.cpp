@@ -30,7 +30,7 @@ static FVertexBufferRHIRef AllocVertexBuffer(uint32 Stride, uint32 NumElements)
 {
 	FVertexBufferRHIRef VertexBufferRHI;
 	uint32 SizeInBytes = NumElements * Stride;
-	FRHIResourceCreateInfo CreateInfo;
+	FRHIResourceCreateInfo CreateInfo(TEXT("CREATURE_VERT_ALLOC"));
 	VertexBufferRHI = RHICreateVertexBuffer(SizeInBytes, BUF_Volatile | BUF_ShaderResource, CreateInfo);
 
 	return VertexBufferRHI;
@@ -68,7 +68,7 @@ public:
 	// FRenderResource interface.
 	virtual void InitRHI() override
 	{
-		uint32 TextureStride = sizeof(FVector2D);
+		uint32 TextureStride = sizeof(FVector2f);
 		EPixelFormat TextureFormat = PF_G32R32F;
 
 		if (Use16bitTexCoord)
@@ -79,7 +79,7 @@ public:
 
 		if (!buffersAllocated)
 	{
-			PositionBuffer.VertexBufferRHI = AllocVertexBuffer(sizeof(FVector), Vertices.Num());
+			PositionBuffer.VertexBufferRHI = AllocVertexBuffer(sizeof(FVector3f), Vertices.Num());
 			TangentBuffer.VertexBufferRHI = AllocVertexBuffer(sizeof(FPackedNormal), 2 * Vertices.Num());
 			TexCoordBuffer.VertexBufferRHI = AllocVertexBuffer(TextureStride, NumTexCoords * Vertices.Num());
 			ColorBuffer.VertexBufferRHI = AllocVertexBuffer(sizeof(FColor), Vertices.Num());
@@ -92,17 +92,18 @@ public:
 	}
 
 		void* TexCoordBufferData = RHILockVertexBuffer(TexCoordBuffer.VertexBufferRHI, 0, NumTexCoords * TextureStride * Vertices.Num(), RLM_WriteOnly);
-		FVector2D* TexCoordBufferData32 = !Use16bitTexCoord ? static_cast<FVector2D*>(TexCoordBufferData) : nullptr;
+		FVector2f* TexCoordBufferData32 = !Use16bitTexCoord ? static_cast<FVector2f*>(TexCoordBufferData) : nullptr;
 		FVector2DHalf* TexCoordBufferData16 = Use16bitTexCoord ? static_cast<FVector2DHalf*>(TexCoordBufferData) : nullptr;
 
 		// Copy the vertex data into the vertex buffers.
-		FVector* PositionBufferData			= static_cast<FVector*>(RHILockVertexBuffer(PositionBuffer.VertexBufferRHI, 0, sizeof(FVector) * Vertices.Num(), RLM_WriteOnly));
+		FVector3f* PositionBufferData			= static_cast<FVector3f*>(RHILockVertexBuffer(PositionBuffer.VertexBufferRHI, 0, sizeof(FVector3f) * Vertices.Num(), RLM_WriteOnly));
 		FPackedNormal* TangentBufferData	= static_cast<FPackedNormal*>(RHILockVertexBuffer(TangentBuffer.VertexBufferRHI, 0, 2 * sizeof(FPackedNormal) * Vertices.Num(), RLM_WriteOnly));	
 		FColor* ColorBufferData				= static_cast<FColor*>(RHILockVertexBuffer(ColorBuffer.VertexBufferRHI, 0, sizeof(FColor) * Vertices.Num(), RLM_WriteOnly));
 
 		for (int32 i = 0; i < Vertices.Num(); i++)
 		{
-			PositionBufferData[i] = Vertices[i].Position;
+			auto& cVert = Vertices[i];
+			PositionBufferData[i] = cVert.Position;
 			TangentBufferData[2 * i + 0] = Vertices[i].TangentX;
 			TangentBufferData[2 * i + 1] = Vertices[i].TangentZ;
 			ColorBufferData[i] = Vertices[i].Color;
@@ -115,7 +116,7 @@ public:
 				}
 				else
 				{
-					TexCoordBufferData32[NumTexCoords * i + j] = Vertices[i].TextureCoordinate[j];
+					TexCoordBufferData32[NumTexCoords * i + j] = FVector2f(Vertices[i].TextureCoordinate[j]);
 				}
 			}
 		}
@@ -189,20 +190,20 @@ private:
 class FProceduralMeshIndexBuffer : public FIndexBuffer
 {
 public:
-	TArray<int32> Indices;
+	TArray<uint32> Indices;
 
 	virtual void InitRHI() override
 	{
-		FRHIResourceCreateInfo CreateInfo;
-		IndexBufferRHI = RHICreateIndexBuffer(sizeof(int32), Indices.Num() * sizeof(int32), BUF_Dynamic, CreateInfo);
+		FRHIResourceCreateInfo CreateInfo(TEXT("CREATURE_PROC_RHI"));
+		IndexBufferRHI = RHICreateIndexBuffer(sizeof(uint32), Indices.Num() * sizeof(uint32), BUF_Dynamic, CreateInfo);
 		UpdateRenderData();
 	}
 
 	void UpdateRenderData() const
 	{
 		// Copy the index data into the indices buffer
-		void* Buffer = RHILockIndexBuffer(IndexBufferRHI, 0, Indices.Num() * sizeof(int32), RLM_WriteOnly);
-		FMemory::Memcpy(Buffer, Indices.GetData(), Indices.Num() * sizeof(int32));
+		void* Buffer = RHILockIndexBuffer(IndexBufferRHI, 0, Indices.Num() * sizeof(uint32), RLM_WriteOnly);
+		FMemory::Memcpy(Buffer, Indices.GetData(), Indices.Num() * sizeof(uint32));
 		RHIUnlockIndexBuffer(IndexBufferRHI);
 	}
 };
@@ -226,7 +227,7 @@ public:
 			Data.PositionComponent = FVertexStreamComponent(
 				&PooledVertexBuffer->PositionBuffer,
 				0,
-				sizeof(FVector),
+				sizeof(FVector3f),
 				VET_Float3
 			);
 
@@ -252,7 +253,7 @@ public:
 				}
 				else
 				{
-					UVSizeInBytes = sizeof(FVector2D);
+					UVSizeInBytes = sizeof(FVector2f);
 					UVDoubleWideVertexElementType = VET_Float4;
 					UVVertexElementType = VET_Float2;
 				}
@@ -391,7 +392,8 @@ public:
 			FDynamicMeshVertex& curVert = VertexCache[i];
 
 			int pos_idx = i * 3;
-			curVert.Position = FVector(this->points[pos_idx + x_id],
+			curVert.Position = FVector3f(
+				this->points[pos_idx + x_id],
 				this->points[pos_idx + y_id],
 				this->points[pos_idx + z_id]);
 
@@ -419,12 +421,12 @@ public:
 			FDynamicMeshVertex & vert1 = VertexCache[(indices[cur_indice + 1])];
 			FDynamicMeshVertex & vert2 = VertexCache[(indices[cur_indice + 2])];
 
-			const FVector Edge01 = (vert1.Position - vert0.Position);
-			const FVector Edge02 = (vert2.Position - vert0.Position);
+			const FVector3f Edge01 = (vert1.Position - vert0.Position);
+			const FVector3f Edge02 = (vert2.Position - vert0.Position);
 
-			const FVector TangentX = Edge01.GetSafeNormal();
-			const FVector TangentZ = (Edge02 ^ Edge01).GetSafeNormal();
-			const FVector TangentY = (TangentX ^ TangentZ).GetSafeNormal();
+			const FVector3f TangentX = Edge01.GetSafeNormal();
+			const FVector3f TangentZ = (Edge02 ^ Edge01).GetSafeNormal();
+			const FVector3f TangentY = (TangentX ^ TangentZ).GetSafeNormal();
 
 			vert0.SetTangents(TangentX, TangentY, TangentZ);
 			vert1.SetTangents(TangentX, TangentY, TangentZ);
@@ -453,9 +455,9 @@ public:
 		SCOPE_CYCLE_COUNTER(STAT_UpdateDirectIndexData);
 
 		FScopeLock scope_lock(update_lock.Get());
-		void* Buffer = RHILockIndexBuffer(IndexBuffer.IndexBufferRHI, 0, indices_num * sizeof(int32), RLM_WriteOnly);
+		void* Buffer = RHILockIndexBuffer(IndexBuffer.IndexBufferRHI, 0, indices_num * sizeof(uint32), RLM_WriteOnly);
 
-		FMemory::Memcpy(Buffer, indices, indices_num * sizeof(int32));
+		FMemory::Memcpy(Buffer, indices, indices_num * sizeof(uint32));
 
 		RHIUnlockIndexBuffer(IndexBuffer.IndexBufferRHI);
 	}
@@ -567,10 +569,10 @@ void FCProceduralMeshSceneProxy::AddRenderPacket(FProceduralMeshTriData * target
 	{
 		FDynamicMeshVertex &Vert = VertexBuffer.Vertices[i];
 		int pos_idx = i * 3;
-		Vert.Position = FVector(cur_packet.points[pos_idx + x_id], cur_packet.points[pos_idx + y_id], cur_packet.points[pos_idx + z_id]);
+		Vert.Position = FVector3f(cur_packet.points[pos_idx + x_id], cur_packet.points[pos_idx + y_id], cur_packet.points[pos_idx + z_id]);
 
 		Vert.Color = startColorIn;
-		Vert.SetTangents(FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
+		Vert.SetTangents(FVector3f(1, 0, 0), FVector3f(0, 1, 0), FVector3f(0, 0, 1));
 
 		int uv_idx = i * 2;
 		for (int texCoord = 0; texCoord < MAX_STATIC_TEXCOORDS; texCoord++)
@@ -586,12 +588,12 @@ void FCProceduralMeshSceneProxy::AddRenderPacket(FProceduralMeshTriData * target
 		FDynamicMeshVertex& vert1 = VertexBuffer.Vertices[cur_packet.indices[cur_indice + 1]];
 		FDynamicMeshVertex& vert2 = VertexBuffer.Vertices[cur_packet.indices[cur_indice + 2]];
 
-		const FVector Edge01 = (vert1.Position - vert0.Position);
-		const FVector Edge02 = (vert2.Position - vert0.Position);
+		const FVector3f Edge01 = (vert1.Position - vert0.Position);
+		const FVector3f Edge02 = (vert2.Position - vert0.Position);
 
-		const FVector TangentX = Edge01.GetSafeNormal();
-		const FVector TangentZ = (Edge02 ^ Edge01).GetSafeNormal();
-		const FVector TangentY = (TangentX ^ TangentZ).GetSafeNormal();
+		const FVector3f TangentX = Edge01.GetSafeNormal();
+		const FVector3f TangentZ = (Edge02 ^ Edge01).GetSafeNormal();
+		const FVector3f TangentY = (TangentX ^ TangentZ).GetSafeNormal();
 
 		vert0.SetTangents(TangentX, TangentY, TangentZ);
 		vert1.SetTangents(TangentX, TangentY, TangentZ);
