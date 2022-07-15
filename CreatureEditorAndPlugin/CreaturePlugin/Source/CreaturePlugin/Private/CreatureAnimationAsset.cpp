@@ -1,6 +1,7 @@
 
 #include "CreatureAnimationAsset.h"
 #include "CreatureCore.h"
+#include <CoreUObject/Public/UObject/ObjectSaveContext.h>
 #include "EditorFramework/AssetImportData.h"
 #include "Serialization/ArchiveSaveCompressedProxy.h"
 #include "Serialization/ArchiveLoadCompressedProxy.h"
@@ -268,9 +269,9 @@ void UCreatureAnimationAsset::GatherAnimationData()
 	}
 }
 
-void UCreatureAnimationAsset::PreSave(const class ITargetPlatform* TargetPlatform)
+void UCreatureAnimationAsset::PreSave(FObjectPreSaveContext ObjectSaveContext)
 {
-	Super::PreSave(TargetPlatform);
+	Super::PreSave(ObjectSaveContext);
 
 	// before saving, always ensure animation data is up to date
 	GatherAnimationData();

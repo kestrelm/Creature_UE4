@@ -26,12 +26,11 @@ static TAutoConsoleVariable<int32> CVarShowCreatureMeshes(
 	ECVF_RenderThreadSafe);
 
 
-static FVertexBufferRHIRef AllocVertexBuffer(uint32 Stride, uint32 NumElements)
+static FBufferRHIRef AllocVertexBuffer(uint32 Stride, uint32 NumElements)
 {
-	FVertexBufferRHIRef VertexBufferRHI;
 	uint32 SizeInBytes = NumElements * Stride;
 	FRHIResourceCreateInfo CreateInfo(TEXT("CREATURE_VERT_ALLOC"));
-	VertexBufferRHI = RHICreateVertexBuffer(SizeInBytes, BUF_Volatile | BUF_ShaderResource, CreateInfo);
+	auto VertexBufferRHI = RHICreateVertexBuffer(SizeInBytes, BUF_Volatile | BUF_ShaderResource, CreateInfo);
 
 	return VertexBufferRHI;
 }
@@ -91,14 +90,14 @@ public:
 			buffersAllocated = true;
 	}
 
-		void* TexCoordBufferData = RHILockVertexBuffer(TexCoordBuffer.VertexBufferRHI, 0, NumTexCoords * TextureStride * Vertices.Num(), RLM_WriteOnly);
+		void* TexCoordBufferData = RHILockBuffer(TexCoordBuffer.VertexBufferRHI, 0, NumTexCoords * TextureStride * Vertices.Num(), RLM_WriteOnly);
 		FVector2f* TexCoordBufferData32 = !Use16bitTexCoord ? static_cast<FVector2f*>(TexCoordBufferData) : nullptr;
 		FVector2DHalf* TexCoordBufferData16 = Use16bitTexCoord ? static_cast<FVector2DHalf*>(TexCoordBufferData) : nullptr;
 
 		// Copy the vertex data into the vertex buffers.
-		FVector3f* PositionBufferData			= static_cast<FVector3f*>(RHILockVertexBuffer(PositionBuffer.VertexBufferRHI, 0, sizeof(FVector3f) * Vertices.Num(), RLM_WriteOnly));
-		FPackedNormal* TangentBufferData	= static_cast<FPackedNormal*>(RHILockVertexBuffer(TangentBuffer.VertexBufferRHI, 0, 2 * sizeof(FPackedNormal) * Vertices.Num(), RLM_WriteOnly));	
-		FColor* ColorBufferData				= static_cast<FColor*>(RHILockVertexBuffer(ColorBuffer.VertexBufferRHI, 0, sizeof(FColor) * Vertices.Num(), RLM_WriteOnly));
+		FVector3f* PositionBufferData			= static_cast<FVector3f*>(RHILockBuffer(PositionBuffer.VertexBufferRHI, 0, sizeof(FVector3f) * Vertices.Num(), RLM_WriteOnly));
+		FPackedNormal* TangentBufferData	= static_cast<FPackedNormal*>(RHILockBuffer(TangentBuffer.VertexBufferRHI, 0, 2 * sizeof(FPackedNormal) * Vertices.Num(), RLM_WriteOnly));
+		FColor* ColorBufferData				= static_cast<FColor*>(RHILockBuffer(ColorBuffer.VertexBufferRHI, 0, sizeof(FColor) * Vertices.Num(), RLM_WriteOnly));
 
 		for (int32 i = 0; i < Vertices.Num(); i++)
 		{
@@ -121,10 +120,10 @@ public:
 			}
 		}
 
-		RHIUnlockVertexBuffer(PositionBuffer.VertexBufferRHI);
-		RHIUnlockVertexBuffer(TangentBuffer.VertexBufferRHI);
-		RHIUnlockVertexBuffer(TexCoordBuffer.VertexBufferRHI);
-		RHIUnlockVertexBuffer(ColorBuffer.VertexBufferRHI);
+		RHIUnlockBuffer(PositionBuffer.VertexBufferRHI);
+		RHIUnlockBuffer(TangentBuffer.VertexBufferRHI);
+		RHIUnlockBuffer(TexCoordBuffer.VertexBufferRHI);
+		RHIUnlockBuffer(ColorBuffer.VertexBufferRHI);
 	}
 
 	void InitResource() override
@@ -202,9 +201,9 @@ public:
 	void UpdateRenderData() const
 	{
 		// Copy the index data into the indices buffer
-		void* Buffer = RHILockIndexBuffer(IndexBufferRHI, 0, Indices.Num() * sizeof(uint32), RLM_WriteOnly);
+		void* Buffer = RHILockBuffer(IndexBufferRHI, 0, Indices.Num() * sizeof(uint32), RLM_WriteOnly);
 		FMemory::Memcpy(Buffer, Indices.GetData(), Indices.Num() * sizeof(uint32));
-		RHIUnlockIndexBuffer(IndexBufferRHI);
+		RHIUnlockBuffer(IndexBufferRHI);
 	}
 };
 
@@ -455,11 +454,11 @@ public:
 		SCOPE_CYCLE_COUNTER(STAT_UpdateDirectIndexData);
 
 		FScopeLock scope_lock(update_lock.Get());
-		void* Buffer = RHILockIndexBuffer(IndexBuffer.IndexBufferRHI, 0, indices_num * sizeof(uint32), RLM_WriteOnly);
+		void* Buffer = RHILockBuffer(IndexBuffer.IndexBufferRHI, 0, indices_num * sizeof(uint32), RLM_WriteOnly);
 
 		FMemory::Memcpy(Buffer, indices, indices_num * sizeof(uint32));
 
-		RHIUnlockIndexBuffer(IndexBuffer.IndexBufferRHI);
+		RHIUnlockBuffer(IndexBuffer.IndexBufferRHI);
 	}
 
 	mutable FProceduralMeshVertexBuffer VertexBuffer;

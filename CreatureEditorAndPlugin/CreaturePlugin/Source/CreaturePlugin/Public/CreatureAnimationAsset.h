@@ -73,7 +73,7 @@ public:
 	void SetCreatureFilename(const FName &newFilename);
 	void GetAssetRegistryTags(TArray<FAssetRegistryTag>& OutTags) const override;
 	void PostLoad() override;
-	void PreSave(const class ITargetPlatform* TargetPlatform) override;
+	void PreSave(FObjectPreSaveContext ObjectSaveContext) override;
 	void PostInitProperties() override;
 	virtual void PostEditUndo() override;
 	
